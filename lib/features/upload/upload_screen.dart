@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-/// This screen lets the user pick a PDF and upload it to the backend.
+/// UploadScreen allows the user to select and (mock) upload a PDF.
+/// This version works on all platforms and simulates the upload step.
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
 
@@ -10,15 +12,16 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  String? _selectedFileName; // Shows which file was picked
-  PlatformFile? _pickedFile; // Stores the actual file object
-  bool _isUploading = false; // Toggles loading spinner during upload
+  String? _selectedFileName;
+  PlatformFile? _pickedFile;
+  bool _isUploading = false;
 
-  /// Method to open the file picker and allow PDF selection
+  /// Opens a native file picker restricted to PDF files.
   Future<void> _pickPdfFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'], // Accept only PDFs
+      allowedExtensions: ['pdf'],
+      withData: kIsWeb, // For Web: load file bytes into memory
     );
 
     if (result != null && result.files.isNotEmpty) {
@@ -29,7 +32,8 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
-  /// Simulates uploading the file to the backend
+  /// Simulates uploading the PDF file.
+  /// After a fake delay, navigates to /loading with a mock UUID.
   Future<void> _uploadPdfFile() async {
     if (_pickedFile == null) return;
 
@@ -38,19 +42,28 @@ class _UploadScreenState extends State<UploadScreen> {
     });
 
     try {
-      // TODO: Replace with actual HTTP POST call to backend
+      // Simulate a network call delay (2 seconds)
       await Future.delayed(const Duration(seconds: 2));
 
-      // Show dialog or navigate to result screen here
+      // Use a fake UUID for mocking
+      const String fakeUuid = 'mock-uuid-1234567890';
+
+      // Navigate to the loading screen, passing the fake UUID
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("File caricato con successo!")),
+        debugPrint('Navigating to /loading');
+        Navigator.pushNamed(
+          context,
+          '/loading',
+          arguments: fakeUuid,
         );
       }
-
-      // TODO: Navigate to result screen and pass UUID or data
     } catch (e) {
-      debugPrint("Upload error: $e");
+      debugPrint('Mock upload error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Errore durante il caricamento.')),
+        );
+      }
     } finally {
       setState(() {
         _isUploading = false;
@@ -58,11 +71,12 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
+  /// Main UI layout
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Analisi Referto PDF"),
+        title: const Text('Analisi Referto PDF'),
         centerTitle: true,
       ),
       body: Padding(
@@ -71,39 +85,41 @@ class _UploadScreenState extends State<UploadScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              /// PDF File Info or Prompt
+              // Display file name or prompt
               if (_selectedFileName != null)
                 Text(
-                  "File selezionato:\n$_selectedFileName",
+                  'File selezionato:\n$_selectedFileName',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 )
               else
                 Text(
-                  "Seleziona un referto PDF da analizzare",
+                  'Seleziona un referto PDF da analizzare',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
 
               const SizedBox(height: 24),
 
-              /// Select Button
+              // "Scegli File PDF" button
               ElevatedButton.icon(
                 onPressed: _isUploading ? null : _pickPdfFile,
                 icon: const Icon(Icons.attach_file),
-                label: const Text("Scegli File PDF"),
+                label: const Text('Scegli File PDF'),
               ),
 
               const SizedBox(height: 16),
 
-              /// Upload Button or SpinnerAn
+              // Show spinner or "Carica e Analizza" button
               _isUploading
                   ? const CircularProgressIndicator()
                   : ElevatedButton.icon(
-                    onPressed: (_pickedFile == null || _isUploading ) ? null : _uploadPdfFile,
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text("Carica e Analizza"),
-                  ),
+                onPressed: (_pickedFile == null || _isUploading)
+                    ? null
+                    : _uploadPdfFile,
+                icon: const Icon(Icons.upload_file),
+                label: const Text('Carica e Analizza'),
+              ),
             ],
           ),
         ),

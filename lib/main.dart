@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'app/theme/app_theme.dart';
 import 'features/upload/upload_screen.dart';
+import 'features/loading/loading_screen.dart';
+//import 'features/result/result_screen.dart';
 
 void main() {
   runApp(const BloodworkApp());
 }
 
-/// This is the root of the application.
-/// It sets up theming and the initial home screen.
 class BloodworkApp extends StatelessWidget {
   const BloodworkApp({super.key});
 
@@ -16,11 +16,17 @@ class BloodworkApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bloodwork Analyzer',
       debugShowCheckedModeBanner: false,
-
       theme: AppTheme.lightTheme,
 
-      // Initial screen: Upload PDF UI
-      home: const UploadScreen(),
+      /// Set the initial route
+      initialRoute: '/',
+
+      /// Define named routes
+      routes: {
+        '/': (context) => const UploadScreen(),
+        '/loading': (context) => const LoadingScreen(),
+        //'/results': (context) => const ResultScreen(), // placeholder
+      },
     );
   }
 }
