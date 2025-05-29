@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// A full-screen loading page with a progress bar and message.
-/// It receives the UUID via route arguments.
+// @formatter:on
+/// Full-screen progress screen shown after upload.
+/// Expects a UUID to be passed via Navigator arguments.
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({super.key});
 
@@ -25,8 +26,17 @@ class LoadingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'UUID: $uuid',
+                'Stiamo analizzando il referto PDF.\nAttendi qualche secondo.',
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'UUID: $uuid',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black54,
+                ),
               ),
             ],
           ),

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'app/theme/app_theme.dart';
 import 'features/upload/upload_screen.dart';
 import 'features/loading/loading_screen.dart';
-//import 'features/result/result_screen.dart';
+import 'features/result/result_screen.dart';
 
+// @formatter:on
 void main() {
   runApp(const BloodworkApp());
 }
@@ -18,14 +19,11 @@ class BloodworkApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
 
-      /// Set the initial route
       initialRoute: '/',
-
-      /// Define named routes
       routes: {
         '/': (context) => const UploadScreen(),
         '/loading': (context) => const LoadingScreen(),
-        //'/results': (context) => const ResultScreen(), // placeholder
+        '/results': (context) => const ResultScreen(), // Placeholder screen
       },
     );
   }
