@@ -30,9 +30,30 @@ class _UploadScreenState extends State<UploadScreen> {
     );
 
     if (result != null && result.files.isNotEmpty) {
+      final picked = result.files.first;
+
+      // Read first 5 bytes (PDF magic number should be '%PDF-')
+      final bytes = picked.bytes;
+      if (bytes == null || bytes.length < 5) {
+        _showInvalidFileSnackBar();
+        return;
+      }
+
+      final isPdfHeader =
+          bytes[0] == 0x25 && // %
+          bytes[1] == 0x50 && // P
+          bytes[2] == 0x44 && // D
+          bytes[3] == 0x46 && // F
+          bytes[4] == 0x2D; // -
+
+      if (!isPdfHeader) {
+        _showInvalidFileSnackBar();
+        return;
+      }
+
       setState(() {
-        _pickedFile = result.files.first;
-        _selectedFileName = _pickedFile!.name;
+        _pickedFile = picked;
+        _selectedFileName = picked.name;
       });
     }
   }
@@ -45,7 +66,8 @@ class _UploadScreenState extends State<UploadScreen> {
     });
 
     try {
-      const String kBaseUrl = kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000';
+      const String kBaseUrl =
+          kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000';
       final uri = Uri.parse('$kBaseUrl/analysis/pdf_analysis');
 
       final request = http.MultipartRequest('POST', uri);
@@ -95,6 +117,12 @@ class _UploadScreenState extends State<UploadScreen> {
         _isUploading = false;
       });
     }
+  }
+
+  void _showInvalidFileSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Il file selezionato non è un PDF valido.')),
+    );
   }
 
   @override

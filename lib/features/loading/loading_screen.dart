@@ -1,16 +1,84 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-// @formatter:on
-/// Full-screen progress screen shown after upload.
-/// Expects a UUID to be passed via Navigator arguments.
-class LoadingScreen extends StatelessWidget {
+/// This screen polls the backend every 2 seconds until the analysis is ready.
+/// Once ready, it redirects to the result screen with the same UUID.
+class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final String uuid =
-        ModalRoute.of(context)?.settings.arguments as String? ?? "UNKNOWN";
+  State<LoadingScreen> createState() => _LoadingScreenState();
+}
 
+class _LoadingScreenState extends State<LoadingScreen> {
+  late final String uuid;
+  Timer? _pollingTimer;
+  bool _hasNavigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is String) {
+        uuid = args;
+        _startPolling(uuid);
+      } else {
+        _showError("UUID mancante o non valido.");
+      }
+    });
+  }
+
+  void _startPolling(String uuid) {
+    const pollingInterval = Duration(seconds: 2);
+    _pollingTimer = Timer.periodic(pollingInterval, (_) async {
+      final uri = Uri.parse(
+        'http://127.0.0.1:8000/analysis/pdf_analysis_result/$uuid',
+      );
+
+      try {
+        final response = await http.get(uri);
+
+        if (response.statusCode == 200) {
+          _pollingTimer?.cancel();
+          if (!_hasNavigated && context.mounted) {
+            _hasNavigated = true;
+            Navigator.pushReplacementNamed(
+              context,
+              '/results',
+              arguments: uuid,
+            );
+          }
+        } else if (response.statusCode == 404) {
+          // Analysis still in progress — wait
+        } else if (response.statusCode == 202) {
+          // Analysis still in progress — wait
+        } else {
+          _showError("Errore server: ${response.statusCode}");
+        }
+      } catch (e) {
+        _showError("Errore connessione: $e");
+      }
+    });
+  }
+
+  void _showError(String message) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(
@@ -26,17 +94,9 @@ class LoadingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Stiamo analizzando il referto PDF.\nAttendi qualche secondo.',
+                'Stiamo elaborando il tuo referto.\nAttendi qualche minuto.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'UUID: $uuid',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black54,
-                ),
               ),
             ],
           ),
