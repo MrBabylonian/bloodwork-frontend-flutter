@@ -42,7 +42,7 @@ class _ResultScreenState extends State<ResultScreen> {
   Future<void> _fetchAnalysisResult(String uuid) async {
     // Keep all existing logic here
     final uri = Uri.parse(
-      'https://13.62.43.40:8000/analysis/pdf_analysis_result/$uuid',
+      'https://13.62.43.40/analysis/pdf_analysis_result/$uuid',
     );
 
     try {

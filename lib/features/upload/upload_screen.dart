@@ -67,7 +67,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     try {
       const String kBaseUrl =
-          kIsWeb ? 'https://13.62.43.40:8000' : 'http://10.0.2.2:8000';
+          kIsWeb ? 'https://13.62.43.40/analysis/pdf_analysis' : 'http://10.0.2.2:8000';
       final uri = Uri.parse('$kBaseUrl/analysis/pdf_analysis');
 
       final request = http.MultipartRequest('POST', uri);

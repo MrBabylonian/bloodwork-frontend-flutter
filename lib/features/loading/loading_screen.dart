@@ -34,7 +34,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     const pollingInterval = Duration(seconds: 2);
     _pollingTimer = Timer.periodic(pollingInterval, (_) async {
       final uri = Uri.parse(
-        'https://13.62.43.40:8000/analysis/pdf_analysis_result/$uuid',
+        'https://13.62.43.40/analysis/pdf_analysis_result/$uuid',
       );
 
       try {
