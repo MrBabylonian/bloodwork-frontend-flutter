@@ -29,8 +29,7 @@ class SecondaryButton extends AppButton {
       decoration: BoxDecoration(
         color:
             isDisabled
-                // ignore: deprecated_member_use
-                ? AppColors.lightGray.withOpacity(0.5)
+                ? AppColors.lightGray.withValues(alpha: 0.5)
                 : AppColors.lightGray,
         borderRadius: effectiveBorderRadius,
       ),

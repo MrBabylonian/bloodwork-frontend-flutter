@@ -32,6 +32,8 @@ mock/
 .pub-cache/
 .pub/
 /build/
+.github/instructions/
+build/
 
 # Symbolication related
 app.*.symbols

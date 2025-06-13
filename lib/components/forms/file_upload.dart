@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import '../../theme/app_colors.dart';
@@ -43,7 +45,7 @@ class FileUploadField extends StatefulWidget {
 
 class _FileUploadFieldState extends State<FileUploadField> {
   List<PlatformFile> _selectedFiles = [];
-  // ignore: prefer_final_fields
+
   bool _isDragging = false;
 
   /// Returns the appropriate icon based on file extension

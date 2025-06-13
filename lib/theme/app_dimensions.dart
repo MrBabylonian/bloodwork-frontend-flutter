@@ -7,6 +7,9 @@
 class AppDimensions {
   // Spacing/Padding values
 
+  /// Extra extra small spacing - used for fine-grained adjustments (2px)
+  static const double spacingXxs = 2.0;
+
   /// Tiny spacing - used for minimal separation (4px)
   static const double spacingXs = 4.0;
 
@@ -25,6 +28,19 @@ class AppDimensions {
   /// Double extra large spacing - used for very significant breaks (48px)
   static const double spacingXxl = 48.0;
 
+  // Semantic Aliases for Padding (can map to spacing or be distinct)
+  // For consistency, we'll map them directly to spacing values for now.
+  // If more specific padding values are needed later, they can be defined separately.
+
+  /// Small padding (maps to spacingS)
+  static const double paddingSmall = spacingS;
+
+  /// Medium padding (maps to spacingM)
+  static const double paddingMedium = spacingM;
+
+  /// Large padding (maps to spacingL)
+  static const double paddingLarge = spacingL;
+
   // Border radius values
 
   /// Small radius - used for subtle rounding (4px)
@@ -39,6 +55,17 @@ class AppDimensions {
   /// Full radius - used for pill shapes (9999px)
   static const double radiusFull = 9999.0;
 
+  // Semantic Aliases for Border Radius
+
+  /// Small border radius (maps to radiusSmall)
+  static const double borderRadiusSmall = radiusSmall;
+
+  /// Medium border radius (maps to radiusMedium)
+  static const double borderRadiusMedium = radiusMedium;
+
+  /// Large border radius (maps to radiusLarge)
+  static const double borderRadiusLarge = radiusLarge;
+
   // Element sizing
 
   /// Small button/input height (32px)
@@ -50,6 +77,9 @@ class AppDimensions {
   /// Large button/input height (56px)
   static const double buttonHeightLarge = 56.0;
 
+  /// Icon size - extra small (12px) - Added for finer icon control
+  static const double iconSizeXs = 12.0;
+
   /// Icon size - small (16px)
   static const double iconSizeSmall = 16.0;
 
@@ -58,6 +88,22 @@ class AppDimensions {
 
   /// Icon size - large (32px)
   static const double iconSizeLarge = 32.0;
+
+  /// Standard width for borders (1.0px)
+  static const double borderWidth = 1.0;
+
+  /// Standard avatar radius (20px, for a 40px diameter avatar)
+  static const double avatarRadiusStandard = 20.0;
+
+  // Existing avatar radii - these might be for different contexts or can be reviewed later
+  /// Small avatar radius (16px)
+  static const double avatarRadiusSmall = 16.0;
+
+  /// Medium avatar radius (24px)
+  static const double avatarRadiusMedium = 24.0;
+
+  /// Large avatar radius (32px)
+  static const double avatarRadiusLarge = 32.0;
 
   // Responsive breakpoints for web
 
@@ -86,9 +132,6 @@ class AppDimensions {
 
   /// Standard card elevation (2.0)
   static const double cardElevation = 2.0;
-
-  /// Border width for outlines, dividers (1.0px)
-  static const double borderWidth = 1.0;
 
   /// Larger border width for emphasis (2.0px)
   static const double borderWidthLarge = 2.0;

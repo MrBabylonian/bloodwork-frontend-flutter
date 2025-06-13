@@ -60,6 +60,16 @@ class AppTextStyles {
     height: 1.5,
   );
 
+  /// Bold primary body text style
+  static const TextStyle bodyBold = TextStyle(
+    fontFamily: 'SF Pro Text',
+    fontSize: 17.0,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.41,
+    color: AppColors.foregroundDark,
+    height: 1.5,
+  );
+
   /// Secondary, smaller body text for details and descriptions
   static const TextStyle bodySmall = TextStyle(
     fontFamily: 'SF Pro Text',
@@ -68,6 +78,16 @@ class AppTextStyles {
     letterSpacing: -0.24,
     color: AppColors.foregroundDark,
     height: 1.5,
+  );
+
+  /// Footnote text style for ancillary information
+  static const TextStyle footnote = TextStyle(
+    fontFamily: 'SF Pro Text',
+    fontSize: 13.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: -0.08,
+    color: AppColors.mediumGray, // Changed to AppColors.mediumGray
+    height: 1.4,
   );
 
   // Button and interactive element styles
@@ -129,10 +149,20 @@ class AppTextStyles {
   /// Style for captions and annotations
   static const TextStyle caption = TextStyle(
     fontFamily: 'SF Pro Text',
-    fontSize: 12.0,
+    fontSize: 12.0, // Ensure this is defined
     fontWeight: FontWeight.normal,
     letterSpacing: 0.0,
-    color: AppColors.mediumGray,
+    color: AppColors.mediumGray, // Ensure this is defined
     height: 1.3,
+  );
+
+  /// Style for error messages
+  static const TextStyle error = TextStyle(
+    fontFamily: 'SF Pro Text',
+    fontSize: 13.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: -0.08,
+    color: AppColors.destructiveRed,
+    height: 1.4,
   );
 }

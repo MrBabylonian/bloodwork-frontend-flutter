@@ -3,13 +3,13 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
 
-/// An expandable accordion component that shows/hides content.
+/// An expandable panel component that shows/hides content.
 ///
 /// This component allows users to toggle the visibility of content,
 /// which is useful for displaying additional details without cluttering the UI.
-class Accordion extends StatefulWidget {
-  /// Creates an accordion with the specified properties.
-  const Accordion({
+class AppAccordionPanel extends StatefulWidget {
+  /// Creates an accordion panel with the specified properties.
+  const AppAccordionPanel({
     super.key,
     required this.title,
     required this.child,
@@ -58,10 +58,10 @@ class Accordion extends StatefulWidget {
   final Duration animationDuration;
 
   @override
-  State<Accordion> createState() => _AccordionState();
+  State<AppAccordionPanel> createState() => _AppAccordionPanelState();
 }
 
-class _AccordionState extends State<Accordion>
+class _AppAccordionPanelState extends State<AppAccordionPanel>
     with SingleTickerProviderStateMixin {
   late bool _isExpanded;
   late AnimationController _controller;
@@ -102,9 +102,8 @@ class _AccordionState extends State<Accordion>
         _controller.reverse();
       }
 
-      if (widget.onToggle != null) {
-        widget.onToggle!(_isExpanded);
-      }
+      // Null check for widget.onToggle before calling it
+      widget.onToggle?.call(_isExpanded);
     });
   }
 
