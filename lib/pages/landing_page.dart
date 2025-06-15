@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
-import '../components/layout/page_scaffold.dart';
-import '../components/buttons/primary_button.dart';
-import '../components/buttons/ghost_button.dart';
+import '../components/buttons/index.dart';
 
-// Data model for features section
+// Data models for the landing page sections
 class FeatureItem {
   final IconData icon;
   final String title;
@@ -19,7 +17,6 @@ class FeatureItem {
   });
 }
 
-// Data model for stats section
 class StatItem {
   final IconData icon;
   final String value;
@@ -35,7 +32,7 @@ class StatItem {
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
-  // Define our feature data - translated to Italian
+  // Features data in Italian
   static const List<FeatureItem> features = [
     FeatureItem(
       icon: CupertinoIcons.waveform_path_ecg,
@@ -57,7 +54,7 @@ class LandingPage extends StatelessWidget {
     ),
   ];
 
-  // Define our stats data - translated to Italian
+  // Stats data in Italian
   static const List<StatItem> stats = [
     StatItem(
       icon: CupertinoIcons.group,
@@ -78,224 +75,372 @@ class LandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      layoutType:
-          PageLayoutType.fullWidth, // Full width for landing page design
+    return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundWhite,
-      padding:
-          EdgeInsets.zero, // No default padding, we'll handle it per section
-      navigationBar: _buildNavigationBar(context),
-      body: Column(
-        children: [
-          // Hero Section
-          _buildHeroSection(context),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(context),
 
-          // Features Section
-          _buildFeaturesSection(context),
+            // Hero Section
+            _buildHeroSection(context),
 
-          // Stats Section
-          _buildStatsSection(context),
+            // Features Section
+            _buildFeaturesSection(context),
 
-          // CTA Section
-          _buildCTASection(context),
-        ],
+            // Stats Section
+            _buildStatsSection(context),
+
+            // CTA Section
+            _buildCTASection(context),
+
+            // Footer
+            _buildFooter(context),
+          ],
+        ),
       ),
-      footer: _buildFooter(context),
     );
   }
 
-  // Navigation Bar using CupertinoNavigationBar
-  CupertinoNavigationBar _buildNavigationBar(BuildContext context) {
-    return CupertinoNavigationBar(
-      backgroundColor: AppColors.backgroundWhite.withValues(alpha: 0.95),
-      border: const Border(
-        bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
+  // Header with navigation
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingS,
       ),
-      middle: Row(
-        mainAxisSize: MainAxisSize.min,
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite.withValues(alpha: 0.95),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryBlue.withValues(alpha: 0.7),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
-            ),
-            child: const Center(
-              child: Text(
-                'V',
-                style: TextStyle(
-                  color: CupertinoColors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+          // Logo
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                ),
+                child: const Center(
+                  child: Text(
+                    'V',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                'VetAnalytics',
+                style: AppTextStyles.title3.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            'VetAnalytics',
-            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GhostButton(
-            onPressed: () {
-              debugPrint('Navigate to login');
-            },
-            child: const Text('Accedi'),
-          ),
-          const SizedBox(width: AppDimensions.spacingS),
-          PrimaryButton(
-            onPressed: () {
-              debugPrint('Navigate to get started');
-            },
-            child: const Text('Inizia'),
+
+          // Navigation buttons
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GhostButton(
+                size: ButtonSize.small,
+                onPressed: () => debugPrint('Accedi tapped'),
+                child: const Text('Accedi'),
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              PrimaryButton(
+                size: ButtonSize.small,
+                onPressed: () => debugPrint('Inizia tapped'),
+                child: const Text('Inizia'),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // Hero Section - Main banner with call to action
+  // Hero section
   Widget _buildHeroSection(BuildContext context) {
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingL,
+        AppDimensions.spacingXxl + AppDimensions.spacingXl,
+        AppDimensions.spacingL,
+        AppDimensions.spacingXxl,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             AppColors.backgroundWhite,
-            AppColors.lightGray,
+            Color(0xFFF8F9FA),
             AppColors.backgroundWhite,
           ],
         ),
       ),
-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
       child: Column(
         children: [
-          const SizedBox(height: AppDimensions.spacingXxl),
+          Container(
+            constraints: const BoxConstraints(maxWidth: 960),
+            child: Column(
+              children: [
+                // Main headline with gradient text
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.foregroundDark,
+                      height: 1.1,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Analisi '),
+                      TextSpan(
+                        text: 'Rivoluzionaria ',
+                        style: TextStyle(
+                          foreground:
+                              Paint()
+                                ..shader = const LinearGradient(
+                                  colors: [
+                                    AppColors.primaryBlue,
+                                    Color(0xFF4A90E2),
+                                  ],
+                                ).createShader(
+                                  const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0),
+                                ),
+                        ),
+                      ),
+                      const TextSpan(text: 'del Sangue'),
+                    ],
+                  ),
+                ),
 
-          // Main headline
-          Text(
-            'Analisi Professionale del Sangue\nper l\'Eccellenza Veterinaria',
-            style: AppTextStyles.largeTitle.copyWith(fontSize: 48, height: 1.1),
-            textAlign: TextAlign.center,
-          ),
+                const SizedBox(height: AppDimensions.spacingL),
 
-          const SizedBox(height: AppDimensions.spacingL),
+                // Subtitle
+                Text(
+                  'Trasforma la diagnostica veterinaria con l\'analisi del sangue basata sull\'intelligenza artificiale. '
+                  'Ottieni insight istantanei e precisi per fornire la migliore cura ai tuoi pazienti.',
+                  style: AppTextStyles.title3.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.normal,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
 
-          // Subtitle
-          Text(
-            'Trasforma la tua pratica veterinaria con l\'analisi del sangue basata sull\'IA.\nOttieni risultati istantanei e accurati che ti aiutano a fornire la migliore cura per i tuoi pazienti.',
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.mediumGray,
-              fontSize: 18,
-              height: 1.5,
+                const SizedBox(height: AppDimensions.spacingXl),
+
+                // CTA buttons
+                _buildResponsiveCTAButtons(context),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-
-          const SizedBox(height: AppDimensions.spacingXxl),
-
-          // CTA Buttons
-          Wrap(
-            spacing: AppDimensions.spacingM,
-            runSpacing: AppDimensions.spacingM,
-            alignment: WrapAlignment.center,
-            children: [
-              PrimaryButton(
-                onPressed: () {
-                  debugPrint('Start analyzing');
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(CupertinoIcons.play_fill, size: 16),
-                    const SizedBox(width: AppDimensions.spacingXs),
-                    const Text('Inizia ad Analizzare'),
-                  ],
-                ),
-              ),
-
-              GhostButton(
-                onPressed: () {
-                  debugPrint('Watch demo');
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(CupertinoIcons.play_circle, size: 16),
-                    const SizedBox(width: AppDimensions.spacingXs),
-                    const Text('Guarda Demo'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppDimensions.spacingXxl),
         ],
       ),
     );
   }
 
-  // Features Section - Showcasing key benefits
+  // Responsive CTA buttons for hero section
+  Widget _buildResponsiveCTAButtons(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
+
+        if (isSmallScreen) {
+          return Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  size: ButtonSize.large,
+                  onPressed: () => debugPrint('Inizia Analisi tapped'),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Inizia Analisi'),
+                      SizedBox(width: AppDimensions.spacingS),
+                      Icon(CupertinoIcons.chevron_right, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingM),
+              SizedBox(
+                width: double.infinity,
+                child: OutlineButton(
+                  size: ButtonSize.large,
+                  onPressed: () => debugPrint('Guarda Demo tapped'),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(CupertinoIcons.play_fill, size: 20),
+                      SizedBox(width: AppDimensions.spacingS),
+                      Text('Guarda Demo'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PrimaryButton(
+                    size: ButtonSize.large,
+                    onPressed: () => debugPrint('Inizia Analisi tapped'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Inizia Analisi'),
+                        SizedBox(width: AppDimensions.spacingS),
+                        Icon(CupertinoIcons.chevron_right, size: 20),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  OutlineButton(
+                    size: ButtonSize.large,
+                    onPressed: () => debugPrint('Guarda Demo tapped'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.play_fill, size: 20),
+                        SizedBox(width: AppDimensions.spacingS),
+                        Text('Guarda Demo'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  // Features section
   Widget _buildFeaturesSection(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXxl,
+      ),
       child: Column(
         children: [
-          // Section title
-          Text(
-            'Perché Scegliere VetAnalytics?',
-            style: AppTextStyles.title1.copyWith(fontSize: 32),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: AppDimensions.spacingM),
-
-          // Section subtitle
-          Text(
-            'Costruito per pratiche veterinarie moderne che richiedono precisione, velocità e affidabilità',
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.mediumGray,
-              fontSize: 18,
+          Container(
+            constraints: const BoxConstraints(
+              maxWidth: AppDimensions.maxContentWidth,
             ),
-            textAlign: TextAlign.center,
+            child: Column(
+              children: [
+                // Section header
+                Column(
+                  children: [
+                    Text(
+                      'Perché Scegliere VetAnalytics?',
+                      style: AppTextStyles.largeTitle.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingM),
+                    Text(
+                      'Costruito per le moderne pratiche veterinarie che richiedono precisione, velocità e affidabilità',
+                      style: AppTextStyles.title3.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.normal,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppDimensions.spacingXxl),
+
+                // Feature cards
+                _buildFeatureCards(context),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: AppDimensions.spacingXxl),
+  // Feature cards grid
+  Widget _buildFeatureCards(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
 
-          // Features grid - Using Wrap for better responsive behavior
-          Wrap(
+        if (isSmallScreen) {
+          return IntrinsicHeight(
+            child: Column(
+              children:
+                  features
+                      .map(
+                        (feature) => Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppDimensions.spacingL,
+                          ),
+                          child: _buildFeatureCard(feature),
+                        ),
+                      )
+                      .toList(),
+            ),
+          );
+        } else {
+          return Wrap(
             spacing: AppDimensions.spacingL,
             runSpacing: AppDimensions.spacingL,
             children:
                 features
                     .map(
-                      (feature) => ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minWidth: 280,
-                          maxWidth: 350,
-                        ),
+                      (feature) => SizedBox(
+                        width:
+                            (constraints.maxWidth -
+                                2 * AppDimensions.spacingL) /
+                            3,
+                        height: 280, // Fixed height for equal card heights
                         child: _buildFeatureCard(feature),
                       ),
                     )
                     .toList(),
-          ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
 
@@ -303,23 +448,17 @@ class LandingPage extends StatelessWidget {
   Widget _buildFeatureCard(FeatureItem feature) {
     return Container(
       width: double.infinity,
+      height: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
+        color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: AppColors.borderGray),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderGray.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon container
+          // Icon
           Container(
             width: 48,
             height: 48,
@@ -333,16 +472,25 @@ class LandingPage extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
 
           // Title
-          Text(feature.title, style: AppTextStyles.title3),
+          Text(
+            feature.title,
+            style: AppTextStyles.title3.copyWith(
+              color: AppColors.foregroundDark,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
 
-          const SizedBox(height: AppDimensions.spacingS),
+          const SizedBox(height: AppDimensions.spacingM),
 
           // Description
-          Text(
-            feature.description,
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.mediumGray,
-              height: 1.6,
+          Flexible(
+            child: Text(
+              feature.description,
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+              overflow: TextOverflow.fade,
             ),
           ),
         ],
@@ -350,18 +498,56 @@ class LandingPage extends StatelessWidget {
     );
   }
 
-  // Stats Section - Social proof with numbers
+  // Stats section
   Widget _buildStatsSection(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
-      decoration: const BoxDecoration(color: AppColors.lightGray),
-      child: Wrap(
-        spacing: AppDimensions.spacingXl,
-        runSpacing: AppDimensions.spacingL,
-        alignment: WrapAlignment.spaceEvenly,
-        children: stats.map((stat) => _buildStatItem(stat)).toList(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXxl,
       ),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary.withValues(alpha: 0.3),
+      ),
+      child: Container(
+        constraints: const BoxConstraints(
+          maxWidth: AppDimensions.maxContentWidth,
+        ),
+        child: _buildStatsGrid(context),
+      ),
+    );
+  }
+
+  // Stats grid
+  Widget _buildStatsGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
+
+        if (isSmallScreen) {
+          return Column(
+            children:
+                stats
+                    .map(
+                      (stat) => Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppDimensions.spacingL,
+                        ),
+                        child: _buildStatItem(stat),
+                      ),
+                    )
+                    .toList(),
+          );
+        } else {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children:
+                stats
+                    .map((stat) => Expanded(child: _buildStatItem(stat)))
+                    .toList(),
+          );
+        }
+      },
     );
   }
 
@@ -369,144 +555,117 @@ class LandingPage extends StatelessWidget {
   Widget _buildStatItem(StatItem stat) {
     return Column(
       children: [
+        // Icon and value
         Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(stat.icon, color: AppColors.primaryBlue, size: 32),
-            const SizedBox(width: AppDimensions.spacingS),
+            const SizedBox(width: AppDimensions.spacingM),
             Text(
               stat.value,
-              style: AppTextStyles.largeTitle.copyWith(
-                fontSize: 40,
+              style: const TextStyle(
+                fontSize: 36,
                 fontWeight: FontWeight.bold,
+                color: AppColors.foregroundDark,
               ),
             ),
           ],
         ),
 
-        const SizedBox(height: AppDimensions.spacingS),
+        const SizedBox(height: AppDimensions.spacingM),
 
+        // Label
         Text(
           stat.label,
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.mediumGray,
-            fontSize: 18,
-          ),
+          style: AppTextStyles.title3.copyWith(color: AppColors.textSecondary),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  // Call to Action Section
+  // CTA section
   Widget _buildCTASection(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.primaryBlue,
-              AppColors.primaryBlue.withValues(alpha: 0.8),
-            ],
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXxl,
+      ),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 768),
+          padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
+            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              'Pronto a Trasformare la Tua Pratica?',
-              style: AppTextStyles.title1.copyWith(
-                color: CupertinoColors.white,
-                fontSize: 32,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: AppDimensions.spacingM),
-
-            Text(
-              'Unisciti a centinaia di professionisti veterinari che si fidano di VetAnalytics\nper analisi del sangue accurate e veloci.',
-              style: AppTextStyles.body.copyWith(
-                color: CupertinoColors.white.withValues(alpha: 0.9),
-                fontSize: 18,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: AppDimensions.spacingXl),
-
-            // Custom CTA Button
-            GestureDetector(
-              onTap: () {
-                debugPrint('Get started today');
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingXl,
-                  vertical: AppDimensions.spacingM,
+          child: Column(
+            children: [
+              // Title
+              Text(
+                'Pronto a Trasformare la Tua Pratica?',
+                style: AppTextStyles.largeTitle.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.bold,
                 ),
-                decoration: BoxDecoration(
-                  color: CupertinoColors.white,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMedium,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CupertinoColors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: AppDimensions.spacingM),
+
+              // Description
+              Text(
+                'Unisciti a centinaia di professionisti veterinari che si fidano di VetAnalytics '
+                'per analisi del sangue accurate e veloci.',
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.normal,
+                  height: 1.5,
                 ),
-                child: Row(
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: AppDimensions.spacingXl),
+
+              // CTA button
+              Button(
+                size: ButtonSize.large,
+                onPressed: () => debugPrint('Inizia Oggi tapped'),
+                variant: ButtonVariant.secondary,
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Inizia Oggi',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.primaryBlue,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingXs),
-                    Icon(
-                      CupertinoIcons.chevron_right,
-                      size: 16,
-                      color: AppColors.primaryBlue,
-                    ),
+                    Text('Inizia Oggi'),
+                    SizedBox(width: AppDimensions.spacingS),
+                    Icon(CupertinoIcons.chevron_right, size: 20),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Footer Section
+  // Footer
   Widget _buildFooter(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
-      decoration: const BoxDecoration(
-        color: AppColors.lightGray,
-        border: Border(top: BorderSide(color: AppColors.borderGray)),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingM,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary.withValues(alpha: 0.2),
+        border: const Border(top: BorderSide(color: AppColors.borderGray)),
       ),
       child: Column(
         children: [
-          // Logo and title
+          // Logo
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -514,11 +673,8 @@ class LandingPage extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryBlue,
-                      AppColors.primaryBlue.withValues(alpha: 0.7),
-                    ],
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
                   ),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusSmall,
@@ -528,14 +684,14 @@ class LandingPage extends StatelessWidget {
                   child: Text(
                     'V',
                     style: TextStyle(
-                      color: CupertinoColors.white,
+                      color: AppColors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'VetAnalytics',
                 style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
@@ -548,9 +704,8 @@ class LandingPage extends StatelessWidget {
           // Copyright
           Text(
             '© 2024 VetAnalytics. Tutti i diritti riservati.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.mediumGray,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

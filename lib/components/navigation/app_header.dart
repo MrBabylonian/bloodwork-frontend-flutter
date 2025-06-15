@@ -3,7 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_gradients.dart';
-import '../buttons/ghost_button.dart';
+import '../buttons/index.dart';
 
 /// A header component for the application
 ///

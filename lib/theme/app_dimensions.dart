@@ -41,16 +41,16 @@ class AppDimensions {
   /// Large padding (maps to spacingL)
   static const double paddingLarge = spacingL;
 
-  // Border radius values
+  // Border radius values (updated to match React design system)
 
-  /// Small radius - used for subtle rounding (4px)
-  static const double radiusSmall = 4.0;
+  /// Small radius - used for subtle rounding (8px)
+  static const double radiusSmall = 8.0;
 
-  /// Medium radius - default for most elements (8px)
-  static const double radiusMedium = 8.0;
+  /// Medium radius - default for most elements (12px) - matches React --radius
+  static const double radiusMedium = 12.0;
 
-  /// Large radius - used for prominent elements (12px)
-  static const double radiusLarge = 12.0;
+  /// Large radius - used for prominent elements (16px)
+  static const double radiusLarge = 16.0;
 
   /// Full radius - used for pill shapes (9999px)
   static const double radiusFull = 9999.0;
@@ -66,16 +66,36 @@ class AppDimensions {
   /// Large border radius (maps to radiusLarge)
   static const double borderRadiusLarge = radiusLarge;
 
-  // Element sizing
+  // Element sizing (updated to match React button system)
 
-  /// Small button/input height (32px)
-  static const double buttonHeightSmall = 32.0;
+  /// Small button height (36px) - matches React 'sm' size (h-9)
+  static const double buttonHeightSmall = 36.0;
 
-  /// Standard button/input height (44px)
-  static const double buttonHeightMedium = 44.0;
+  /// Standard button height (40px) - matches React 'default' size (h-10)
+  static const double buttonHeightMedium = 40.0;
 
-  /// Large button/input height (56px)
-  static const double buttonHeightLarge = 56.0;
+  /// Large button height (44px) - matches React 'lg' size (h-11)
+  static const double buttonHeightLarge = 44.0;
+
+  /// Button widths - minimum widths for consistent sizing
+  /// Small button minimum width (80px)
+  static const double buttonWidthSmall = 80.0;
+
+  /// Medium button minimum width (120px)
+  static const double buttonWidthMedium = 120.0;
+
+  /// Large button minimum width (160px)
+  static const double buttonWidthLarge = 160.0;
+
+  /// Button horizontal padding - matches React system
+  /// Small button padding (12px) - matches React 'sm' (px-3)
+  static const double buttonPaddingSmall = 12.0;
+
+  /// Medium button padding (16px) - matches React 'default' (px-4)
+  static const double buttonPaddingMedium = 16.0;
+
+  /// Large button padding (32px) - matches React 'lg' (px-8)
+  static const double buttonPaddingLarge = 32.0;
 
   /// Icon size - extra small (12px) - Added for finer icon control
   static const double iconSizeXs = 12.0;

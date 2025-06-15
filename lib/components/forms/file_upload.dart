@@ -5,8 +5,7 @@ import 'package:flutter/cupertino.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
-import '../buttons/secondary_button.dart';
-import '../buttons/app_button.dart';
+import '../buttons/index.dart';
 
 /// A file upload component that allows users to select PDF files and images.
 ///
@@ -244,7 +243,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
                               Row(
                                 children: [
                                   SecondaryButton(
-                                    size: AppButtonSize.small,
+                                    size: ButtonSize.small,
                                     onPressed: () => _pickFiles(FileType.image),
                                     child: const Text('Aggiungi Immagini'),
                                   ),
@@ -255,7 +254,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
                                       width: AppDimensions.spacingS,
                                     ),
                                     SecondaryButton(
-                                      size: AppButtonSize.small,
+                                      size: ButtonSize.small,
                                       onPressed: () => _pickFiles(FileType.any),
                                       child: const Text('Aggiungi PDF'),
                                     ),

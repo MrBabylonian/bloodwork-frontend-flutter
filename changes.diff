@@ -1,1140 +1,2869 @@
-diff --git a/.gitignore b/.gitignore
-index c81d28c..41e4dbc 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -32,6 +32,8 @@ mock/
- .pub-cache/
- .pub/
- /build/
-+.github/instructions/
-+build/
- 
- # Symbolication related
- app.*.symbols
-diff --git a/.metadata b/.metadata
-index 9fc6a8a..87dc5c3 100644
---- a/.metadata
-+++ b/.metadata
-@@ -15,7 +15,7 @@ migration:
-     - platform: root
-       create_revision: ea121f8859e4b13e47a8f845e4586164519588bc
-       base_revision: ea121f8859e4b13e47a8f845e4586164519588bc
--    - platform: web
-+    - platform: macos
-       create_revision: ea121f8859e4b13e47a8f845e4586164519588bc
-       base_revision: ea121f8859e4b13e47a8f845e4586164519588bc
- 
 diff --git a/changes.diff b/changes.diff
-index c049031..e69de29 100644
-Binary files a/changes.diff and b/changes.diff differ
-diff --git a/lib/components/buttons/secondary_button.dart b/lib/components/buttons/secondary_button.dart
-index dd55d2d..da51ff0 100644
---- a/lib/components/buttons/secondary_button.dart
-+++ b/lib/components/buttons/secondary_button.dart
-@@ -29,8 +29,7 @@ class SecondaryButton extends AppButton {
-       decoration: BoxDecoration(
-         color:
-             isDisabled
--                // ignore: deprecated_member_use
--                ? AppColors.lightGray.withOpacity(0.5)
-+                ? AppColors.lightGray.withValues(alpha: 0.5)
-                 : AppColors.lightGray,
-         borderRadius: effectiveBorderRadius,
-       ),
-diff --git a/lib/components/dialogs/alert_dialog.dart b/lib/components/dialogs/alert_dialog.dart
-index f38c29e..02d3d90 100644
---- a/lib/components/dialogs/alert_dialog.dart
-+++ b/lib/components/dialogs/alert_dialog.dart
-@@ -116,132 +116,3 @@ Future<T?> showAppDialog<T>({
-     },
-   );
- }
+index 08457c2..e69de29 100644
+--- a/changes.diff
++++ b/changes.diff
+@@ -1,1140 +0,0 @@
+-diff --git a/.gitignore b/.gitignore
+-index c81d28c..41e4dbc 100644
+---- a/.gitignore
+-+++ b/.gitignore
+-@@ -32,6 +32,8 @@ mock/
+- .pub-cache/
+- .pub/
+- /build/
+-+.github/instructions/
+-+build/
+- 
+- # Symbolication related
+- app.*.symbols
+-diff --git a/.metadata b/.metadata
+-index 9fc6a8a..87dc5c3 100644
+---- a/.metadata
+-+++ b/.metadata
+-@@ -15,7 +15,7 @@ migration:
+-     - platform: root
+-       create_revision: ea121f8859e4b13e47a8f845e4586164519588bc
+-       base_revision: ea121f8859e4b13e47a8f845e4586164519588bc
+--    - platform: web
+-+    - platform: macos
+-       create_revision: ea121f8859e4b13e47a8f845e4586164519588bc
+-       base_revision: ea121f8859e4b13e47a8f845e4586164519588bc
+- 
+-diff --git a/changes.diff b/changes.diff
+-index c049031..e69de29 100644
+-Binary files a/changes.diff and b/changes.diff differ
+-diff --git a/lib/components/buttons/secondary_button.dart b/lib/components/buttons/secondary_button.dart
+-index dd55d2d..da51ff0 100644
+---- a/lib/components/buttons/secondary_button.dart
+-+++ b/lib/components/buttons/secondary_button.dart
+-@@ -29,8 +29,7 @@ class SecondaryButton extends AppButton {
+-       decoration: BoxDecoration(
+-         color:
+-             isDisabled
+--                // ignore: deprecated_member_use
+--                ? AppColors.lightGray.withOpacity(0.5)
+-+                ? AppColors.lightGray.withValues(alpha: 0.5)
+-                 : AppColors.lightGray,
+-         borderRadius: effectiveBorderRadius,
+-       ),
+-diff --git a/lib/components/dialogs/alert_dialog.dart b/lib/components/dialogs/alert_dialog.dart
+-index f38c29e..02d3d90 100644
+---- a/lib/components/dialogs/alert_dialog.dart
+-+++ b/lib/components/dialogs/alert_dialog.dart
+-@@ -116,132 +116,3 @@ Future<T?> showAppDialog<T>({
+-     },
+-   );
+- }
+--
+--/// A banner alert that can be shown inline in the UI.
+--class AlertBanner extends StatelessWidget {
+--  /// Creates an alert banner with the specified properties.
+--  const AlertBanner({
+--    super.key,
+--    required this.message,
+--    this.type = AlertType.info,
+--    this.onDismiss,
+--    this.action,
+--    this.actionLabel,
+--  });
+--
+--  /// The message to display in the banner.
+--  final String message;
+--
+--  /// The type of alert to display.
+--  final AlertType type;
+--
+--  /// Called when the dismiss button is tapped.
+--  final VoidCallback? onDismiss;
+--
+--  /// Called when the action button is tapped.
+--  final VoidCallback? action;
+--
+--  /// The label for the action button.
+--  final String? actionLabel;
+--
+--  @override
+--  Widget build(BuildContext context) {
+--    late Color backgroundColor;
+--    late Color textColor;
+--    late IconData iconData;
+--
+--    switch (type) {
+--      case AlertType.success:
+--        backgroundColor = Color.fromRGBO(
+--          AppColors.successGreen.r.toInt(),
+--          AppColors.successGreen.g.toInt(),
+--          AppColors.successGreen.b.toInt(),
+--          0.15,
+--        );
+--        textColor = AppColors.successGreen;
+--        iconData = CupertinoIcons.checkmark_circle_fill;
+--        break;
+--      case AlertType.warning:
+--        backgroundColor = Color.fromRGBO(
+--          AppColors.warningOrange.r.toInt(),
+--          AppColors.warningOrange.g.toInt(),
+--          AppColors.warningOrange.b.toInt(),
+--          0.15,
+--        );
+--        textColor = AppColors.warningOrange;
+--        iconData = CupertinoIcons.exclamationmark_triangle_fill;
+--        break;
+--      case AlertType.error:
+--        backgroundColor = Color.fromRGBO(
+--          AppColors.destructiveRed.r.toInt(),
+--          AppColors.destructiveRed.g.toInt(),
+--          AppColors.destructiveRed.b.toInt(),
+--          0.15,
+--        );
+--        textColor = AppColors.destructiveRed;
+--        iconData = CupertinoIcons.xmark_circle_fill;
+--        break;
+--      case AlertType.info:
+--        backgroundColor = Color.fromRGBO(
+--          AppColors.primaryBlue.r.toInt(),
+--          AppColors.primaryBlue.g.toInt(),
+--          AppColors.primaryBlue.b.toInt(),
+--          0.15,
+--        );
+--        textColor = AppColors.primaryBlue;
+--        iconData = CupertinoIcons.info_circle_fill;
+--        break;
+--    }
+--
+--    return Container(
+--      padding: const EdgeInsets.all(AppDimensions.contentPadding),
+--      decoration: BoxDecoration(
+--        color: backgroundColor,
+--        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+--      ),
+--      child: Row(
+--        crossAxisAlignment: CrossAxisAlignment.start,
+--        children: [
+--          Icon(iconData, color: textColor, size: AppDimensions.iconSizeMedium),
+--          const SizedBox(width: AppDimensions.spacingM),
+--          Expanded(
+--            child: Column(
+--              crossAxisAlignment: CrossAxisAlignment.start,
+--              children: [
+--                Text(
+--                  message,
+--                  style: AppTextStyles.body.copyWith(color: textColor),
+--                ),
+--                if (action != null && actionLabel != null) ...[
+--                  const SizedBox(height: AppDimensions.spacingS),
+--                  CupertinoButton(
+--                    padding: EdgeInsets.zero,
+--                    onPressed: action,
+--                    child: Text(
+--                      actionLabel!,
+--                      style: AppTextStyles.bodySmall.copyWith(
+--                        color: textColor,
+--                        fontWeight: FontWeight.w600,
+--                      ),
+--                    ),
+--                  ),
+--                ],
+--              ],
+--            ),
+--          ),
+--          if (onDismiss != null) ...[
+--            CupertinoButton(
+--              padding: EdgeInsets.zero,
+--              onPressed: onDismiss,
+--              child: Icon(
+--                CupertinoIcons.xmark,
+--                color: textColor,
+--                size: AppDimensions.iconSizeSmall,
+--              ),
+--            ),
+--          ],
+--        ],
+--      ),
+--    );
+--  }
+--}
+-diff --git a/lib/components/display/accordion.dart b/lib/components/display/accordion.dart
+-index c8fe906..1684c1a 100644
+---- a/lib/components/display/accordion.dart
+-+++ b/lib/components/display/accordion.dart
+-@@ -3,13 +3,13 @@ import '../../theme/app_colors.dart';
+- import '../../theme/app_dimensions.dart';
+- import '../../theme/app_text_styles.dart';
+- 
+--/// An expandable accordion component that shows/hides content.
+-+/// An expandable panel component that shows/hides content.
+- ///
+- /// This component allows users to toggle the visibility of content,
+- /// which is useful for displaying additional details without cluttering the UI.
+--class Accordion extends StatefulWidget {
+--  /// Creates an accordion with the specified properties.
+--  const Accordion({
+-+class AppAccordionPanel extends StatefulWidget {
+-+  /// Creates an accordion panel with the specified properties.
+-+  const AppAccordionPanel({
+-     super.key,
+-     required this.title,
+-     required this.child,
+-@@ -58,10 +58,10 @@ class Accordion extends StatefulWidget {
+-   final Duration animationDuration;
+- 
+-   @override
+--  State<Accordion> createState() => _AccordionState();
+-+  State<AppAccordionPanel> createState() => _AppAccordionPanelState();
+- }
+- 
+--class _AccordionState extends State<Accordion>
+-+class _AppAccordionPanelState extends State<AppAccordionPanel>
+-     with SingleTickerProviderStateMixin {
+-   late bool _isExpanded;
+-   late AnimationController _controller;
+-@@ -102,9 +102,8 @@ class _AccordionState extends State<Accordion>
+-         _controller.reverse();
+-       }
+- 
+--      if (widget.onToggle != null) {
+--        widget.onToggle!(_isExpanded);
+--      }
+-+      // Null check for widget.onToggle before calling it
+-+      widget.onToggle?.call(_isExpanded);
+-     });
+-   }
+- 
+-diff --git a/lib/components/display/badge.dart b/lib/components/display/badge.dart
+-index e69de29..929f842 100644
+---- a/lib/components/display/badge.dart
+-+++ b/lib/components/display/badge.dart
+-@@ -0,0 +1,175 @@
+-+import 'package:flutter/cupertino.dart';
+-+import '../../theme/app_colors.dart';
+-+import '../../theme/app_text_styles.dart';
+-+import '../../theme/app_dimensions.dart';
+-+
+-+/// Enum for different badge visual styles, mirroring shadcn/ui variants.
+-+enum AppBadgeVariant {
+-+  primary, // default in shadcn
+-+  secondary,
+-+  destructive,
+-+  outline,
+-+  // Custom variants from existing AppBadge
+-+  success,
+-+  warning,
+-+  info,
+-+}
+-+
+-+/// A badge component for displaying short pieces of information or status.
+-+///
+-+/// Badges can be styled with different variants to convey meaning through color.
+-+/// This component aims to replicate the visual style and variants of the
+-+/// shadcn/ui Badge component.
+-+///
+-+/// Example usage:
+-+/// ```dart
+-+/// AppBadge(label: "Active", variant: AppBadgeVariant.primary)
+-+/// AppBadge(label: "Offline", variant: AppBadgeVariant.outline)
+-+/// AppBadge(label: "Error", variant: AppBadgeVariant.destructive, icon: CupertinoIcons.xmark_circle_fill)
+-+/// ```
+-+class AppBadge extends StatelessWidget {
+-+  /// Creates a badge with the specified properties.
+-+  ///
+-+  /// - [label]: The text to display within the badge.
+-+  /// - [variant]: The visual style of the badge. Defaults to `AppBadgeVariant.primary`.
+-+  /// - [icon]: Optional icon to display before the label.
+-+  const AppBadge({
+-+    super.key,
+-+    required this.label,
+-+    this.variant = AppBadgeVariant.primary,
+-+    this.icon,
+-+  });
+-+
+-+  final String label;
+-+  final AppBadgeVariant variant;
+-+  final IconData? icon;
+-+
+-+  @override
+-+  Widget build(BuildContext context) {
+-+    final _BadgeStyle style = _getVariantStyle(variant);
+-+
+-+    // text-xs (12px) font-semibold from shadcn
+-+    // AppTextStyles.caption is 12px normal. We'll override fontWeight.
+-+    final TextStyle textStyle = AppTextStyles.caption.copyWith(
+-+      color: style.textColor,
+-+      fontWeight: FontWeight.w600, // font-semibold
+-+    );
+-+
+-+    // px-2.5 (10px), py-0.5 (2px) from shadcn
+-+    final EdgeInsets padding = EdgeInsets.symmetric(
+-+      horizontal: AppDimensions.spacingS + AppDimensions.spacingXxs, // 10px
+-+      vertical: AppDimensions.spacingXxs, // 2px
+-+    );
+-+
+-+    return Container(
+-+      padding: padding,
+-+      decoration: BoxDecoration(
+-+        color: style.backgroundColor,
+-+        // rounded-full from shadcn
+-+        borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
+-+        border: Border.all(
+-+          color: style.borderColor,
+-+          // border (1px) from shadcn, only visible for outline or if borderColor is different from backgroundColor
+-+          width:
+-+              (variant == AppBadgeVariant.outline ||
+-+                      style.borderColor != style.backgroundColor)
+-+                  ? AppDimensions
+-+                      .borderWidth // Use the defined borderWidth
+-+                  : 0,
+-+        ),
+-+      ),
+-+      child: Row(
+-+        mainAxisSize: MainAxisSize.min,
+-+        crossAxisAlignment: CrossAxisAlignment.center,
+-+        children: [
+-+          if (icon != null)
+-+            Padding(
+-+              padding: const EdgeInsets.only(right: AppDimensions.spacingXs),
+-+              child: Icon(
+-+                icon,
+-+                color: style.textColor,
+-+                size: textStyle.fontSize, // Match icon size to text size
+-+              ),
+-+            ),
+-+          Text(label, style: textStyle),
+-+        ],
+-+      ),
+-+    );
+-+  }
+-+
+-+  _BadgeStyle _getVariantStyle(AppBadgeVariant variant) {
+-+    Color backgroundColor;
+-+    Color textColor;
+-+    Color borderColor;
+-+
+-+    switch (variant) {
+-+      case AppBadgeVariant.primary:
+-+        // "border-transparent bg-primary text-primary-foreground hover:bg-primary/80"
+-+        backgroundColor = AppColors.primaryBlue;
+-+        textColor = AppColors.accentForeground; // primary-foreground
+-+        borderColor =
+-+            AppColors
+-+                .primaryBlue; // border-transparent implies border color matches bg
+-+        break;
+-+      case AppBadgeVariant.secondary:
+-+        // "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+-+        backgroundColor = AppColors.backgroundSecondary; // secondary
+-+        textColor = AppColors.textSecondary; // secondary-foreground
+-+        borderColor = AppColors.backgroundSecondary;
+-+        break;
+-+      case AppBadgeVariant.destructive:
+-+        // "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80"
+-+        backgroundColor = AppColors.destructiveRed; // destructive
+-+        textColor = AppColors.accentForeground; // destructive-foreground
+-+        borderColor = AppColors.destructiveRed;
+-+        break;
+-+      // Custom variants from original AppBadge
+-+      case AppBadgeVariant.success:
+-+        backgroundColor = AppColors.successGreen.withValues(alpha: 0.15);
+-+        textColor = AppColors.successGreen;
+-+        borderColor = AppColors.successGreen.withValues(alpha: 0.15);
+-+        break;
+-+      case AppBadgeVariant.warning:
+-+        backgroundColor = AppColors.warningOrange.withValues(alpha: 0.15);
+-+        textColor = AppColors.warningOrange;
+-+        borderColor = AppColors.warningOrange.withValues(alpha: 0.15);
+-+        break;
+-+      case AppBadgeVariant.info:
+-+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.15);
+-+        textColor = AppColors.primaryBlue;
+-+        borderColor = AppColors.primaryBlue.withValues(alpha: 0.15);
+-+        break;
+-+      default:
+-+        backgroundColor = AppColors.foregroundDark;
+-+        textColor = AppColors.backgroundWhite;
+-+        borderColor = AppColors.transparent;
+-+    }
+-+
+-+    // Apply outline variant styles
+-+    if (variant == AppBadgeVariant.outline) {
+-+      textColor =
+-+          backgroundColor; // Outline text color is the variant's base color
+-+      backgroundColor = AppColors.transparent;
+-+      // borderColor is already set by the switch, or defaults to transparent if not a specific outline case
+-+    }
+-+
+-+    return _BadgeStyle(
+-+      backgroundColor: backgroundColor,
+-+      textColor: textColor,
+-+      borderColor: borderColor,
+-+    );
+-+  }
+-+}
+-+
+-+/// Helper class to hold style properties for a badge variant.
+-+class _BadgeStyle {
+-+  final Color backgroundColor;
+-+  final Color textColor;
+-+  final Color borderColor;
+-+
+-+  _BadgeStyle({
+-+    required this.backgroundColor,
+-+    required this.textColor,
+-+    required this.borderColor,
+-+  });
+-+}
+-diff --git a/lib/components/feedback/loading_indicator.dart b/lib/components/feedback/loading_indicator.dart
+-index e69de29..5cf8f30 100644
+---- a/lib/components/feedback/loading_indicator.dart
+-+++ b/lib/components/feedback/loading_indicator.dart
+-@@ -0,0 +1,21 @@
+-+import 'package:flutter/cupertino.dart';
+-+
+-+/// A standardized loading indicator for the application.
+-+///
+-+/// This component wraps the `CupertinoActivityIndicator` to provide a consistent
+-+/// loading spinner. It can be customized with size and color if needed in the future.
+-+class LoadingIndicator extends StatelessWidget {
+-+  /// Creates a loading indicator.
+-+  const LoadingIndicator({
+-+    super.key,
+-+    this.radius = 14.0, // Default CupertinoActivityIndicator radius
+-+  });
+-+
+-+  /// The radius of the spinner.
+-+  final double radius;
+-+
+-+  @override
+-+  Widget build(BuildContext context) {
+-+    return Center(child: CupertinoActivityIndicator(radius: radius));
+-+  }
+-+}
+-diff --git a/lib/components/feedback/status_badge.dart b/lib/components/feedback/status_badge.dart
+-index e69de29..c95bf23 100644
+---- a/lib/components/feedback/status_badge.dart
+-+++ b/lib/components/feedback/status_badge.dart
+-@@ -0,0 +1,55 @@
+-+import 'package:flutter/cupertino.dart';
+-+import '../display/badge.dart';
+-+
+-+/// Enum for different status types, influencing icon and color.
+-+enum StatusType { success, warning, error, info, pending, neutral }
+-+
+-+/// A badge specifically designed to convey status with an icon and label.
+-+///
+-+/// This component uses the `AppBadge` internally and provides predefined
+-+/// icons and color schemes for different status types.
+-+class StatusBadge extends StatelessWidget {
+-+  /// Creates a status badge with the specified properties.
+-+  const StatusBadge({super.key, required this.label, required this.statusType});
+-+
+-+  /// The text label to display.
+-+  final String label;
+-+
+-+  /// The type of status to represent.
+-+  final StatusType statusType;
+-+
+-+  @override
+-+  Widget build(BuildContext context) {
+-+    IconData iconData;
+-+    AppBadgeVariant badgeVariant;
+-+
+-+    switch (statusType) {
+-+      case StatusType.success:
+-+        iconData = CupertinoIcons.checkmark_circle_fill;
+-+        badgeVariant = AppBadgeVariant.success;
+-+        break;
+-+      case StatusType.warning:
+-+        iconData = CupertinoIcons.exclamationmark_triangle_fill;
+-+        badgeVariant = AppBadgeVariant.warning;
+-+        break;
+-+      case StatusType.error:
+-+        iconData = CupertinoIcons.xmark_circle_fill;
+-+        badgeVariant = AppBadgeVariant.destructive;
+-+        break;
+-+      case StatusType.info:
+-+        iconData = CupertinoIcons.info_circle_fill;
+-+        badgeVariant = AppBadgeVariant.info;
+-+        break;
+-+      case StatusType.pending:
+-+        iconData = CupertinoIcons.time_solid;
+-+        badgeVariant = AppBadgeVariant.secondary;
+-+        break;
+-+      case StatusType.neutral:
+-+        iconData = CupertinoIcons.circle_fill;
+-+        badgeVariant = AppBadgeVariant.secondary;
+-+        break;
+-+    }
+-+
+-+    return AppBadge(label: label, variant: badgeVariant, icon: iconData);
+-+  }
+-+}
+-diff --git a/lib/components/forms/file_upload.dart b/lib/components/forms/file_upload.dart
+-index a8ef00d..881f755 100644
+---- a/lib/components/forms/file_upload.dart
+-+++ b/lib/components/forms/file_upload.dart
+-@@ -1,3 +1,5 @@
+-+// ignore_for_file: prefer_final_fields
+-+
+- import 'package:file_picker/file_picker.dart';
+- import 'package:flutter/cupertino.dart';
+- import '../../theme/app_colors.dart';
+-@@ -43,7 +45,7 @@ class FileUploadField extends StatefulWidget {
+- 
+- class _FileUploadFieldState extends State<FileUploadField> {
+-   List<PlatformFile> _selectedFiles = [];
+--  // ignore: prefer_final_fields
+-+
+-   bool _isDragging = false;
+- 
+-   /// Returns the appropriate icon based on file extension
+-diff --git a/lib/components/forms/text_input.dart b/lib/components/forms/text_input.dart
+-index 5f9750d..48e359e 100644
+---- a/lib/components/forms/text_input.dart
+-+++ b/lib/components/forms/text_input.dart
+-@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
+- import '../../theme/app_colors.dart';
+- import '../../theme/app_dimensions.dart';
+- import '../../theme/app_text_styles.dart';
+-+import '../../theme/app_theme.dart';
+- 
+--/// A customized text input field following Cupertino design principles.
+-+/// A customized text input field following Cupertino design principles,
+-+/// aligned with the styling from input.tsx mock.
+- ///
+- /// This component creates a consistent text input experience throughout
+- /// the application with built-in label, placeholder, and validation support.
+-@@ -27,6 +29,9 @@ class AppTextInput extends StatelessWidget {
+-     this.autofocus = false,
+-     this.autocorrect = true,
+-     this.focusNode,
+-+    this.prefix,
+-+    this.suffix,
+-+    this.textCapitalization = TextCapitalization.none,
+-   });
+- 
+-   /// Controller for the text field.
+-@@ -77,15 +82,77 @@ class AppTextInput extends StatelessWidget {
+-   /// Focus node for controlling the focus of this input.
+-   final FocusNode? focusNode;
+- 
+-+  /// Optional widget to display before the text input.
+-+  final Widget? prefix;
+-+
+-+  /// Optional widget to display after the text input.
+-+  final Widget? suffix;
+-+
+-+  /// Configures how the platform keyboard behaviorally capitalizes digits.
+-+  final TextCapitalization textCapitalization;
+-+
+-   @override
+-   Widget build(BuildContext context) {
+-+    final appTheme = AppTheme.of(context);
+-+    final bool hasError = errorText != null && errorText!.isNotEmpty;
+-+
+-+    // Determine background color based on enabled state and theme.
+-+    // CupertinoTextFields typically use a light gray background.
+-+    // The mock uses `bg-background` which we map to `AppColors.backgroundSecondary` (lightGray) for enabled, and `AppColors.backgroundDisabled` for disabled.
+-+    Color textFieldFillColor;
+-+    if (!enabled) {
+-+      textFieldFillColor = AppColors.backgroundDisabled;
+-+    } else {
+-+      // For light theme, use AppColors.backgroundSecondary. For dark theme, a darker equivalent would be needed.
+-+      // Since darkTheme currently maps to lightTheme, this will resolve to AppColors.backgroundSecondary.
+-+      textFieldFillColor =
+-+          appTheme.isDarkMode
+-+              ? AppColors.backgroundSecondary
+-+              : AppColors
+-+                  .backgroundSecondary; // Placeholder for actual dark theme color
+-+    }
+-+
+-+    BoxDecoration decoration = BoxDecoration(
+-+      color: textFieldFillColor,
+-+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+-+      border: Border.all(
+-+        color: hasError ? AppColors.error : AppColors.borderGray,
+-+        width: AppDimensions.borderWidth,
+-+      ),
+-+    );
+-+
+-+    // Style for the input text itself, matching text-base or md:text-sm from mock
+-+    TextStyle inputTextStyle = AppTextStyles.formInput.copyWith(
+-+      color:
+-+          enabled
+-+              ? (appTheme.isDarkMode
+-+                  ? AppColors.white
+-+                  : AppColors
+-+                      .foregroundDark) // Adjust for dark mode if implemented
+-+              : AppColors.textDisabled,
+-+    );
+-+
+-+    // Style for placeholder text, matching placeholder:text-muted-foreground
+-+    TextStyle placeholderTextStyle = AppTextStyles.formPlaceholder.copyWith(
+-+      color: AppColors.textDisabled, // text-muted-foreground equivalent
+-+    );
+-+
+-+    // Style for the label
+-+    TextStyle labelStyle = AppTextStyles.formLabel.copyWith(
+-+      color:
+-+          appTheme.isDarkMode
+-+              ? AppColors.white.withValues(alpha: 0.8)
+-+              : AppColors.foregroundDark, // Adjust for dark mode
+-+    );
+-+
+-     return Column(
+-       crossAxisAlignment: CrossAxisAlignment.start,
+-+      mainAxisSize: MainAxisSize.min,
+-       children: [
+-         if (label != null) ...[
+-           Padding(
+-             padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+--            child: Text(label!, style: AppTextStyles.formLabel),
+-+            child: Text(label!, style: labelStyle),
+-           ),
+-         ],
+-         CupertinoTextField(
+-@@ -103,29 +170,30 @@ class AppTextInput extends StatelessWidget {
+-           autofocus: autofocus,
+-           autocorrect: autocorrect,
+-           focusNode: focusNode,
+-+          prefix: prefix,
+-+          suffix: suffix,
+-+          textCapitalization: textCapitalization,
+-           padding: const EdgeInsets.symmetric(
+--            horizontal: AppDimensions.spacingM,
+--            vertical: AppDimensions.spacingS,
+-+            horizontal:
+-+                AppDimensions.paddingMedium, // Corresponds to px-3 in mock
+-+            vertical:
+-+                AppDimensions
+-+                    .paddingSmall, // Corresponds to py-2 in mock (adjust if h-10 target is strict)
+-           ),
+--          decoration: BoxDecoration(
+--            color: AppColors.lightGray,
+--            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+--            border:
+--                errorText != null
+--                    ? Border.all(color: AppColors.destructiveRed)
+--                    : null,
+--          ),
+--          style: AppTextStyles.formInput,
+--          placeholderStyle: AppTextStyles.formPlaceholder,
+-+          decoration: decoration,
+-+          style: inputTextStyle,
+-+          placeholderStyle: placeholderTextStyle,
+-+          cursorColor: AppColors.primaryBlue, // Standard cursor color
+-         ),
+--        if (errorText != null) ...[
+-+        if (hasError) ...[
+-           Padding(
+--            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+-+            padding: const EdgeInsets.only(
+-+              top: AppDimensions.spacingXxs,
+-+              left: AppDimensions.paddingSmall,
+-+            ),
+-             child: Text(
+-               errorText!,
+--              style: AppTextStyles.caption.copyWith(
+--                color: AppColors.destructiveRed,
+--              ),
+-+              style: AppTextStyles.caption.copyWith(color: AppColors.error),
+-             ),
+-           ),
+-         ],
+-@@ -133,3 +201,126 @@ class AppTextInput extends StatelessWidget {
+-     );
+-   }
+- }
+-+
+-+// --- Example Usage (Illustrative) ---
+-+/*
+-+class MyFormPage extends StatefulWidget {
+-+  const MyFormPage({super.key});
+-+
+-+  @override
+-+  State<MyFormPage> createState() => _MyFormPageState();
+-+}
+-+
+-+class _MyFormPageState extends State<MyFormPage> {
+-+  final _formKey = GlobalKey<FormState>();
+-+  final _nameController = TextEditingController();
+-+  final _emailController = TextEditingController();
+-+  final _passwordController = TextEditingController();
+-+  String? _nameError;
+-+
+-+  @override
+-+  void dispose() {
+-+    _nameController.dispose();
+-+    _emailController.dispose();
+-+    _passwordController.dispose();
+-+    super.dispose();
+-+  }
+-+
+-+  void _validateName(String value) {
+-+    setState(() {
+-+      if (value.isEmpty) {
+-+        _nameError = 'Name cannot be empty.';
+-+      } else if (value.length < 3) {
+-+        _nameError = 'Name must be at least 3 characters.';
+-+      } else {
+-+        _nameError = null;
+-+      }
+-+    });
+-+  }
+-+
+-+  @override
+-+  Widget build(BuildContext context) {
+-+    return CupertinoPageScaffold(
+-+      navigationBar: const CupertinoNavigationBar(
+-+        middle: Text('Text Input Examples'),
+-+      ),
+-+      child: SafeArea(
+-+        child: Padding(
+-+          padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+-+          child: Form(
+-+            key: _formKey,
+-+            child: ListView(
+-+              children: <Widget>[
+-+                AppTextInput(
+-+                  controller: _nameController,
+-+                  label: 'Full Name',
+-+                  placeholder: 'Enter your full name',
+-+                  textInputAction: TextInputAction.next,
+-+                  errorText: _nameError,
+-+                  onChanged: _validateName,
+-+                  prefix: const Padding(
+-+                    padding: EdgeInsets.only(right: AppDimensions.spacingS),
+-+                    child: Icon(CupertinoIcons.person, color: AppColors.mediumGray, size: AppDimensions.iconSizeMedium),
+-+                  ),
+-+                ),
+-+                const SizedBox(height: AppDimensions.spacingM),
+-+                AppTextInput(
+-+                  controller: _emailController,
+-+                  label: 'Email Address',
+-+                  placeholder: 'you@example.com',
+-+                  keyboardType: TextInputType.emailAddress,
+-+                  textInputAction: TextInputAction.next,
+-+                  // No direct error prop for this example, assuming form validation handles it
+-+                ),
+-+                const SizedBox(height: AppDimensions.spacingM),
+-+                AppTextInput(
+-+                  controller: _passwordController,
+-+                  label: 'Password',
+-+                  placeholder: 'Enter your password',
+-+                  obscureText: true,
+-+                  textInputAction: TextInputAction.done,
+-+                  suffix: Padding(
+-+                    padding: const EdgeInsets.only(left: AppDimensions.spacingS),
+-+                    child: CupertinoButton(
+-+                      padding: EdgeInsets.zero,
+-+                      child: const Icon(CupertinoIcons.eye_slash, color: AppColors.mediumGray, size: AppDimensions.iconSizeMedium),
+-+                      onPressed: () {
+-+                        // Toggle password visibility logic here
+-+                        print('Toggle password visibility');
+-+                      },
+-+                    ),
+-+                  ),
+-+                ),
+-+                const SizedBox(height: AppDimensions.spacingM),
+-+                AppTextInput(
+-+                  controller: TextEditingController(text: 'Disabled Text'),
+-+                  label: 'Disabled Field',
+-+                  enabled: false,
+-+                ),
+-+                const SizedBox(height: AppDimensions.spacingXl),
+-+                CupertinoButton.filled(
+-+                  child: const Text('Submit'),
+-+                  onPressed: () {
+-+                    _validateName(_nameController.text); // Trigger validation for name field
+-+                    if (_formKey.currentState!.validate()) {
+-+                      // This example doesn't use FormField, so direct validation check is illustrative
+-+                      if (_nameError == null) {
+-+                         print('Form submitted successfully!');
+-+                         print('Name: ${_nameController.text}');
+-+                         print('Email: ${_emailController.text}');
+-+                         print('Password: ${_passwordController.text}');
+-+                      } else {
+-+                        print('Please correct the errors.');
+-+                      }
+-+                    }
+-+                  },
+-+                ),
+-+              ],
+-+            ),
+-+          ),
+-+        ),
+-+      ),
+-+    );
+-+  }
+-+}
+-+*/
+-diff --git a/lib/main.dart b/lib/main.dart
+-index 8b13789..ea5702d 100644
+---- a/lib/main.dart
+-+++ b/lib/main.dart
+-@@ -1 +1,90 @@
+-+import 'package:flutter/cupertino.dart';
+-+import 'package:flutter/services.dart';
+-+import 'package:provider/provider.dart';
+-+import 'theme/app_theme.dart';
+-+import 'pages/landing_page.dart';
+- 
+-+void main() {
+-+  // Ensure Flutter is initialized
+-+  WidgetsFlutterBinding.ensureInitialized();
+-+
+-+  // Set preferred device orientations (optional)
+-+  SystemChrome.setPreferredOrientations([
+-+    DeviceOrientation.portraitUp,
+-+    DeviceOrientation.portraitDown,
+-+    DeviceOrientation.landscapeLeft,
+-+    DeviceOrientation.landscapeRight,
+-+  ]);
+-+
+-+  // Run the app with theme provider
+-+  runApp(const VetAnalyticsApp());
+-+}
+-+
+-+/// The main application widget for VetAnalytics
+-+class VetAnalyticsApp extends StatelessWidget {
+-+  const VetAnalyticsApp({super.key});
+-+
+-+  @override
+-+  Widget build(BuildContext context) {
+-+    // Wrap app with ChangeNotifierProvider for theme management
+-+    return ChangeNotifierProvider(
+-+      create: (_) => AppTheme(),
+-+      child: Consumer<AppTheme>(
+-+        builder: (context, appTheme, child) {
+-+          return CupertinoApp(
+-+            // App Configuration
+-+            title: 'VetAnalytics',
+-+            debugShowCheckedModeBanner: false,
+-+
+-+            // Localization (Italian)
+-+            locale: const Locale('it', 'IT'),
+-+
+-+            // Theme Configuration - Using the currentTheme getter
+-+            theme: appTheme.currentTheme,
+-+
+-+            // Home Page
+-+            home: const LandingPage(),
+-+
+-+            // Route Generation (for future navigation)
+-+            onGenerateRoute: _generateRoute,
+-+
+-+            // Initial Route
+-+            initialRoute: '/',
+-+          );
+-+        },
+-+      ),
+-+    );
+-+  }
+-+
+-+  /// Route generator for navigation
+-+  /// This will be expanded as we add more pages
+-+  static Route<dynamic>? _generateRoute(RouteSettings settings) {
+-+    switch (settings.name) {
+-+      case '/':
+-+        return CupertinoPageRoute(
+-+          builder: (_) => const LandingPage(),
+-+          settings: settings,
+-+        );
+-+
+-+      // Future routes will go here:
+-+      // case '/login':
+-+      //   return CupertinoPageRoute(
+-+      //     builder: (_) => const LoginPage(),
+-+      //     settings: settings,
+-+      //   );
+-+      //
+-+      // case '/dashboard':
+-+      //   return CupertinoPageRoute(
+-+      //     builder: (_) => const DashboardPage(),
+-+      //     settings: settings,
+-+      //   );
+-+
+-+      default:
+-+        // Fallback to landing page for unknown routes
+-+        return CupertinoPageRoute(
+-+          builder: (_) => const LandingPage(),
+-+          settings: settings,
+-+        );
+-+    }
+-+  }
+-+}
+-diff --git a/lib/theme/app_colors.dart b/lib/theme/app_colors.dart
+-index 7aa5d53..51d8259 100644
+---- a/lib/theme/app_colors.dart
+-+++ b/lib/theme/app_colors.dart
+-@@ -10,6 +10,12 @@ class AppColors {
+-   /// Used in primary buttons, links, progress indicators
+-   static const Color primaryBlue = Color(0xFF007AFF);
+- 
+-+  /// Foreground color for elements on an accent background (e.g., text on a primaryBlue button)
+-+  static const Color accentForeground = Color(0xFFFFFFFF); // White
+-+
+-+  /// Background color for popover elements like dropdowns, menus
+-+  static const Color popoverBackground = Color(0xFFFFFFFF); // Typically white
+-+
+-   /// Main background color for pages, cards, and dialog backgrounds
+-   static const Color backgroundWhite = Color(0xFFFFFFFF);
+- 
+-@@ -27,6 +33,30 @@ class AppColors {
+-   /// Used for borders, dividers, and subtle separations between elements
+-   static const Color borderGray = Color(0xFFDCDCDC);
+- 
+-+  /// General border color, can be an alias for borderGray or a slightly different shade
+-+  static const Color border = borderGray;
+-+
+-+  // Semantic Aliases (derived from base palette for clarity)
+-+
+-+  /// Color for secondary text elements (often same as mediumGray)
+-+  static const Color textSecondary = mediumGray;
+-+
+-+  /// Color for disabled text elements
+-+  static const Color textDisabled = Color(
+-+    0x618E8E93,
+-+  ); // mediumGray at 38% opacity
+-+
+-+  /// Color for secondary backgrounds (e.g., input fields, selected items)
+-+  static const Color backgroundSecondary = lightGray;
+-+
+-+  /// Color for disabled backgrounds or components
+-+  static const Color backgroundDisabled = Color(
+-+    0xFFE5E5EA,
+-+  ); // A slightly darker, less vibrant gray
+-+
+-+  /// Color for error text and icons (often same as destructiveRed)
+-+  static const Color error = destructiveRed;
+-+
+-   // Accent colors
+- 
+-   /// Green color for success states, positive feedback, checkmarks
+-@@ -54,6 +84,17 @@ class AppColors {
+-   /// Pure white for text on dark backgrounds and overlay elements
+-   static const Color white = Color(0xFFFFFFFF);
+- 
+-+  /// Transparent color
+-+  static const Color transparent = Color(0x00000000);
+-+
+-+  /// Muted background color
+-+  static const Color muted = Color(0xFFF1F5F9); // Example: A light gray
+-+
+-+  /// Muted foreground color (text on muted background)
+-+  static const Color mutedForeground = Color(
+-+    0xFF64748B,
+-+  ); // Example: A darker gray
+-+
+-   /// Primary gradient applied from top-left to bottom-right (135 degrees)
+-   /// Used for premium element and brand highligts
+-   static const LinearGradient primaryGradient = LinearGradient(
+-diff --git a/lib/theme/app_dimensions.dart b/lib/theme/app_dimensions.dart
+-index 824cec8..00877e3 100644
+---- a/lib/theme/app_dimensions.dart
+-+++ b/lib/theme/app_dimensions.dart
+-@@ -7,6 +7,9 @@
+- class AppDimensions {
+-   // Spacing/Padding values
+- 
+-+  /// Extra extra small spacing - used for fine-grained adjustments (2px)
+-+  static const double spacingXxs = 2.0;
+-+
+-   /// Tiny spacing - used for minimal separation (4px)
+-   static const double spacingXs = 4.0;
+- 
+-@@ -25,6 +28,19 @@ class AppDimensions {
+-   /// Double extra large spacing - used for very significant breaks (48px)
+-   static const double spacingXxl = 48.0;
+- 
+-+  // Semantic Aliases for Padding (can map to spacing or be distinct)
+-+  // For consistency, we'll map them directly to spacing values for now.
+-+  // If more specific padding values are needed later, they can be defined separately.
+-+
+-+  /// Small padding (maps to spacingS)
+-+  static const double paddingSmall = spacingS;
+-+
+-+  /// Medium padding (maps to spacingM)
+-+  static const double paddingMedium = spacingM;
+-+
+-+  /// Large padding (maps to spacingL)
+-+  static const double paddingLarge = spacingL;
+-+
+-   // Border radius values
+- 
+-   /// Small radius - used for subtle rounding (4px)
+-@@ -39,6 +55,17 @@ class AppDimensions {
+-   /// Full radius - used for pill shapes (9999px)
+-   static const double radiusFull = 9999.0;
+- 
+-+  // Semantic Aliases for Border Radius
+-+
+-+  /// Small border radius (maps to radiusSmall)
+-+  static const double borderRadiusSmall = radiusSmall;
+-+
+-+  /// Medium border radius (maps to radiusMedium)
+-+  static const double borderRadiusMedium = radiusMedium;
+-+
+-+  /// Large border radius (maps to radiusLarge)
+-+  static const double borderRadiusLarge = radiusLarge;
+-+
+-   // Element sizing
+- 
+-   /// Small button/input height (32px)
+-@@ -50,6 +77,9 @@ class AppDimensions {
+-   /// Large button/input height (56px)
+-   static const double buttonHeightLarge = 56.0;
+- 
+-+  /// Icon size - extra small (12px) - Added for finer icon control
+-+  static const double iconSizeXs = 12.0;
+-+
+-   /// Icon size - small (16px)
+-   static const double iconSizeSmall = 16.0;
+- 
+-@@ -59,6 +89,22 @@ class AppDimensions {
+-   /// Icon size - large (32px)
+-   static const double iconSizeLarge = 32.0;
+- 
+-+  /// Standard width for borders (1.0px)
+-+  static const double borderWidth = 1.0;
+-+
+-+  /// Standard avatar radius (20px, for a 40px diameter avatar)
+-+  static const double avatarRadiusStandard = 20.0;
+-+
+-+  // Existing avatar radii - these might be for different contexts or can be reviewed later
+-+  /// Small avatar radius (16px)
+-+  static const double avatarRadiusSmall = 16.0;
+-+
+-+  /// Medium avatar radius (24px)
+-+  static const double avatarRadiusMedium = 24.0;
+-+
+-+  /// Large avatar radius (32px)
+-+  static const double avatarRadiusLarge = 32.0;
+-+
+-   // Responsive breakpoints for web
+- 
+-   /// Small mobile breakpoint (320px)
+-@@ -87,9 +133,6 @@ class AppDimensions {
+-   /// Standard card elevation (2.0)
+-   static const double cardElevation = 2.0;
+- 
+--  /// Border width for outlines, dividers (1.0px)
+--  static const double borderWidth = 1.0;
+--
+-   /// Larger border width for emphasis (2.0px)
+-   static const double borderWidthLarge = 2.0;
+- 
+-diff --git a/lib/theme/app_text_styles.dart b/lib/theme/app_text_styles.dart
+-index cf523f4..c076343 100644
+---- a/lib/theme/app_text_styles.dart
+-+++ b/lib/theme/app_text_styles.dart
+-@@ -60,6 +60,16 @@ class AppTextStyles {
+-     height: 1.5,
+-   );
+- 
+-+  /// Bold primary body text style
+-+  static const TextStyle bodyBold = TextStyle(
+-+    fontFamily: 'SF Pro Text',
+-+    fontSize: 17.0,
+-+    fontWeight: FontWeight.bold,
+-+    letterSpacing: -0.41,
+-+    color: AppColors.foregroundDark,
+-+    height: 1.5,
+-+  );
+-+
+-   /// Secondary, smaller body text for details and descriptions
+-   static const TextStyle bodySmall = TextStyle(
+-     fontFamily: 'SF Pro Text',
+-@@ -70,6 +80,16 @@ class AppTextStyles {
+-     height: 1.5,
+-   );
+- 
+-+  /// Footnote text style for ancillary information
+-+  static const TextStyle footnote = TextStyle(
+-+    fontFamily: 'SF Pro Text',
+-+    fontSize: 13.0,
+-+    fontWeight: FontWeight.normal,
+-+    letterSpacing: -0.08,
+-+    color: AppColors.mediumGray, // Changed to AppColors.mediumGray
+-+    height: 1.4,
+-+  );
+-+
+-   // Button and interactive element styles
+- 
+-   /// Text style for primary buttons
+-@@ -129,10 +149,20 @@ class AppTextStyles {
+-   /// Style for captions and annotations
+-   static const TextStyle caption = TextStyle(
+-     fontFamily: 'SF Pro Text',
+--    fontSize: 12.0,
+-+    fontSize: 12.0, // Ensure this is defined
+-     fontWeight: FontWeight.normal,
+-     letterSpacing: 0.0,
+--    color: AppColors.mediumGray,
+-+    color: AppColors.mediumGray, // Ensure this is defined
+-     height: 1.3,
+-   );
+-+
+-+  /// Style for error messages
+-+  static const TextStyle error = TextStyle(
+-+    fontFamily: 'SF Pro Text',
+-+    fontSize: 13.0,
+-+    fontWeight: FontWeight.normal,
+-+    letterSpacing: -0.08,
+-+    color: AppColors.destructiveRed,
+-+    height: 1.4,
+-+  );
+- }
+-diff --git a/pubspec.lock b/pubspec.lock
+-index 3f1c9e7..d9d531b 100644
+---- a/pubspec.lock
+-+++ b/pubspec.lock
+-@@ -256,6 +256,14 @@ packages:
+-       url: "https://pub.dev"
+-     source: hosted
+-     version: "6.1.5"
+-+  shimmer:
+-+    dependency: "direct main"
+-+    description:
+-+      name: shimmer
+-+      sha256: "5f88c883a22e9f9f299e5ba0e4f7e6054857224976a5d9f839d4ebdc94a14ac9"
+-+      url: "https://pub.dev"
+-+    source: hosted
+-+    version: "3.0.0"
+-   sky_engine:
+-     dependency: transitive
+-     description: flutter
+-diff --git a/pubspec.yaml b/pubspec.yaml
+-index e9d4fb1..f9e90f5 100644
+---- a/pubspec.yaml
+-+++ b/pubspec.yaml
+-@@ -38,6 +38,7 @@ dependencies:
+-   go_router: ^15.1.3
+-   flutter_adaptive_ui: ^0.8.0+1
+-   fl_chart: ^1.0.0
+-+  shimmer: ^3.0.0
+- 
+-   # The following adds the Cupertino Icons font to your application.
+-   # Use with the CupertinoIcons class for iOS style icons.
+diff --git a/lib/components/buttons/app_button.dart b/lib/components/buttons/app_button.dart
+deleted file mode 100644
+index 1e63f86..0000000
+--- a/lib/components/buttons/app_button.dart
++++ /dev/null
+@@ -1,94 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_dimensions.dart';
 -
--/// A banner alert that can be shown inline in the UI.
--class AlertBanner extends StatelessWidget {
--  /// Creates an alert banner with the specified properties.
--  const AlertBanner({
+-/// Button size variants
+-enum AppButtonSize {
+-  /// Small, compact buttons
+-  small,
+-
+-  /// Default, standard-sized buttons
+-  medium,
+-
+-  /// Large, prominent buttons
+-  large,
+-}
+-
+-/// Base button class that defines common properties and behaviors for
+-/// all button types in the application.
+-///
+-/// This abstract class ensures consistent styling and behavior across
+-/// different button variants while allowing for customization.
+-abstract class AppButton extends StatelessWidget {
+-  /// Creates a button with the specified properties.
+-  const AppButton({
 -    super.key,
--    required this.message,
--    this.type = AlertType.info,
--    this.onDismiss,
--    this.action,
--    this.actionLabel,
+-    required this.onPressed,
+-    required this.child,
+-    this.size = AppButtonSize.medium,
+-    this.width,
+-    this.isLoading = false,
+-    this.isDisabled = false,
+-    this.borderRadius,
 -  });
 -
--  /// The message to display in the banner.
--  final String message;
+-  /// Callback that is called when the button is tapped.
+-  final VoidCallback? onPressed;
 -
--  /// The type of alert to display.
--  final AlertType type;
+-  /// Widget to display as the button's content.
+-  final Widget child;
 -
--  /// Called when the dismiss button is tapped.
--  final VoidCallback? onDismiss;
+-  /// Size variant of the button.
+-  final AppButtonSize size;
 -
--  /// Called when the action button is tapped.
--  final VoidCallback? action;
+-  /// Optional explicit width for the button.
+-  /// If null, the button will size to fit its content.
+-  final double? width;
 -
--  /// The label for the action button.
--  final String? actionLabel;
+-  /// Whether the button should show a loading indicator.
+-  final bool isLoading;
+-
+-  /// Whether the button is disabled.
+-  final bool isDisabled;
+-
+-  /// Custom border radius. If not specified, uses default radius.
+-  final BorderRadius? borderRadius;
+-
+-  /// Get the appropriate height for the button based on its size.
+-  double get buttonHeight {
+-    switch (size) {
+-      case AppButtonSize.small:
+-        return AppDimensions.buttonHeightSmall;
+-      case AppButtonSize.medium:
+-        return AppDimensions.buttonHeightMedium;
+-      case AppButtonSize.large:
+-        return AppDimensions.buttonHeightLarge;
+-    }
+-  }
+-
+-  /// Get the appropriate horizontal padding for the button based on its size.
+-  double get horizontalPadding {
+-    switch (size) {
+-      case AppButtonSize.small:
+-        return AppDimensions.spacingS;
+-      case AppButtonSize.medium:
+-        return AppDimensions.spacingM;
+-      case AppButtonSize.large:
+-        return AppDimensions.spacingL;
+-    }
+-  }
+-
+-  /// Get the default button border radius.
+-  BorderRadius get defaultBorderRadius {
+-    switch (size) {
+-      case AppButtonSize.small:
+-        return BorderRadius.circular(AppDimensions.radiusSmall);
+-      case AppButtonSize.medium:
+-        return BorderRadius.circular(AppDimensions.radiusMedium);
+-      case AppButtonSize.large:
+-        return BorderRadius.circular(AppDimensions.radiusLarge);
+-    }
+-  }
+-
+-  /// Get the effective border radius, using custom or default.
+-  BorderRadius get effectiveBorderRadius => borderRadius ?? defaultBorderRadius;
+-}
+diff --git a/lib/components/buttons/destructive_button.dart b/lib/components/buttons/destructive_button.dart
+deleted file mode 100644
+index 2bf9102..0000000
+--- a/lib/components/buttons/destructive_button.dart
++++ /dev/null
+@@ -1,47 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_text_styles.dart';
+-import 'app_button.dart';
+-
+-/// Destructive button component for dangerous or destructive actions.
+-///
+-/// Used for actions that delete data, cancel processes, or perform
+-/// other potentially destructive operations. The red color provides
+-/// a clear visual indication of caution to the user.
+-class DestructiveButton extends AppButton {
+-  /// Creates a destructive button with the specified properties.
+-  const DestructiveButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium,
+-    super.width,
+-    super.isLoading = false,
+-    super.isDisabled = false,
+-    super.borderRadius,
+-  });
 -
 -  @override
 -  Widget build(BuildContext context) {
--    late Color backgroundColor;
--    late Color textColor;
--    late IconData iconData;
--
--    switch (type) {
--      case AlertType.success:
--        backgroundColor = Color.fromRGBO(
--          AppColors.successGreen.r.toInt(),
--          AppColors.successGreen.g.toInt(),
--          AppColors.successGreen.b.toInt(),
--          0.15,
--        );
--        textColor = AppColors.successGreen;
--        iconData = CupertinoIcons.checkmark_circle_fill;
--        break;
--      case AlertType.warning:
--        backgroundColor = Color.fromRGBO(
--          AppColors.warningOrange.r.toInt(),
--          AppColors.warningOrange.g.toInt(),
--          AppColors.warningOrange.b.toInt(),
--          0.15,
--        );
--        textColor = AppColors.warningOrange;
--        iconData = CupertinoIcons.exclamationmark_triangle_fill;
--        break;
--      case AlertType.error:
--        backgroundColor = Color.fromRGBO(
--          AppColors.destructiveRed.r.toInt(),
--          AppColors.destructiveRed.g.toInt(),
--          AppColors.destructiveRed.b.toInt(),
--          0.15,
--        );
--        textColor = AppColors.destructiveRed;
--        iconData = CupertinoIcons.xmark_circle_fill;
--        break;
--      case AlertType.info:
--        backgroundColor = Color.fromRGBO(
--          AppColors.primaryBlue.r.toInt(),
--          AppColors.primaryBlue.g.toInt(),
--          AppColors.primaryBlue.b.toInt(),
--          0.15,
--        );
--        textColor = AppColors.primaryBlue;
--        iconData = CupertinoIcons.info_circle_fill;
--        break;
--    }
--
 -    return Container(
--      padding: const EdgeInsets.all(AppDimensions.contentPadding),
+-      width: width,
+-      height: buttonHeight,
 -      decoration: BoxDecoration(
--        color: backgroundColor,
--        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+-        color: isDisabled ? AppColors.lightGray : AppColors.destructiveRed,
+-        borderRadius: effectiveBorderRadius,
 -      ),
--      child: Row(
--        crossAxisAlignment: CrossAxisAlignment.start,
--        children: [
--          Icon(iconData, color: textColor, size: AppDimensions.iconSizeMedium),
--          const SizedBox(width: AppDimensions.spacingM),
--          Expanded(
--            child: Column(
--              crossAxisAlignment: CrossAxisAlignment.start,
--              children: [
--                Text(
--                  message,
--                  style: AppTextStyles.body.copyWith(color: textColor),
+-      child: CupertinoButton(
+-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+-        borderRadius: effectiveBorderRadius,
+-        onPressed: isDisabled || isLoading ? null : onPressed,
+-        child:
+-            isLoading
+-                ? const CupertinoActivityIndicator(color: AppColors.white)
+-                : DefaultTextStyle(
+-                  style: AppTextStyles.buttonPrimary,
+-                  child: child,
 -                ),
--                if (action != null && actionLabel != null) ...[
--                  const SizedBox(height: AppDimensions.spacingS),
--                  CupertinoButton(
--                    padding: EdgeInsets.zero,
--                    onPressed: action,
--                    child: Text(
--                      actionLabel!,
--                      style: AppTextStyles.bodySmall.copyWith(
--                        color: textColor,
--                        fontWeight: FontWeight.w600,
--                      ),
--                    ),
--                  ),
--                ],
--              ],
--            ),
--          ),
--          if (onDismiss != null) ...[
--            CupertinoButton(
--              padding: EdgeInsets.zero,
--              onPressed: onDismiss,
--              child: Icon(
--                CupertinoIcons.xmark,
--                color: textColor,
--                size: AppDimensions.iconSizeSmall,
--              ),
--            ),
--          ],
--        ],
 -      ),
 -    );
 -  }
 -}
-diff --git a/lib/components/display/accordion.dart b/lib/components/display/accordion.dart
-index c8fe906..1684c1a 100644
---- a/lib/components/display/accordion.dart
-+++ b/lib/components/display/accordion.dart
-@@ -3,13 +3,13 @@ import '../../theme/app_colors.dart';
+diff --git a/lib/components/buttons/ghost_button.dart b/lib/components/buttons/ghost_button.dart
+deleted file mode 100644
+index 5b58b9e..0000000
+--- a/lib/components/buttons/ghost_button.dart
++++ /dev/null
+@@ -1,80 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_text_styles.dart';
+-import 'app_button.dart';
+-
+-/// Ghost button component, typically used for less prominent actions.
+-/// It has no border and a transparent background, with text color indicating interactivity.
+-class GhostButton extends AppButton {
+-  /// Creates a ghost button.
+-  const GhostButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium,
+-    super.width,
+-    super.isLoading = false,
+-    super.isDisabled = false,
+-    super.borderRadius,
+-    this.foregroundColor,
+-    this.pressedColor,
+-  });
+-
+-  /// The color for the text and icon. Defaults to `AppColors.primaryBlue`.
+-  final Color? foregroundColor;
+-
+-  /// The background color when the button is pressed. Defaults to a light gray.
+-  final Color? pressedColor;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final Color effectiveForegroundColor =
+-        foregroundColor ?? AppColors.primaryBlue;
+-
+-    return CupertinoButton(
+-      padding: EdgeInsets.symmetric(
+-        horizontal: horizontalPadding,
+-        vertical:
+-            (buttonHeight - (AppTextStyles.buttonSecondary.fontSize ?? 16)) / 2,
+-      ),
+-      borderRadius: effectiveBorderRadius,
+-      color: CupertinoColors.transparent, // Explicitly transparent
+-      disabledColor:
+-          CupertinoColors
+-              .transparent, // Explicitly transparent for disabled state
+-      minSize: buttonHeight,
+-      onPressed: isDisabled || isLoading ? null : onPressed,
+-      child: Builder(
+-        builder: (context) {
+-          final Color currentForegroundColor =
+-              isDisabled ? AppColors.mediumGray : effectiveForegroundColor;
+-          Widget buttonChild = child;
+-
+-          // Apply the foreground color to the text style if the child is Text
+-          if (child is Text) {
+-            Text textChild = child as Text;
+-            buttonChild = Text(
+-              textChild.data!,
+-              style: (textChild.style ?? AppTextStyles.buttonSecondary)
+-                  .copyWith(color: currentForegroundColor),
+-              textAlign: textChild.textAlign,
+-              overflow: textChild.overflow,
+-              maxLines: textChild.maxLines,
+-            );
+-          } else if (child is Icon) {
+-            Icon iconChild = child as Icon;
+-            buttonChild = Icon(
+-              iconChild.icon,
+-              color: currentForegroundColor,
+-              size: iconChild.size, // Use provided icon size
+-            );
+-          }
+-
+-          return isLoading
+-              ? CupertinoActivityIndicator(color: currentForegroundColor)
+-              : buttonChild;
+-        },
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/buttons/link_button.dart b/lib/components/buttons/link_button.dart
+deleted file mode 100644
+index 689e514..0000000
+--- a/lib/components/buttons/link_button.dart
++++ /dev/null
+@@ -1,90 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_text_styles.dart';
+-import '../../theme/app_dimensions.dart';
+-import 'app_button.dart';
+-
+-/// Link button component, styled to look like a hyperlink.
+-class LinkButton extends AppButton {
+-  /// Creates a link button.
+-  const LinkButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium, // Size might affect padding/tap target
+-    super.width,
+-    super.isLoading = false, // Link buttons usually don't have a loading state
+-    super.isDisabled = false,
+-    this.foregroundColor,
+-  });
+-
+-  /// The color for the text. Defaults to `AppColors.primaryBlue`.
+-  final Color? foregroundColor;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final Color effectiveForegroundColor =
+-        foregroundColor ?? AppColors.primaryBlue;
+-
+-    // Link buttons typically don't have a prominent background or border
+-    // Their height is determined by the text itself mostly.
+-    // We use CupertinoButton for its onPressed handling and disabled state.
+-    return CupertinoButton(
+-      padding: EdgeInsets.symmetric(
+-        horizontal: horizontalPadding / 2,
+-        vertical: AppDimensions.spacingXs, // Corrected: Use AppDimensions
+-      ), // Minimal padding
+-      onPressed: isDisabled || isLoading ? null : onPressed,
+-      minSize: 0, // Allow the button to be as small as its child
+-      child: Builder(
+-        builder: (context) {
+-          final Color currentForegroundColor =
+-              isDisabled ? AppColors.mediumGray : effectiveForegroundColor;
+-          Widget buttonChild = child;
+-
+-          if (child is Text) {
+-            Text textChild = child as Text;
+-            // Assuming AppTextStyles.link is not defined, using a base style and adding underline.
+-            // If AppTextStyles.link exists, it should be used directly.
+-            TextStyle linkStyle =
+-                (textChild.style ?? AppTextStyles.buttonSecondary).copyWith(
+-                  color: currentForegroundColor,
+-                  decoration: TextDecoration.underline,
+-                  decorationColor: currentForegroundColor,
+-                  decorationThickness: 2.0, // Make underline more visible
+-                );
+-            buttonChild = Text(
+-              textChild.data!,
+-              style: linkStyle,
+-              textAlign: textChild.textAlign,
+-              overflow: textChild.overflow,
+-              maxLines: textChild.maxLines,
+-            );
+-          } else if (child is Icon) {
+-            // Icons in link buttons are less common but possible
+-            Icon iconChild = child as Icon;
+-            // Use a default size if iconChild.size is null, e.g., from a text style if appropriate
+-            final iconSize =
+-                iconChild.size ??
+-                (AppTextStyles.buttonSecondary.fontSize ?? 16.0);
+-            buttonChild = Icon(
+-              iconChild.icon,
+-              color: currentForegroundColor,
+-              size: iconSize,
+-            );
+-          }
+-
+-          // Link buttons typically don't show a loading indicator in the same way
+-          // If isLoading is true, we might just disable it or show a very subtle indicator elsewhere.
+-          return isLoading
+-              ? CupertinoActivityIndicator(
+-                // Adjust radius based on a text style if AppTextStyles.link is not available
+-                radius: (AppTextStyles.buttonSecondary.fontSize ?? 16.0) / 2.5,
+-                color: currentForegroundColor,
+-              )
+-              : buttonChild;
+-        },
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/buttons/outline_button.dart b/lib/components/buttons/outline_button.dart
+deleted file mode 100644
+index 05afed5..0000000
+--- a/lib/components/buttons/outline_button.dart
++++ /dev/null
+@@ -1,97 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_dimensions.dart';
+-import '../../theme/app_text_styles.dart';
+-import 'app_button.dart';
+-
+-/// Outline button component with a transparent background and a visible border.
+-///
+-/// Used for actions that need to be available but not as prominent as primary
+-/// or secondary buttons.
+-class OutlineButton extends AppButton {
+-  /// Creates an outline button with the specified properties.
+-  const OutlineButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium,
+-    super.width,
+-    super.isLoading = false,
+-    super.isDisabled = false,
+-    super.borderRadius,
+-    this.outlineColor,
+-    this.pressedColor,
+-  });
+-
+-  /// Optional color for the outline border and text/icon.
+-  /// Defaults to `AppColors.primaryBlue`.
+-  final Color? outlineColor;
+-
+-  /// Optional background color when the button is pressed.
+-  /// Defaults to a semi-transparent version of `outlineColor`.
+-  final Color? pressedColor;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final Color effectiveOutlineColor = outlineColor ?? AppColors.primaryBlue;
+-
+-    return Container(
+-      width: width,
+-      height: buttonHeight,
+-      decoration: BoxDecoration(
+-        color:
+-            CupertinoColors
+-                .transparent, // Outline buttons have no fill by default
+-        borderRadius: effectiveBorderRadius,
+-        border: Border.all(
+-          color: isDisabled ? AppColors.mediumGray : effectiveOutlineColor,
+-          width: AppDimensions.borderWidth,
+-        ),
+-      ),
+-      child: CupertinoButton(
+-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+-        borderRadius: effectiveBorderRadius,
+-        color:
+-            CupertinoColors
+-                .transparent, // Ensure CupertinoButton itself doesn't add a color
+-        disabledColor: CupertinoColors.transparent,
+-        pressedOpacity:
+-            1.0, // We handle pressed state with background color change if desired
+-        onPressed: isDisabled || isLoading ? null : onPressed,
+-        child: Builder(
+-          builder: (context) {
+-            // Determine the foreground color based on disabled state
+-            final Color foreground =
+-                isDisabled ? AppColors.mediumGray : effectiveOutlineColor;
+-            Widget buttonChild = child;
+-
+-            // Apply the foreground color to the text style if the child is Text
+-            if (child is Text) {
+-              Text textChild = child as Text;
+-              buttonChild = Text(
+-                textChild.data!,
+-                style: (textChild.style ?? AppTextStyles.buttonSecondary)
+-                    .copyWith(color: foreground),
+-                textAlign: textChild.textAlign,
+-                overflow: textChild.overflow,
+-                maxLines: textChild.maxLines,
+-              );
+-            } else if (child is Icon) {
+-              Icon iconChild = child as Icon;
+-              buttonChild = Icon(
+-                iconChild.icon,
+-                color: foreground,
+-                size: iconChild.size,
+-              );
+-            }
+-            // For more complex children, color might need to be handled inside the child widget itself.
+-
+-            return isLoading
+-                ? CupertinoActivityIndicator(color: foreground)
+-                : buttonChild;
+-          },
+-        ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/buttons/primary_button.dart b/lib/components/buttons/primary_button.dart
+deleted file mode 100644
+index 2c49430..0000000
+--- a/lib/components/buttons/primary_button.dart
++++ /dev/null
+@@ -1,46 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_text_styles.dart';
+-import 'app_button.dart';
+-
+-/// Primary button component using the application's primary color.
+-///
+-/// Used for main actions and the most important interactions on screens.
+-/// Follows Apple's Human Interface Guidelines for button styling.
+-class PrimaryButton extends AppButton {
+-  /// Creates a primary button with the specified properties.
+-  const PrimaryButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium,
+-    super.width,
+-    super.isLoading = false,
+-    super.isDisabled = false,
+-    super.borderRadius,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      width: width,
+-      height: buttonHeight,
+-      decoration: BoxDecoration(
+-        color: isDisabled ? AppColors.lightGray : AppColors.primaryBlue,
+-        borderRadius: effectiveBorderRadius,
+-      ),
+-      child: CupertinoButton(
+-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+-        borderRadius: effectiveBorderRadius,
+-        onPressed: isDisabled || isLoading ? null : onPressed,
+-        child:
+-            isLoading
+-                ? const CupertinoActivityIndicator(color: AppColors.white)
+-                : DefaultTextStyle(
+-                  style: AppTextStyles.buttonPrimary,
+-                  child: child,
+-                ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/buttons/secondary_button.dart b/lib/components/buttons/secondary_button.dart
+deleted file mode 100644
+index da51ff0..0000000
+--- a/lib/components/buttons/secondary_button.dart
++++ /dev/null
+@@ -1,52 +0,0 @@
+-import 'package:flutter/cupertino.dart';
+-import '../../theme/app_colors.dart';
+-import '../../theme/app_text_styles.dart';
+-import 'app_button.dart';
+-
+-/// Secondary button component with a lighter visual weight.
+-///
+-/// Used for secondary actions that don't require the visual prominence
+-/// of a primary button. Provides clear affordance while maintaining
+-/// hierarchy with primary actions.
+-class SecondaryButton extends AppButton {
+-  /// Creates a secondary button with the specified properties.
+-  const SecondaryButton({
+-    super.key,
+-    required super.onPressed,
+-    required super.child,
+-    super.size = AppButtonSize.medium,
+-    super.width,
+-    super.isLoading = false,
+-    super.isDisabled = false,
+-    super.borderRadius,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      width: width,
+-      height: buttonHeight,
+-      decoration: BoxDecoration(
+-        color:
+-            isDisabled
+-                ? AppColors.lightGray.withValues(alpha: 0.5)
+-                : AppColors.lightGray,
+-        borderRadius: effectiveBorderRadius,
+-      ),
+-      child: CupertinoButton(
+-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+-        borderRadius: effectiveBorderRadius,
+-        onPressed: isDisabled || isLoading ? null : onPressed,
+-        child:
+-            isLoading
+-                ? const CupertinoActivityIndicator(
+-                  color: AppColors.foregroundDark,
+-                )
+-                : DefaultTextStyle(
+-                  style: AppTextStyles.buttonSecondary,
+-                  child: child,
+-                ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/dialogs/add_patient_modal.dart b/lib/components/dialogs/add_patient_modal.dart
+index a296320..32a8b0b 100644
+--- a/lib/components/dialogs/add_patient_modal.dart
++++ b/lib/components/dialogs/add_patient_modal.dart
+@@ -5,8 +5,7 @@ import '../../theme/app_dimensions.dart';
+ import '../dialogs/app_generic_dialog.dart';
+ import '../forms/app_form.dart';
+ import '../forms/app_label.dart';
+-import '../buttons/primary_button.dart';
+-import '../buttons/outline_button.dart';
++import '../buttons/index.dart';
+ 
+ /// Data model for patient form
+ class PatientFormData {
+diff --git a/lib/components/forms/file_upload.dart b/lib/components/forms/file_upload.dart
+index 881f755..87c8b26 100644
+--- a/lib/components/forms/file_upload.dart
++++ b/lib/components/forms/file_upload.dart
+@@ -5,8 +5,7 @@ import 'package:flutter/cupertino.dart';
+ import '../../theme/app_colors.dart';
  import '../../theme/app_dimensions.dart';
  import '../../theme/app_text_styles.dart';
+-import '../buttons/secondary_button.dart';
+-import '../buttons/app_button.dart';
++import '../buttons/index.dart';
  
--/// An expandable accordion component that shows/hides content.
-+/// An expandable panel component that shows/hides content.
+ /// A file upload component that allows users to select PDF files and images.
  ///
- /// This component allows users to toggle the visibility of content,
- /// which is useful for displaying additional details without cluttering the UI.
--class Accordion extends StatefulWidget {
--  /// Creates an accordion with the specified properties.
--  const Accordion({
-+class AppAccordionPanel extends StatefulWidget {
-+  /// Creates an accordion panel with the specified properties.
-+  const AppAccordionPanel({
-     super.key,
-     required this.title,
-     required this.child,
-@@ -58,10 +58,10 @@ class Accordion extends StatefulWidget {
-   final Duration animationDuration;
+@@ -244,7 +243,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
+                               Row(
+                                 children: [
+                                   SecondaryButton(
+-                                    size: AppButtonSize.small,
++                                    size: ButtonSize.small,
+                                     onPressed: () => _pickFiles(FileType.image),
+                                     child: const Text('Aggiungi Immagini'),
+                                   ),
+@@ -255,7 +254,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
+                                       width: AppDimensions.spacingS,
+                                     ),
+                                     SecondaryButton(
+-                                      size: AppButtonSize.small,
++                                      size: ButtonSize.small,
+                                       onPressed: () => _pickFiles(FileType.any),
+                                       child: const Text('Aggiungi PDF'),
+                                     ),
+diff --git a/lib/components/navigation/app_header.dart b/lib/components/navigation/app_header.dart
+index 0af8ae7..310a29c 100644
+--- a/lib/components/navigation/app_header.dart
++++ b/lib/components/navigation/app_header.dart
+@@ -3,7 +3,7 @@ import '../../theme/app_colors.dart';
+ import '../../theme/app_text_styles.dart';
+ import '../../theme/app_dimensions.dart';
+ import '../../theme/app_gradients.dart';
+-import '../buttons/ghost_button.dart';
++import '../buttons/index.dart';
  
-   @override
--  State<Accordion> createState() => _AccordionState();
-+  State<AppAccordionPanel> createState() => _AppAccordionPanelState();
+ /// A header component for the application
+ ///
+diff --git a/lib/main.dart b/lib/main.dart
+index ea5702d..67381df 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -1,90 +1,19 @@
+ import 'package:flutter/cupertino.dart';
+-import 'package:flutter/services.dart';
+-import 'package:provider/provider.dart';
+-import 'theme/app_theme.dart';
+ import 'pages/landing_page.dart';
+ 
+ void main() {
+-  // Ensure Flutter is initialized
+-  WidgetsFlutterBinding.ensureInitialized();
+-
+-  // Set preferred device orientations (optional)
+-  SystemChrome.setPreferredOrientations([
+-    DeviceOrientation.portraitUp,
+-    DeviceOrientation.portraitDown,
+-    DeviceOrientation.landscapeLeft,
+-    DeviceOrientation.landscapeRight,
+-  ]);
+-
+-  // Run the app with theme provider
+   runApp(const VetAnalyticsApp());
  }
  
--class _AccordionState extends State<Accordion>
-+class _AppAccordionPanelState extends State<AppAccordionPanel>
-     with SingleTickerProviderStateMixin {
-   late bool _isExpanded;
-   late AnimationController _controller;
-@@ -102,9 +102,8 @@ class _AccordionState extends State<Accordion>
-         _controller.reverse();
-       }
+-/// The main application widget for VetAnalytics
+ class VetAnalyticsApp extends StatelessWidget {
+   const VetAnalyticsApp({super.key});
  
--      if (widget.onToggle != null) {
--        widget.onToggle!(_isExpanded);
--      }
-+      // Null check for widget.onToggle before calling it
-+      widget.onToggle?.call(_isExpanded);
-     });
+   @override
+   Widget build(BuildContext context) {
+-    // Wrap app with ChangeNotifierProvider for theme management
+-    return ChangeNotifierProvider(
+-      create: (_) => AppTheme(),
+-      child: Consumer<AppTheme>(
+-        builder: (context, appTheme, child) {
+-          return CupertinoApp(
+-            // App Configuration
+-            title: 'VetAnalytics',
+-            debugShowCheckedModeBanner: false,
+-
+-            // Localization (Italian)
+-            locale: const Locale('it', 'IT'),
+-
+-            // Theme Configuration - Using the currentTheme getter
+-            theme: appTheme.currentTheme,
+-
+-            // Home Page
+-            home: const LandingPage(),
+-
+-            // Route Generation (for future navigation)
+-            onGenerateRoute: _generateRoute,
+-
+-            // Initial Route
+-            initialRoute: '/',
+-          );
+-        },
+-      ),
++    return const CupertinoApp(
++      title: 'VetAnalytics',
++      home: LandingPage(),
++      debugShowCheckedModeBanner: false,
+     );
+   }
+-
+-  /// Route generator for navigation
+-  /// This will be expanded as we add more pages
+-  static Route<dynamic>? _generateRoute(RouteSettings settings) {
+-    switch (settings.name) {
+-      case '/':
+-        return CupertinoPageRoute(
+-          builder: (_) => const LandingPage(),
+-          settings: settings,
+-        );
+-
+-      // Future routes will go here:
+-      // case '/login':
+-      //   return CupertinoPageRoute(
+-      //     builder: (_) => const LoginPage(),
+-      //     settings: settings,
+-      //   );
+-      //
+-      // case '/dashboard':
+-      //   return CupertinoPageRoute(
+-      //     builder: (_) => const DashboardPage(),
+-      //     settings: settings,
+-      //   );
+-
+-      default:
+-        // Fallback to landing page for unknown routes
+-        return CupertinoPageRoute(
+-          builder: (_) => const LandingPage(),
+-          settings: settings,
+-        );
+-    }
+-  }
+ }
+diff --git a/lib/pages/landing_page.dart b/lib/pages/landing_page.dart
+index 6de2325..7d8ca01 100644
+--- a/lib/pages/landing_page.dart
++++ b/lib/pages/landing_page.dart
+@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
+ import '../theme/app_colors.dart';
+ import '../theme/app_text_styles.dart';
+ import '../theme/app_dimensions.dart';
+-import '../components/layout/page_scaffold.dart';
+-import '../components/buttons/primary_button.dart';
+-import '../components/buttons/ghost_button.dart';
++import '../components/buttons/index.dart';
+ 
+-// Data model for features section
++// Data models for the landing page sections
+ class FeatureItem {
+   final IconData icon;
+   final String title;
+@@ -19,7 +17,6 @@ class FeatureItem {
+   });
+ }
+ 
+-// Data model for stats section
+ class StatItem {
+   final IconData icon;
+   final String value;
+@@ -35,7 +32,7 @@ class StatItem {
+ class LandingPage extends StatelessWidget {
+   const LandingPage({super.key});
+ 
+-  // Define our feature data - translated to Italian
++  // Features data in Italian
+   static const List<FeatureItem> features = [
+     FeatureItem(
+       icon: CupertinoIcons.waveform_path_ecg,
+@@ -57,7 +54,7 @@ class LandingPage extends StatelessWidget {
+     ),
+   ];
+ 
+-  // Define our stats data - translated to Italian
++  // Stats data in Italian
+   static const List<StatItem> stats = [
+     StatItem(
+       icon: CupertinoIcons.group,
+@@ -78,224 +75,372 @@ class LandingPage extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return PageScaffold(
+-      layoutType:
+-          PageLayoutType.fullWidth, // Full width for landing page design
++    return CupertinoPageScaffold(
+       backgroundColor: AppColors.backgroundWhite,
+-      padding:
+-          EdgeInsets.zero, // No default padding, we'll handle it per section
+-      navigationBar: _buildNavigationBar(context),
+-      body: Column(
+-        children: [
+-          // Hero Section
+-          _buildHeroSection(context),
++      child: SingleChildScrollView(
++        child: Column(
++          children: [
++            // Header
++            _buildHeader(context),
+ 
+-          // Features Section
+-          _buildFeaturesSection(context),
++            // Hero Section
++            _buildHeroSection(context),
+ 
+-          // Stats Section
+-          _buildStatsSection(context),
++            // Features Section
++            _buildFeaturesSection(context),
+ 
+-          // CTA Section
+-          _buildCTASection(context),
+-        ],
++            // Stats Section
++            _buildStatsSection(context),
++
++            // CTA Section
++            _buildCTASection(context),
++
++            // Footer
++            _buildFooter(context),
++          ],
++        ),
+       ),
+-      footer: _buildFooter(context),
+     );
    }
  
-diff --git a/lib/components/display/badge.dart b/lib/components/display/badge.dart
-index e69de29..929f842 100644
---- a/lib/components/display/badge.dart
-+++ b/lib/components/display/badge.dart
-@@ -0,0 +1,175 @@
-+import 'package:flutter/cupertino.dart';
-+import '../../theme/app_colors.dart';
-+import '../../theme/app_text_styles.dart';
-+import '../../theme/app_dimensions.dart';
-+
-+/// Enum for different badge visual styles, mirroring shadcn/ui variants.
-+enum AppBadgeVariant {
-+  primary, // default in shadcn
-+  secondary,
-+  destructive,
-+  outline,
-+  // Custom variants from existing AppBadge
-+  success,
-+  warning,
-+  info,
-+}
-+
-+/// A badge component for displaying short pieces of information or status.
-+///
-+/// Badges can be styled with different variants to convey meaning through color.
-+/// This component aims to replicate the visual style and variants of the
-+/// shadcn/ui Badge component.
-+///
-+/// Example usage:
-+/// ```dart
-+/// AppBadge(label: "Active", variant: AppBadgeVariant.primary)
-+/// AppBadge(label: "Offline", variant: AppBadgeVariant.outline)
-+/// AppBadge(label: "Error", variant: AppBadgeVariant.destructive, icon: CupertinoIcons.xmark_circle_fill)
-+/// ```
-+class AppBadge extends StatelessWidget {
-+  /// Creates a badge with the specified properties.
-+  ///
-+  /// - [label]: The text to display within the badge.
-+  /// - [variant]: The visual style of the badge. Defaults to `AppBadgeVariant.primary`.
-+  /// - [icon]: Optional icon to display before the label.
-+  const AppBadge({
-+    super.key,
-+    required this.label,
-+    this.variant = AppBadgeVariant.primary,
-+    this.icon,
-+  });
-+
-+  final String label;
-+  final AppBadgeVariant variant;
-+  final IconData? icon;
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    final _BadgeStyle style = _getVariantStyle(variant);
-+
-+    // text-xs (12px) font-semibold from shadcn
-+    // AppTextStyles.caption is 12px normal. We'll override fontWeight.
-+    final TextStyle textStyle = AppTextStyles.caption.copyWith(
-+      color: style.textColor,
-+      fontWeight: FontWeight.w600, // font-semibold
-+    );
-+
-+    // px-2.5 (10px), py-0.5 (2px) from shadcn
-+    final EdgeInsets padding = EdgeInsets.symmetric(
-+      horizontal: AppDimensions.spacingS + AppDimensions.spacingXxs, // 10px
-+      vertical: AppDimensions.spacingXxs, // 2px
-+    );
-+
+-  // Navigation Bar using CupertinoNavigationBar
+-  CupertinoNavigationBar _buildNavigationBar(BuildContext context) {
+-    return CupertinoNavigationBar(
+-      backgroundColor: AppColors.backgroundWhite.withValues(alpha: 0.95),
+-      border: const Border(
+-        bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
++  // Header with navigation
++  Widget _buildHeader(BuildContext context) {
 +    return Container(
-+      padding: padding,
-+      decoration: BoxDecoration(
-+        color: style.backgroundColor,
-+        // rounded-full from shadcn
-+        borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
-+        border: Border.all(
-+          color: style.borderColor,
-+          // border (1px) from shadcn, only visible for outline or if borderColor is different from backgroundColor
-+          width:
-+              (variant == AppBadgeVariant.outline ||
-+                      style.borderColor != style.backgroundColor)
-+                  ? AppDimensions
-+                      .borderWidth // Use the defined borderWidth
-+                  : 0,
-+        ),
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppDimensions.spacingL,
++        vertical: AppDimensions.spacingS,
 +      ),
++      decoration: BoxDecoration(
++        color: AppColors.backgroundWhite.withValues(alpha: 0.95),
++        border: const Border(
++          bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
++        ),
+       ),
+-      middle: Row(
+-        mainAxisSize: MainAxisSize.min,
 +      child: Row(
-+        mainAxisSize: MainAxisSize.min,
-+        crossAxisAlignment: CrossAxisAlignment.center,
-+        children: [
-+          if (icon != null)
-+            Padding(
-+              padding: const EdgeInsets.only(right: AppDimensions.spacingXs),
-+              child: Icon(
-+                icon,
-+                color: style.textColor,
-+                size: textStyle.fontSize, // Match icon size to text size
++        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+         children: [
+-          Container(
+-            width: 24,
+-            height: 24,
+-            decoration: BoxDecoration(
+-              gradient: LinearGradient(
+-                colors: [
+-                  AppColors.primaryBlue,
+-                  AppColors.primaryBlue.withValues(alpha: 0.7),
+-                ],
++          // Logo
++          Row(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Container(
++                width: 32,
++                height: 32,
++                decoration: BoxDecoration(
++                  gradient: const LinearGradient(
++                    colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
++                  ),
++                  borderRadius: BorderRadius.circular(
++                    AppDimensions.radiusSmall,
++                  ),
++                ),
++                child: const Center(
++                  child: Text(
++                    'V',
++                    style: TextStyle(
++                      color: AppColors.white,
++                      fontSize: 16,
++                      fontWeight: FontWeight.bold,
++                    ),
++                  ),
++                ),
+               ),
+-              borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+-            ),
+-            child: const Center(
+-              child: Text(
+-                'V',
+-                style: TextStyle(
+-                  color: CupertinoColors.white,
+-                  fontSize: 12,
+-                  fontWeight: FontWeight.bold,
++              const SizedBox(width: AppDimensions.spacingS),
++              Text(
++                'VetAnalytics',
++                style: AppTextStyles.title3.copyWith(
++                  fontWeight: FontWeight.w600,
+                 ),
+               ),
+-            ),
+-          ),
+-          const SizedBox(width: AppDimensions.spacingXs),
+-          Text(
+-            'VetAnalytics',
+-            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+-          ),
+-        ],
+-      ),
+-      trailing: Row(
+-        mainAxisSize: MainAxisSize.min,
+-        children: [
+-          GhostButton(
+-            onPressed: () {
+-              debugPrint('Navigate to login');
+-            },
+-            child: const Text('Accedi'),
++            ],
+           ),
+-          const SizedBox(width: AppDimensions.spacingS),
+-          PrimaryButton(
+-            onPressed: () {
+-              debugPrint('Navigate to get started');
+-            },
+-            child: const Text('Inizia'),
++
++          // Navigation buttons
++          Row(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              GhostButton(
++                size: ButtonSize.small,
++                onPressed: () => debugPrint('Accedi tapped'),
++                child: const Text('Accedi'),
 +              ),
-+            ),
-+          Text(label, style: textStyle),
++              const SizedBox(width: AppDimensions.spacingS),
++              PrimaryButton(
++                size: ButtonSize.small,
++                onPressed: () => debugPrint('Inizia tapped'),
++                child: const Text('Inizia'),
++              ),
++            ],
+           ),
+         ],
+       ),
+     );
+   }
+ 
+-  // Hero Section - Main banner with call to action
++  // Hero section
+   Widget _buildHeroSection(BuildContext context) {
+     return Container(
+       width: double.infinity,
++      padding: const EdgeInsets.fromLTRB(
++        AppDimensions.spacingL,
++        AppDimensions.spacingXxl + AppDimensions.spacingXl,
++        AppDimensions.spacingL,
++        AppDimensions.spacingXxl,
++      ),
+       decoration: const BoxDecoration(
+         gradient: LinearGradient(
+           begin: Alignment.topLeft,
+           end: Alignment.bottomRight,
+           colors: [
+             AppColors.backgroundWhite,
+-            AppColors.lightGray,
++            Color(0xFFF8F9FA),
+             AppColors.backgroundWhite,
+           ],
+         ),
+       ),
+-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+       child: Column(
+         children: [
+-          const SizedBox(height: AppDimensions.spacingXxl),
++          Container(
++            constraints: const BoxConstraints(maxWidth: 960),
++            child: Column(
++              children: [
++                // Main headline with gradient text
++                RichText(
++                  textAlign: TextAlign.center,
++                  text: TextSpan(
++                    style: const TextStyle(
++                      fontSize: 48,
++                      fontWeight: FontWeight.bold,
++                      color: AppColors.foregroundDark,
++                      height: 1.1,
++                    ),
++                    children: [
++                      const TextSpan(text: 'Analisi '),
++                      TextSpan(
++                        text: 'Rivoluzionaria ',
++                        style: TextStyle(
++                          foreground:
++                              Paint()
++                                ..shader = const LinearGradient(
++                                  colors: [
++                                    AppColors.primaryBlue,
++                                    Color(0xFF4A90E2),
++                                  ],
++                                ).createShader(
++                                  const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0),
++                                ),
++                        ),
++                      ),
++                      const TextSpan(text: 'del Sangue'),
++                    ],
++                  ),
++                ),
+ 
+-          // Main headline
+-          Text(
+-            'Analisi Professionale del Sangue\nper l\'Eccellenza Veterinaria',
+-            style: AppTextStyles.largeTitle.copyWith(fontSize: 48, height: 1.1),
+-            textAlign: TextAlign.center,
+-          ),
++                const SizedBox(height: AppDimensions.spacingL),
+ 
+-          const SizedBox(height: AppDimensions.spacingL),
++                // Subtitle
++                Text(
++                  'Trasforma la diagnostica veterinaria con l\'analisi del sangue basata sull\'intelligenza artificiale. '
++                  'Ottieni insight istantanei e precisi per fornire la migliore cura ai tuoi pazienti.',
++                  style: AppTextStyles.title3.copyWith(
++                    color: AppColors.textSecondary,
++                    fontWeight: FontWeight.normal,
++                    height: 1.5,
++                  ),
++                  textAlign: TextAlign.center,
++                ),
+ 
+-          // Subtitle
+-          Text(
+-            'Trasforma la tua pratica veterinaria con l\'analisi del sangue basata sull\'IA.\nOttieni risultati istantanei e accurati che ti aiutano a fornire la migliore cura per i tuoi pazienti.',
+-            style: AppTextStyles.body.copyWith(
+-              color: AppColors.mediumGray,
+-              fontSize: 18,
+-              height: 1.5,
++                const SizedBox(height: AppDimensions.spacingXl),
++
++                // CTA buttons
++                _buildResponsiveCTAButtons(context),
++              ],
+             ),
+-            textAlign: TextAlign.center,
+           ),
 +        ],
 +      ),
 +    );
 +  }
-+
-+  _BadgeStyle _getVariantStyle(AppBadgeVariant variant) {
-+    Color backgroundColor;
-+    Color textColor;
-+    Color borderColor;
-+
-+    switch (variant) {
-+      case AppBadgeVariant.primary:
-+        // "border-transparent bg-primary text-primary-foreground hover:bg-primary/80"
-+        backgroundColor = AppColors.primaryBlue;
-+        textColor = AppColors.accentForeground; // primary-foreground
-+        borderColor =
-+            AppColors
-+                .primaryBlue; // border-transparent implies border color matches bg
-+        break;
-+      case AppBadgeVariant.secondary:
-+        // "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
-+        backgroundColor = AppColors.backgroundSecondary; // secondary
-+        textColor = AppColors.textSecondary; // secondary-foreground
-+        borderColor = AppColors.backgroundSecondary;
-+        break;
-+      case AppBadgeVariant.destructive:
-+        // "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80"
-+        backgroundColor = AppColors.destructiveRed; // destructive
-+        textColor = AppColors.accentForeground; // destructive-foreground
-+        borderColor = AppColors.destructiveRed;
-+        break;
-+      // Custom variants from original AppBadge
-+      case AppBadgeVariant.success:
-+        backgroundColor = AppColors.successGreen.withValues(alpha: 0.15);
-+        textColor = AppColors.successGreen;
-+        borderColor = AppColors.successGreen.withValues(alpha: 0.15);
-+        break;
-+      case AppBadgeVariant.warning:
-+        backgroundColor = AppColors.warningOrange.withValues(alpha: 0.15);
-+        textColor = AppColors.warningOrange;
-+        borderColor = AppColors.warningOrange.withValues(alpha: 0.15);
-+        break;
-+      case AppBadgeVariant.info:
-+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.15);
-+        textColor = AppColors.primaryBlue;
-+        borderColor = AppColors.primaryBlue.withValues(alpha: 0.15);
-+        break;
-+      default:
-+        backgroundColor = AppColors.foregroundDark;
-+        textColor = AppColors.backgroundWhite;
-+        borderColor = AppColors.transparent;
-+    }
-+
-+    // Apply outline variant styles
-+    if (variant == AppBadgeVariant.outline) {
-+      textColor =
-+          backgroundColor; // Outline text color is the variant's base color
-+      backgroundColor = AppColors.transparent;
-+      // borderColor is already set by the switch, or defaults to transparent if not a specific outline case
-+    }
-+
-+    return _BadgeStyle(
-+      backgroundColor: backgroundColor,
-+      textColor: textColor,
-+      borderColor: borderColor,
-+    );
-+  }
-+}
-+
-+/// Helper class to hold style properties for a badge variant.
-+class _BadgeStyle {
-+  final Color backgroundColor;
-+  final Color textColor;
-+  final Color borderColor;
-+
-+  _BadgeStyle({
-+    required this.backgroundColor,
-+    required this.textColor,
-+    required this.borderColor,
-+  });
-+}
-diff --git a/lib/components/feedback/loading_indicator.dart b/lib/components/feedback/loading_indicator.dart
-index e69de29..5cf8f30 100644
---- a/lib/components/feedback/loading_indicator.dart
-+++ b/lib/components/feedback/loading_indicator.dart
-@@ -0,0 +1,21 @@
-+import 'package:flutter/cupertino.dart';
-+
-+/// A standardized loading indicator for the application.
-+///
-+/// This component wraps the `CupertinoActivityIndicator` to provide a consistent
-+/// loading spinner. It can be customized with size and color if needed in the future.
-+class LoadingIndicator extends StatelessWidget {
-+  /// Creates a loading indicator.
-+  const LoadingIndicator({
-+    super.key,
-+    this.radius = 14.0, // Default CupertinoActivityIndicator radius
-+  });
-+
-+  /// The radius of the spinner.
-+  final double radius;
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    return Center(child: CupertinoActivityIndicator(radius: radius));
-+  }
-+}
-diff --git a/lib/components/feedback/status_badge.dart b/lib/components/feedback/status_badge.dart
-index e69de29..c95bf23 100644
---- a/lib/components/feedback/status_badge.dart
-+++ b/lib/components/feedback/status_badge.dart
-@@ -0,0 +1,55 @@
-+import 'package:flutter/cupertino.dart';
-+import '../display/badge.dart';
-+
-+/// Enum for different status types, influencing icon and color.
-+enum StatusType { success, warning, error, info, pending, neutral }
-+
-+/// A badge specifically designed to convey status with an icon and label.
-+///
-+/// This component uses the `AppBadge` internally and provides predefined
-+/// icons and color schemes for different status types.
-+class StatusBadge extends StatelessWidget {
-+  /// Creates a status badge with the specified properties.
-+  const StatusBadge({super.key, required this.label, required this.statusType});
-+
-+  /// The text label to display.
-+  final String label;
-+
-+  /// The type of status to represent.
-+  final StatusType statusType;
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    IconData iconData;
-+    AppBadgeVariant badgeVariant;
-+
-+    switch (statusType) {
-+      case StatusType.success:
-+        iconData = CupertinoIcons.checkmark_circle_fill;
-+        badgeVariant = AppBadgeVariant.success;
-+        break;
-+      case StatusType.warning:
-+        iconData = CupertinoIcons.exclamationmark_triangle_fill;
-+        badgeVariant = AppBadgeVariant.warning;
-+        break;
-+      case StatusType.error:
-+        iconData = CupertinoIcons.xmark_circle_fill;
-+        badgeVariant = AppBadgeVariant.destructive;
-+        break;
-+      case StatusType.info:
-+        iconData = CupertinoIcons.info_circle_fill;
-+        badgeVariant = AppBadgeVariant.info;
-+        break;
-+      case StatusType.pending:
-+        iconData = CupertinoIcons.time_solid;
-+        badgeVariant = AppBadgeVariant.secondary;
-+        break;
-+      case StatusType.neutral:
-+        iconData = CupertinoIcons.circle_fill;
-+        badgeVariant = AppBadgeVariant.secondary;
-+        break;
-+    }
-+
-+    return AppBadge(label: label, variant: badgeVariant, icon: iconData);
-+  }
-+}
-diff --git a/lib/components/forms/file_upload.dart b/lib/components/forms/file_upload.dart
-index a8ef00d..881f755 100644
---- a/lib/components/forms/file_upload.dart
-+++ b/lib/components/forms/file_upload.dart
-@@ -1,3 +1,5 @@
-+// ignore_for_file: prefer_final_fields
-+
- import 'package:file_picker/file_picker.dart';
- import 'package:flutter/cupertino.dart';
- import '../../theme/app_colors.dart';
-@@ -43,7 +45,7 @@ class FileUploadField extends StatefulWidget {
  
- class _FileUploadFieldState extends State<FileUploadField> {
-   List<PlatformFile> _selectedFiles = [];
--  // ignore: prefer_final_fields
-+
-   bool _isDragging = false;
+-          const SizedBox(height: AppDimensions.spacingXxl),
++  // Responsive CTA buttons for hero section
++  Widget _buildResponsiveCTAButtons(BuildContext context) {
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
  
-   /// Returns the appropriate icon based on file extension
-diff --git a/lib/components/forms/text_input.dart b/lib/components/forms/text_input.dart
-index 5f9750d..48e359e 100644
---- a/lib/components/forms/text_input.dart
-+++ b/lib/components/forms/text_input.dart
-@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
- import '../../theme/app_colors.dart';
- import '../../theme/app_dimensions.dart';
- import '../../theme/app_text_styles.dart';
-+import '../../theme/app_theme.dart';
+-          // CTA Buttons
+-          Wrap(
+-            spacing: AppDimensions.spacingM,
+-            runSpacing: AppDimensions.spacingM,
+-            alignment: WrapAlignment.center,
++        if (isSmallScreen) {
++          return Column(
+             children: [
+-              PrimaryButton(
+-                onPressed: () {
+-                  debugPrint('Start analyzing');
+-                },
+-                child: Row(
+-                  mainAxisSize: MainAxisSize.min,
+-                  children: [
+-                    const Icon(CupertinoIcons.play_fill, size: 16),
+-                    const SizedBox(width: AppDimensions.spacingXs),
+-                    const Text('Inizia ad Analizzare'),
+-                  ],
++              SizedBox(
++                width: double.infinity,
++                child: PrimaryButton(
++                  size: ButtonSize.large,
++                  onPressed: () => debugPrint('Inizia Analisi tapped'),
++                  child: const Row(
++                    mainAxisSize: MainAxisSize.min,
++                    mainAxisAlignment: MainAxisAlignment.center,
++                    children: [
++                      Text('Inizia Analisi'),
++                      SizedBox(width: AppDimensions.spacingS),
++                      Icon(CupertinoIcons.chevron_right, size: 20),
++                    ],
++                  ),
+                 ),
+               ),
+-
+-              GhostButton(
+-                onPressed: () {
+-                  debugPrint('Watch demo');
+-                },
+-                child: Row(
+-                  mainAxisSize: MainAxisSize.min,
+-                  children: [
+-                    const Icon(CupertinoIcons.play_circle, size: 16),
+-                    const SizedBox(width: AppDimensions.spacingXs),
+-                    const Text('Guarda Demo'),
+-                  ],
++              const SizedBox(height: AppDimensions.spacingM),
++              SizedBox(
++                width: double.infinity,
++                child: OutlineButton(
++                  size: ButtonSize.large,
++                  onPressed: () => debugPrint('Guarda Demo tapped'),
++                  child: const Row(
++                    mainAxisSize: MainAxisSize.min,
++                    mainAxisAlignment: MainAxisAlignment.center,
++                    children: [
++                      Icon(CupertinoIcons.play_fill, size: 20),
++                      SizedBox(width: AppDimensions.spacingS),
++                      Text('Guarda Demo'),
++                    ],
++                  ),
+                 ),
+               ),
+             ],
+-          ),
+-
+-          const SizedBox(height: AppDimensions.spacingXxl),
+-        ],
+-      ),
++          );
++        } else {
++          return Center(
++            child: Container(
++              constraints: const BoxConstraints(maxWidth: 600),
++              child: Row(
++                mainAxisSize: MainAxisSize.min,
++                mainAxisAlignment: MainAxisAlignment.center,
++                children: [
++                  PrimaryButton(
++                    size: ButtonSize.large,
++                    onPressed: () => debugPrint('Inizia Analisi tapped'),
++                    child: const Row(
++                      mainAxisSize: MainAxisSize.min,
++                      mainAxisAlignment: MainAxisAlignment.center,
++                      children: [
++                        Text('Inizia Analisi'),
++                        SizedBox(width: AppDimensions.spacingS),
++                        Icon(CupertinoIcons.chevron_right, size: 20),
++                      ],
++                    ),
++                  ),
++                  const SizedBox(width: AppDimensions.spacingM),
++                  OutlineButton(
++                    size: ButtonSize.large,
++                    onPressed: () => debugPrint('Guarda Demo tapped'),
++                    child: const Row(
++                      mainAxisSize: MainAxisSize.min,
++                      children: [
++                        Icon(CupertinoIcons.play_fill, size: 20),
++                        SizedBox(width: AppDimensions.spacingS),
++                        Text('Guarda Demo'),
++                      ],
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          );
++        }
++      },
+     );
+   }
  
--/// A customized text input field following Cupertino design principles.
-+/// A customized text input field following Cupertino design principles,
-+/// aligned with the styling from input.tsx mock.
- ///
- /// This component creates a consistent text input experience throughout
- /// the application with built-in label, placeholder, and validation support.
-@@ -27,6 +29,9 @@ class AppTextInput extends StatelessWidget {
-     this.autofocus = false,
-     this.autocorrect = true,
-     this.focusNode,
-+    this.prefix,
-+    this.suffix,
-+    this.textCapitalization = TextCapitalization.none,
-   });
+-  // Features Section - Showcasing key benefits
++  // Features section
+   Widget _buildFeaturesSection(BuildContext context) {
+     return Container(
+       width: double.infinity,
+-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppDimensions.spacingL,
++        vertical: AppDimensions.spacingXxl,
++      ),
+       child: Column(
+         children: [
+-          // Section title
+-          Text(
+-            'Perché Scegliere VetAnalytics?',
+-            style: AppTextStyles.title1.copyWith(fontSize: 32),
+-            textAlign: TextAlign.center,
+-          ),
++          Container(
++            constraints: const BoxConstraints(
++              maxWidth: AppDimensions.maxContentWidth,
++            ),
++            child: Column(
++              children: [
++                // Section header
++                Column(
++                  children: [
++                    Text(
++                      'Perché Scegliere VetAnalytics?',
++                      style: AppTextStyles.largeTitle.copyWith(
++                        fontWeight: FontWeight.bold,
++                      ),
++                      textAlign: TextAlign.center,
++                    ),
++                    const SizedBox(height: AppDimensions.spacingM),
++                    Text(
++                      'Costruito per le moderne pratiche veterinarie che richiedono precisione, velocità e affidabilità',
++                      style: AppTextStyles.title3.copyWith(
++                        color: AppColors.textSecondary,
++                        fontWeight: FontWeight.normal,
++                      ),
++                      textAlign: TextAlign.center,
++                    ),
++                  ],
++                ),
  
-   /// Controller for the text field.
-@@ -77,15 +82,77 @@ class AppTextInput extends StatelessWidget {
-   /// Focus node for controlling the focus of this input.
-   final FocusNode? focusNode;
+-          const SizedBox(height: AppDimensions.spacingM),
++                const SizedBox(height: AppDimensions.spacingXxl),
  
-+  /// Optional widget to display before the text input.
-+  final Widget? prefix;
-+
-+  /// Optional widget to display after the text input.
-+  final Widget? suffix;
-+
-+  /// Configures how the platform keyboard behaviorally capitalizes digits.
-+  final TextCapitalization textCapitalization;
-+
-   @override
-   Widget build(BuildContext context) {
-+    final appTheme = AppTheme.of(context);
-+    final bool hasError = errorText != null && errorText!.isNotEmpty;
-+
-+    // Determine background color based on enabled state and theme.
-+    // CupertinoTextFields typically use a light gray background.
-+    // The mock uses `bg-background` which we map to `AppColors.backgroundSecondary` (lightGray) for enabled, and `AppColors.backgroundDisabled` for disabled.
-+    Color textFieldFillColor;
-+    if (!enabled) {
-+      textFieldFillColor = AppColors.backgroundDisabled;
-+    } else {
-+      // For light theme, use AppColors.backgroundSecondary. For dark theme, a darker equivalent would be needed.
-+      // Since darkTheme currently maps to lightTheme, this will resolve to AppColors.backgroundSecondary.
-+      textFieldFillColor =
-+          appTheme.isDarkMode
-+              ? AppColors.backgroundSecondary
-+              : AppColors
-+                  .backgroundSecondary; // Placeholder for actual dark theme color
-+    }
-+
-+    BoxDecoration decoration = BoxDecoration(
-+      color: textFieldFillColor,
-+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
-+      border: Border.all(
-+        color: hasError ? AppColors.error : AppColors.borderGray,
-+        width: AppDimensions.borderWidth,
+-          // Section subtitle
+-          Text(
+-            'Costruito per pratiche veterinarie moderne che richiedono precisione, velocità e affidabilità',
+-            style: AppTextStyles.body.copyWith(
+-              color: AppColors.mediumGray,
+-              fontSize: 18,
++                // Feature cards
++                _buildFeatureCards(context),
++              ],
+             ),
+-            textAlign: TextAlign.center,
+           ),
++        ],
 +      ),
 +    );
++  }
+ 
+-          const SizedBox(height: AppDimensions.spacingXxl),
+-
+-          // Features grid - Using Wrap for better responsive behavior
+-          Wrap(
++  // Feature cards grid
++  Widget _buildFeatureCards(BuildContext context) {
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
 +
-+    // Style for the input text itself, matching text-base or md:text-sm from mock
-+    TextStyle inputTextStyle = AppTextStyles.formInput.copyWith(
-+      color:
-+          enabled
-+              ? (appTheme.isDarkMode
-+                  ? AppColors.white
-+                  : AppColors
-+                      .foregroundDark) // Adjust for dark mode if implemented
-+              : AppColors.textDisabled,
-+    );
-+
-+    // Style for placeholder text, matching placeholder:text-muted-foreground
-+    TextStyle placeholderTextStyle = AppTextStyles.formPlaceholder.copyWith(
-+      color: AppColors.textDisabled, // text-muted-foreground equivalent
-+    );
-+
-+    // Style for the label
-+    TextStyle labelStyle = AppTextStyles.formLabel.copyWith(
-+      color:
-+          appTheme.isDarkMode
-+              ? AppColors.white.withValues(alpha: 0.8)
-+              : AppColors.foregroundDark, // Adjust for dark mode
-+    );
-+
-     return Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
-+      mainAxisSize: MainAxisSize.min,
-       children: [
-         if (label != null) ...[
-           Padding(
-             padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
--            child: Text(label!, style: AppTextStyles.formLabel),
-+            child: Text(label!, style: labelStyle),
-           ),
-         ],
-         CupertinoTextField(
-@@ -103,29 +170,30 @@ class AppTextInput extends StatelessWidget {
-           autofocus: autofocus,
-           autocorrect: autocorrect,
-           focusNode: focusNode,
-+          prefix: prefix,
-+          suffix: suffix,
-+          textCapitalization: textCapitalization,
-           padding: const EdgeInsets.symmetric(
--            horizontal: AppDimensions.spacingM,
--            vertical: AppDimensions.spacingS,
-+            horizontal:
-+                AppDimensions.paddingMedium, // Corresponds to px-3 in mock
-+            vertical:
-+                AppDimensions
-+                    .paddingSmall, // Corresponds to py-2 in mock (adjust if h-10 target is strict)
-           ),
--          decoration: BoxDecoration(
--            color: AppColors.lightGray,
--            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
--            border:
--                errorText != null
--                    ? Border.all(color: AppColors.destructiveRed)
--                    : null,
--          ),
--          style: AppTextStyles.formInput,
--          placeholderStyle: AppTextStyles.formPlaceholder,
-+          decoration: decoration,
-+          style: inputTextStyle,
-+          placeholderStyle: placeholderTextStyle,
-+          cursorColor: AppColors.primaryBlue, // Standard cursor color
-         ),
--        if (errorText != null) ...[
-+        if (hasError) ...[
-           Padding(
--            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-+            padding: const EdgeInsets.only(
-+              top: AppDimensions.spacingXxs,
-+              left: AppDimensions.paddingSmall,
++        if (isSmallScreen) {
++          return IntrinsicHeight(
++            child: Column(
++              children:
++                  features
++                      .map(
++                        (feature) => Padding(
++                          padding: const EdgeInsets.only(
++                            bottom: AppDimensions.spacingL,
++                          ),
++                          child: _buildFeatureCard(feature),
++                        ),
++                      )
++                      .toList(),
 +            ),
-             child: Text(
-               errorText!,
--              style: AppTextStyles.caption.copyWith(
--                color: AppColors.destructiveRed,
--              ),
-+              style: AppTextStyles.caption.copyWith(color: AppColors.error),
++          );
++        } else {
++          return Wrap(
+             spacing: AppDimensions.spacingL,
+             runSpacing: AppDimensions.spacingL,
+             children:
+                 features
+                     .map(
+-                      (feature) => ConstrainedBox(
+-                        constraints: const BoxConstraints(
+-                          minWidth: 280,
+-                          maxWidth: 350,
+-                        ),
++                      (feature) => SizedBox(
++                        width:
++                            (constraints.maxWidth -
++                                2 * AppDimensions.spacingL) /
++                            3,
++                        height: 280, // Fixed height for equal card heights
+                         child: _buildFeatureCard(feature),
+                       ),
+                     )
+                     .toList(),
+-          ),
+-        ],
+-      ),
++          );
++        }
++      },
+     );
+   }
+ 
+@@ -303,23 +448,17 @@ class LandingPage extends StatelessWidget {
+   Widget _buildFeatureCard(FeatureItem feature) {
+     return Container(
+       width: double.infinity,
++      height: double.infinity,
+       padding: const EdgeInsets.all(AppDimensions.spacingXl),
+       decoration: BoxDecoration(
+-        color: AppColors.backgroundWhite,
++        color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
+         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+-        border: Border.all(color: AppColors.borderGray),
+-        boxShadow: [
+-          BoxShadow(
+-            color: CupertinoColors.black.withValues(alpha: 0.05),
+-            blurRadius: 10,
+-            offset: const Offset(0, 4),
+-          ),
+-        ],
++        border: Border.all(color: AppColors.borderGray.withValues(alpha: 0.5)),
+       ),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          // Icon container
++          // Icon
+           Container(
+             width: 48,
+             height: 48,
+@@ -333,16 +472,25 @@ class LandingPage extends StatelessWidget {
+           const SizedBox(height: AppDimensions.spacingL),
+ 
+           // Title
+-          Text(feature.title, style: AppTextStyles.title3),
++          Text(
++            feature.title,
++            style: AppTextStyles.title3.copyWith(
++              color: AppColors.foregroundDark,
++              fontWeight: FontWeight.w600,
++            ),
++          ),
+ 
+-          const SizedBox(height: AppDimensions.spacingS),
++          const SizedBox(height: AppDimensions.spacingM),
+ 
+           // Description
+-          Text(
+-            feature.description,
+-            style: AppTextStyles.body.copyWith(
+-              color: AppColors.mediumGray,
+-              height: 1.6,
++          Flexible(
++            child: Text(
++              feature.description,
++              style: AppTextStyles.body.copyWith(
++                color: AppColors.textSecondary,
++                height: 1.5,
++              ),
++              overflow: TextOverflow.fade,
              ),
            ),
          ],
-@@ -133,3 +201,126 @@ class AppTextInput extends StatelessWidget {
+@@ -350,163 +498,174 @@ class LandingPage extends StatelessWidget {
      );
    }
- }
-+
-+// --- Example Usage (Illustrative) ---
-+/*
-+class MyFormPage extends StatefulWidget {
-+  const MyFormPage({super.key});
-+
-+  @override
-+  State<MyFormPage> createState() => _MyFormPageState();
-+}
-+
-+class _MyFormPageState extends State<MyFormPage> {
-+  final _formKey = GlobalKey<FormState>();
-+  final _nameController = TextEditingController();
-+  final _emailController = TextEditingController();
-+  final _passwordController = TextEditingController();
-+  String? _nameError;
-+
-+  @override
-+  void dispose() {
-+    _nameController.dispose();
-+    _emailController.dispose();
-+    _passwordController.dispose();
-+    super.dispose();
-+  }
-+
-+  void _validateName(String value) {
-+    setState(() {
-+      if (value.isEmpty) {
-+        _nameError = 'Name cannot be empty.';
-+      } else if (value.length < 3) {
-+        _nameError = 'Name must be at least 3 characters.';
-+      } else {
-+        _nameError = null;
-+      }
-+    });
-+  }
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    return CupertinoPageScaffold(
-+      navigationBar: const CupertinoNavigationBar(
-+        middle: Text('Text Input Examples'),
+ 
+-  // Stats Section - Social proof with numbers
++  // Stats section
+   Widget _buildStatsSection(BuildContext context) {
+     return Container(
+       width: double.infinity,
+-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+-      decoration: const BoxDecoration(color: AppColors.lightGray),
+-      child: Wrap(
+-        spacing: AppDimensions.spacingXl,
+-        runSpacing: AppDimensions.spacingL,
+-        alignment: WrapAlignment.spaceEvenly,
+-        children: stats.map((stat) => _buildStatItem(stat)).toList(),
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppDimensions.spacingL,
++        vertical: AppDimensions.spacingXxl,
 +      ),
-+      child: SafeArea(
-+        child: Padding(
-+          padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-+          child: Form(
-+            key: _formKey,
-+            child: ListView(
-+              children: <Widget>[
-+                AppTextInput(
-+                  controller: _nameController,
-+                  label: 'Full Name',
-+                  placeholder: 'Enter your full name',
-+                  textInputAction: TextInputAction.next,
-+                  errorText: _nameError,
-+                  onChanged: _validateName,
-+                  prefix: const Padding(
-+                    padding: EdgeInsets.only(right: AppDimensions.spacingS),
-+                    child: Icon(CupertinoIcons.person, color: AppColors.mediumGray, size: AppDimensions.iconSizeMedium),
-+                  ),
-+                ),
-+                const SizedBox(height: AppDimensions.spacingM),
-+                AppTextInput(
-+                  controller: _emailController,
-+                  label: 'Email Address',
-+                  placeholder: 'you@example.com',
-+                  keyboardType: TextInputType.emailAddress,
-+                  textInputAction: TextInputAction.next,
-+                  // No direct error prop for this example, assuming form validation handles it
-+                ),
-+                const SizedBox(height: AppDimensions.spacingM),
-+                AppTextInput(
-+                  controller: _passwordController,
-+                  label: 'Password',
-+                  placeholder: 'Enter your password',
-+                  obscureText: true,
-+                  textInputAction: TextInputAction.done,
-+                  suffix: Padding(
-+                    padding: const EdgeInsets.only(left: AppDimensions.spacingS),
-+                    child: CupertinoButton(
-+                      padding: EdgeInsets.zero,
-+                      child: const Icon(CupertinoIcons.eye_slash, color: AppColors.mediumGray, size: AppDimensions.iconSizeMedium),
-+                      onPressed: () {
-+                        // Toggle password visibility logic here
-+                        print('Toggle password visibility');
-+                      },
-+                    ),
-+                  ),
-+                ),
-+                const SizedBox(height: AppDimensions.spacingM),
-+                AppTextInput(
-+                  controller: TextEditingController(text: 'Disabled Text'),
-+                  label: 'Disabled Field',
-+                  enabled: false,
-+                ),
-+                const SizedBox(height: AppDimensions.spacingXl),
-+                CupertinoButton.filled(
-+                  child: const Text('Submit'),
-+                  onPressed: () {
-+                    _validateName(_nameController.text); // Trigger validation for name field
-+                    if (_formKey.currentState!.validate()) {
-+                      // This example doesn't use FormField, so direct validation check is illustrative
-+                      if (_nameError == null) {
-+                         print('Form submitted successfully!');
-+                         print('Name: ${_nameController.text}');
-+                         print('Email: ${_emailController.text}');
-+                         print('Password: ${_passwordController.text}');
-+                      } else {
-+                        print('Please correct the errors.');
-+                      }
-+                    }
-+                  },
-+                ),
-+              ],
-+            ),
-+          ),
++      decoration: BoxDecoration(
++        color: AppColors.backgroundSecondary.withValues(alpha: 0.3),
++      ),
++      child: Container(
++        constraints: const BoxConstraints(
++          maxWidth: AppDimensions.maxContentWidth,
 +        ),
-+      ),
-+    );
-+  }
-+}
-+*/
-diff --git a/lib/main.dart b/lib/main.dart
-index 8b13789..ea5702d 100644
---- a/lib/main.dart
-+++ b/lib/main.dart
-@@ -1 +1,90 @@
-+import 'package:flutter/cupertino.dart';
-+import 'package:flutter/services.dart';
-+import 'package:provider/provider.dart';
-+import 'theme/app_theme.dart';
-+import 'pages/landing_page.dart';
++        child: _buildStatsGrid(context),
+       ),
+     );
+   }
  
-+void main() {
-+  // Ensure Flutter is initialized
-+  WidgetsFlutterBinding.ensureInitialized();
++  // Stats grid
++  Widget _buildStatsGrid(BuildContext context) {
++    return LayoutBuilder(
++      builder: (context, constraints) {
++        final isSmallScreen = constraints.maxWidth < AppDimensions.breakpointM;
 +
-+  // Set preferred device orientations (optional)
-+  SystemChrome.setPreferredOrientations([
-+    DeviceOrientation.portraitUp,
-+    DeviceOrientation.portraitDown,
-+    DeviceOrientation.landscapeLeft,
-+    DeviceOrientation.landscapeRight,
-+  ]);
-+
-+  // Run the app with theme provider
-+  runApp(const VetAnalyticsApp());
-+}
-+
-+/// The main application widget for VetAnalytics
-+class VetAnalyticsApp extends StatelessWidget {
-+  const VetAnalyticsApp({super.key});
-+
-+  @override
-+  Widget build(BuildContext context) {
-+    // Wrap app with ChangeNotifierProvider for theme management
-+    return ChangeNotifierProvider(
-+      create: (_) => AppTheme(),
-+      child: Consumer<AppTheme>(
-+        builder: (context, appTheme, child) {
-+          return CupertinoApp(
-+            // App Configuration
-+            title: 'VetAnalytics',
-+            debugShowCheckedModeBanner: false,
-+
-+            // Localization (Italian)
-+            locale: const Locale('it', 'IT'),
-+
-+            // Theme Configuration - Using the currentTheme getter
-+            theme: appTheme.currentTheme,
-+
-+            // Home Page
-+            home: const LandingPage(),
-+
-+            // Route Generation (for future navigation)
-+            onGenerateRoute: _generateRoute,
-+
-+            // Initial Route
-+            initialRoute: '/',
++        if (isSmallScreen) {
++          return Column(
++            children:
++                stats
++                    .map(
++                      (stat) => Padding(
++                        padding: const EdgeInsets.only(
++                          bottom: AppDimensions.spacingL,
++                        ),
++                        child: _buildStatItem(stat),
++                      ),
++                    )
++                    .toList(),
 +          );
-+        },
-+      ),
++        } else {
++          return Row(
++            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++            children:
++                stats
++                    .map((stat) => Expanded(child: _buildStatItem(stat)))
++                    .toList(),
++          );
++        }
++      },
 +    );
 +  }
 +
-+  /// Route generator for navigation
-+  /// This will be expanded as we add more pages
-+  static Route<dynamic>? _generateRoute(RouteSettings settings) {
-+    switch (settings.name) {
-+      case '/':
-+        return CupertinoPageRoute(
-+          builder: (_) => const LandingPage(),
-+          settings: settings,
-+        );
-+
-+      // Future routes will go here:
-+      // case '/login':
-+      //   return CupertinoPageRoute(
-+      //     builder: (_) => const LoginPage(),
-+      //     settings: settings,
-+      //   );
-+      //
-+      // case '/dashboard':
-+      //   return CupertinoPageRoute(
-+      //     builder: (_) => const DashboardPage(),
-+      //     settings: settings,
-+      //   );
-+
-+      default:
-+        // Fallback to landing page for unknown routes
-+        return CupertinoPageRoute(
-+          builder: (_) => const LandingPage(),
-+          settings: settings,
-+        );
-+    }
-+  }
-+}
-diff --git a/lib/theme/app_colors.dart b/lib/theme/app_colors.dart
-index 7aa5d53..51d8259 100644
---- a/lib/theme/app_colors.dart
-+++ b/lib/theme/app_colors.dart
-@@ -10,6 +10,12 @@ class AppColors {
-   /// Used in primary buttons, links, progress indicators
-   static const Color primaryBlue = Color(0xFF007AFF);
+   // Individual stat item
+   Widget _buildStatItem(StatItem stat) {
+     return Column(
+       children: [
++        // Icon and value
+         Row(
+-          mainAxisSize: MainAxisSize.min,
++          mainAxisAlignment: MainAxisAlignment.center,
+           children: [
+             Icon(stat.icon, color: AppColors.primaryBlue, size: 32),
+-            const SizedBox(width: AppDimensions.spacingS),
++            const SizedBox(width: AppDimensions.spacingM),
+             Text(
+               stat.value,
+-              style: AppTextStyles.largeTitle.copyWith(
+-                fontSize: 40,
++              style: const TextStyle(
++                fontSize: 36,
+                 fontWeight: FontWeight.bold,
++                color: AppColors.foregroundDark,
+               ),
+             ),
+           ],
+         ),
  
-+  /// Foreground color for elements on an accent background (e.g., text on a primaryBlue button)
-+  static const Color accentForeground = Color(0xFFFFFFFF); // White
-+
-+  /// Background color for popover elements like dropdowns, menus
-+  static const Color popoverBackground = Color(0xFFFFFFFF); // Typically white
-+
-   /// Main background color for pages, cards, and dialog backgrounds
-   static const Color backgroundWhite = Color(0xFFFFFFFF);
+-        const SizedBox(height: AppDimensions.spacingS),
++        const SizedBox(height: AppDimensions.spacingM),
  
-@@ -27,6 +33,30 @@ class AppColors {
-   /// Used for borders, dividers, and subtle separations between elements
-   static const Color borderGray = Color(0xFFDCDCDC);
++        // Label
+         Text(
+           stat.label,
+-          style: AppTextStyles.body.copyWith(
+-            color: AppColors.mediumGray,
+-            fontSize: 18,
+-          ),
++          style: AppTextStyles.title3.copyWith(color: AppColors.textSecondary),
++          textAlign: TextAlign.center,
+         ),
+       ],
+     );
+   }
  
-+  /// General border color, can be an alias for borderGray or a slightly different shade
-+  static const Color border = borderGray;
-+
-+  // Semantic Aliases (derived from base palette for clarity)
-+
-+  /// Color for secondary text elements (often same as mediumGray)
-+  static const Color textSecondary = mediumGray;
-+
-+  /// Color for disabled text elements
-+  static const Color textDisabled = Color(
-+    0x618E8E93,
-+  ); // mediumGray at 38% opacity
-+
-+  /// Color for secondary backgrounds (e.g., input fields, selected items)
-+  static const Color backgroundSecondary = lightGray;
-+
-+  /// Color for disabled backgrounds or components
-+  static const Color backgroundDisabled = Color(
-+    0xFFE5E5EA,
-+  ); // A slightly darker, less vibrant gray
-+
-+  /// Color for error text and icons (often same as destructiveRed)
-+  static const Color error = destructiveRed;
-+
-   // Accent colors
+-  // Call to Action Section
++  // CTA section
+   Widget _buildCTASection(BuildContext context) {
+     return Container(
+       width: double.infinity,
+-      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+-      child: Container(
+-        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+-        decoration: BoxDecoration(
+-          gradient: LinearGradient(
+-            colors: [
+-              AppColors.primaryBlue,
+-              AppColors.primaryBlue.withValues(alpha: 0.8),
+-            ],
+-          ),
+-          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+-          boxShadow: [
+-            BoxShadow(
+-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+-              blurRadius: 20,
+-              offset: const Offset(0, 8),
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppDimensions.spacingL,
++        vertical: AppDimensions.spacingXxl,
++      ),
++      child: Center(
++        child: Container(
++          constraints: const BoxConstraints(maxWidth: 768),
++          padding: const EdgeInsets.all(AppDimensions.spacingXxl),
++          decoration: BoxDecoration(
++            gradient: const LinearGradient(
++              colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
+             ),
+-          ],
+-        ),
+-        child: Column(
+-          children: [
+-            Text(
+-              'Pronto a Trasformare la Tua Pratica?',
+-              style: AppTextStyles.title1.copyWith(
+-                color: CupertinoColors.white,
+-                fontSize: 32,
++            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
++          ),
++          child: Column(
++            children: [
++              // Title
++              Text(
++                'Pronto a Trasformare la Tua Pratica?',
++                style: AppTextStyles.largeTitle.copyWith(
++                  color: AppColors.white,
++                  fontWeight: FontWeight.bold,
++                ),
++                textAlign: TextAlign.center,
+               ),
+-              textAlign: TextAlign.center,
+-            ),
  
-   /// Green color for success states, positive feedback, checkmarks
-@@ -54,6 +84,17 @@ class AppColors {
-   /// Pure white for text on dark backgrounds and overlay elements
-   static const Color white = Color(0xFFFFFFFF);
+-            const SizedBox(height: AppDimensions.spacingM),
++              const SizedBox(height: AppDimensions.spacingM),
  
-+  /// Transparent color
-+  static const Color transparent = Color(0x00000000);
+-            Text(
+-              'Unisciti a centinaia di professionisti veterinari che si fidano di VetAnalytics\nper analisi del sangue accurate e veloci.',
+-              style: AppTextStyles.body.copyWith(
+-                color: CupertinoColors.white.withValues(alpha: 0.9),
+-                fontSize: 18,
+-                height: 1.5,
++              // Description
++              Text(
++                'Unisciti a centinaia di professionisti veterinari che si fidano di VetAnalytics '
++                'per analisi del sangue accurate e veloci.',
++                style: AppTextStyles.title3.copyWith(
++                  color: AppColors.white.withValues(alpha: 0.9),
++                  fontWeight: FontWeight.normal,
++                  height: 1.5,
++                ),
++                textAlign: TextAlign.center,
+               ),
+-              textAlign: TextAlign.center,
+-            ),
+ 
+-            const SizedBox(height: AppDimensions.spacingXl),
+-
+-            // Custom CTA Button
+-            GestureDetector(
+-              onTap: () {
+-                debugPrint('Get started today');
+-              },
+-              child: Container(
+-                padding: const EdgeInsets.symmetric(
+-                  horizontal: AppDimensions.spacingXl,
+-                  vertical: AppDimensions.spacingM,
+-                ),
+-                decoration: BoxDecoration(
+-                  color: CupertinoColors.white,
+-                  borderRadius: BorderRadius.circular(
+-                    AppDimensions.radiusMedium,
+-                  ),
+-                  boxShadow: [
+-                    BoxShadow(
+-                      color: CupertinoColors.black.withValues(alpha: 0.1),
+-                      blurRadius: 8,
+-                      offset: const Offset(0, 2),
+-                    ),
+-                  ],
+-                ),
+-                child: Row(
++              const SizedBox(height: AppDimensions.spacingXl),
 +
-+  /// Muted background color
-+  static const Color muted = Color(0xFFF1F5F9); // Example: A light gray
-+
-+  /// Muted foreground color (text on muted background)
-+  static const Color mutedForeground = Color(
-+    0xFF64748B,
-+  ); // Example: A darker gray
-+
-   /// Primary gradient applied from top-left to bottom-right (135 degrees)
-   /// Used for premium element and brand highligts
-   static const LinearGradient primaryGradient = LinearGradient(
++              // CTA button
++              Button(
++                size: ButtonSize.large,
++                onPressed: () => debugPrint('Inizia Oggi tapped'),
++                variant: ButtonVariant.secondary,
++                child: const Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+-                    Text(
+-                      'Inizia Oggi',
+-                      style: AppTextStyles.body.copyWith(
+-                        color: AppColors.primaryBlue,
+-                        fontSize: 16,
+-                        fontWeight: FontWeight.w600,
+-                      ),
+-                    ),
+-                    const SizedBox(width: AppDimensions.spacingXs),
+-                    Icon(
+-                      CupertinoIcons.chevron_right,
+-                      size: 16,
+-                      color: AppColors.primaryBlue,
+-                    ),
++                    Text('Inizia Oggi'),
++                    SizedBox(width: AppDimensions.spacingS),
++                    Icon(CupertinoIcons.chevron_right, size: 20),
+                   ],
+                 ),
+               ),
+-            ),
+-          ],
++            ],
++          ),
+         ),
+       ),
+     );
+   }
+ 
+-  // Footer Section
++  // Footer
+   Widget _buildFooter(BuildContext context) {
+     return Container(
+       width: double.infinity,
+-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+-      decoration: const BoxDecoration(
+-        color: AppColors.lightGray,
+-        border: Border(top: BorderSide(color: AppColors.borderGray)),
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppDimensions.spacingL,
++        vertical: AppDimensions.spacingM,
++      ),
++      decoration: BoxDecoration(
++        color: AppColors.backgroundSecondary.withValues(alpha: 0.2),
++        border: const Border(top: BorderSide(color: AppColors.borderGray)),
+       ),
+       child: Column(
+         children: [
+-          // Logo and title
++          // Logo
+           Row(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+@@ -514,11 +673,8 @@ class LandingPage extends StatelessWidget {
+                 width: 24,
+                 height: 24,
+                 decoration: BoxDecoration(
+-                  gradient: LinearGradient(
+-                    colors: [
+-                      AppColors.primaryBlue,
+-                      AppColors.primaryBlue.withValues(alpha: 0.7),
+-                    ],
++                  gradient: const LinearGradient(
++                    colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
+                   ),
+                   borderRadius: BorderRadius.circular(
+                     AppDimensions.radiusSmall,
+@@ -528,14 +684,14 @@ class LandingPage extends StatelessWidget {
+                   child: Text(
+                     'V',
+                     style: TextStyle(
+-                      color: CupertinoColors.white,
++                      color: AppColors.white,
+                       fontSize: 12,
+                       fontWeight: FontWeight.bold,
+                     ),
+                   ),
+                 ),
+               ),
+-              const SizedBox(width: AppDimensions.spacingXs),
++              const SizedBox(width: AppDimensions.spacingS),
+               Text(
+                 'VetAnalytics',
+                 style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+@@ -548,9 +704,8 @@ class LandingPage extends StatelessWidget {
+           // Copyright
+           Text(
+             '© 2024 VetAnalytics. Tutti i diritti riservati.',
+-            style: AppTextStyles.bodySmall.copyWith(
+-              color: AppColors.mediumGray,
+-            ),
++            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
++            textAlign: TextAlign.center,
+           ),
+         ],
+       ),
 diff --git a/lib/theme/app_dimensions.dart b/lib/theme/app_dimensions.dart
-index 824cec8..00877e3 100644
+index 00877e3..df91fff 100644
 --- a/lib/theme/app_dimensions.dart
 +++ b/lib/theme/app_dimensions.dart
-@@ -7,6 +7,9 @@
- class AppDimensions {
-   // Spacing/Padding values
+@@ -41,16 +41,16 @@ class AppDimensions {
+   /// Large padding (maps to spacingL)
+   static const double paddingLarge = spacingL;
  
-+  /// Extra extra small spacing - used for fine-grained adjustments (2px)
-+  static const double spacingXxs = 2.0;
-+
-   /// Tiny spacing - used for minimal separation (4px)
-   static const double spacingXs = 4.0;
+-  // Border radius values
++  // Border radius values (updated to match React design system)
  
-@@ -25,6 +28,19 @@ class AppDimensions {
-   /// Double extra large spacing - used for very significant breaks (48px)
-   static const double spacingXxl = 48.0;
+-  /// Small radius - used for subtle rounding (4px)
+-  static const double radiusSmall = 4.0;
++  /// Small radius - used for subtle rounding (8px)
++  static const double radiusSmall = 8.0;
  
-+  // Semantic Aliases for Padding (can map to spacing or be distinct)
-+  // For consistency, we'll map them directly to spacing values for now.
-+  // If more specific padding values are needed later, they can be defined separately.
-+
-+  /// Small padding (maps to spacingS)
-+  static const double paddingSmall = spacingS;
-+
-+  /// Medium padding (maps to spacingM)
-+  static const double paddingMedium = spacingM;
-+
-+  /// Large padding (maps to spacingL)
-+  static const double paddingLarge = spacingL;
-+
-   // Border radius values
+-  /// Medium radius - default for most elements (8px)
+-  static const double radiusMedium = 8.0;
++  /// Medium radius - default for most elements (12px) - matches React --radius
++  static const double radiusMedium = 12.0;
  
-   /// Small radius - used for subtle rounding (4px)
-@@ -39,6 +55,17 @@ class AppDimensions {
+-  /// Large radius - used for prominent elements (12px)
+-  static const double radiusLarge = 12.0;
++  /// Large radius - used for prominent elements (16px)
++  static const double radiusLarge = 16.0;
+ 
    /// Full radius - used for pill shapes (9999px)
    static const double radiusFull = 9999.0;
+@@ -66,16 +66,36 @@ class AppDimensions {
+   /// Large border radius (maps to radiusLarge)
+   static const double borderRadiusLarge = radiusLarge;
  
-+  // Semantic Aliases for Border Radius
-+
-+  /// Small border radius (maps to radiusSmall)
-+  static const double borderRadiusSmall = radiusSmall;
-+
-+  /// Medium border radius (maps to radiusMedium)
-+  static const double borderRadiusMedium = radiusMedium;
-+
-+  /// Large border radius (maps to radiusLarge)
-+  static const double borderRadiusLarge = radiusLarge;
-+
-   // Element sizing
+-  // Element sizing
++  // Element sizing (updated to match React button system)
  
-   /// Small button/input height (32px)
-@@ -50,6 +77,9 @@ class AppDimensions {
-   /// Large button/input height (56px)
-   static const double buttonHeightLarge = 56.0;
+-  /// Small button/input height (32px)
+-  static const double buttonHeightSmall = 32.0;
++  /// Small button height (36px) - matches React 'sm' size (h-9)
++  static const double buttonHeightSmall = 36.0;
  
-+  /// Icon size - extra small (12px) - Added for finer icon control
-+  static const double iconSizeXs = 12.0;
+-  /// Standard button/input height (44px)
+-  static const double buttonHeightMedium = 44.0;
++  /// Standard button height (40px) - matches React 'default' size (h-10)
++  static const double buttonHeightMedium = 40.0;
+ 
+-  /// Large button/input height (56px)
+-  static const double buttonHeightLarge = 56.0;
++  /// Large button height (44px) - matches React 'lg' size (h-11)
++  static const double buttonHeightLarge = 44.0;
 +
-   /// Icon size - small (16px)
-   static const double iconSizeSmall = 16.0;
- 
-@@ -59,6 +89,22 @@ class AppDimensions {
-   /// Icon size - large (32px)
-   static const double iconSizeLarge = 32.0;
- 
-+  /// Standard width for borders (1.0px)
-+  static const double borderWidth = 1.0;
++  /// Button widths - minimum widths for consistent sizing
++  /// Small button minimum width (80px)
++  static const double buttonWidthSmall = 80.0;
 +
-+  /// Standard avatar radius (20px, for a 40px diameter avatar)
-+  static const double avatarRadiusStandard = 20.0;
++  /// Medium button minimum width (120px)
++  static const double buttonWidthMedium = 120.0;
 +
-+  // Existing avatar radii - these might be for different contexts or can be reviewed later
-+  /// Small avatar radius (16px)
-+  static const double avatarRadiusSmall = 16.0;
++  /// Large button minimum width (160px)
++  static const double buttonWidthLarge = 160.0;
 +
-+  /// Medium avatar radius (24px)
-+  static const double avatarRadiusMedium = 24.0;
++  /// Button horizontal padding - matches React system
++  /// Small button padding (12px) - matches React 'sm' (px-3)
++  static const double buttonPaddingSmall = 12.0;
 +
-+  /// Large avatar radius (32px)
-+  static const double avatarRadiusLarge = 32.0;
++  /// Medium button padding (16px) - matches React 'default' (px-4)
++  static const double buttonPaddingMedium = 16.0;
 +
-   // Responsive breakpoints for web
++  /// Large button padding (32px) - matches React 'lg' (px-8)
++  static const double buttonPaddingLarge = 32.0;
  
-   /// Small mobile breakpoint (320px)
-@@ -87,9 +133,6 @@ class AppDimensions {
-   /// Standard card elevation (2.0)
-   static const double cardElevation = 2.0;
- 
--  /// Border width for outlines, dividers (1.0px)
--  static const double borderWidth = 1.0;
--
-   /// Larger border width for emphasis (2.0px)
-   static const double borderWidthLarge = 2.0;
- 
-diff --git a/lib/theme/app_text_styles.dart b/lib/theme/app_text_styles.dart
-index cf523f4..c076343 100644
---- a/lib/theme/app_text_styles.dart
-+++ b/lib/theme/app_text_styles.dart
-@@ -60,6 +60,16 @@ class AppTextStyles {
-     height: 1.5,
-   );
- 
-+  /// Bold primary body text style
-+  static const TextStyle bodyBold = TextStyle(
-+    fontFamily: 'SF Pro Text',
-+    fontSize: 17.0,
-+    fontWeight: FontWeight.bold,
-+    letterSpacing: -0.41,
-+    color: AppColors.foregroundDark,
-+    height: 1.5,
-+  );
-+
-   /// Secondary, smaller body text for details and descriptions
-   static const TextStyle bodySmall = TextStyle(
-     fontFamily: 'SF Pro Text',
-@@ -70,6 +80,16 @@ class AppTextStyles {
-     height: 1.5,
-   );
- 
-+  /// Footnote text style for ancillary information
-+  static const TextStyle footnote = TextStyle(
-+    fontFamily: 'SF Pro Text',
-+    fontSize: 13.0,
-+    fontWeight: FontWeight.normal,
-+    letterSpacing: -0.08,
-+    color: AppColors.mediumGray, // Changed to AppColors.mediumGray
-+    height: 1.4,
-+  );
-+
-   // Button and interactive element styles
- 
-   /// Text style for primary buttons
-@@ -129,10 +149,20 @@ class AppTextStyles {
-   /// Style for captions and annotations
-   static const TextStyle caption = TextStyle(
-     fontFamily: 'SF Pro Text',
--    fontSize: 12.0,
-+    fontSize: 12.0, // Ensure this is defined
-     fontWeight: FontWeight.normal,
-     letterSpacing: 0.0,
--    color: AppColors.mediumGray,
-+    color: AppColors.mediumGray, // Ensure this is defined
-     height: 1.3,
-   );
-+
-+  /// Style for error messages
-+  static const TextStyle error = TextStyle(
-+    fontFamily: 'SF Pro Text',
-+    fontSize: 13.0,
-+    fontWeight: FontWeight.normal,
-+    letterSpacing: -0.08,
-+    color: AppColors.destructiveRed,
-+    height: 1.4,
-+  );
- }
-diff --git a/pubspec.lock b/pubspec.lock
-index 3f1c9e7..d9d531b 100644
---- a/pubspec.lock
-+++ b/pubspec.lock
-@@ -256,6 +256,14 @@ packages:
-       url: "https://pub.dev"
-     source: hosted
-     version: "6.1.5"
-+  shimmer:
-+    dependency: "direct main"
-+    description:
-+      name: shimmer
-+      sha256: "5f88c883a22e9f9f299e5ba0e4f7e6054857224976a5d9f839d4ebdc94a14ac9"
-+      url: "https://pub.dev"
-+    source: hosted
-+    version: "3.0.0"
-   sky_engine:
-     dependency: transitive
-     description: flutter
-diff --git a/pubspec.yaml b/pubspec.yaml
-index e9d4fb1..f9e90f5 100644
---- a/pubspec.yaml
-+++ b/pubspec.yaml
-@@ -38,6 +38,7 @@ dependencies:
-   go_router: ^15.1.3
-   flutter_adaptive_ui: ^0.8.0+1
-   fl_chart: ^1.0.0
-+  shimmer: ^3.0.0
- 
-   # The following adds the Cupertino Icons font to your application.
-   # Use with the CupertinoIcons class for iOS style icons.
+   /// Icon size - extra small (12px) - Added for finer icon control
+   static const double iconSizeXs = 12.0;

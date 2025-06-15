@@ -5,8 +5,7 @@ import '../../theme/app_dimensions.dart';
 import '../dialogs/app_generic_dialog.dart';
 import '../forms/app_form.dart';
 import '../forms/app_label.dart';
-import '../buttons/primary_button.dart';
-import '../buttons/outline_button.dart';
+import '../buttons/index.dart';
 
 /// Data model for patient form
 class PatientFormData {
