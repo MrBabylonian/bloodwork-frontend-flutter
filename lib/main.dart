@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'pages/landing_page.dart';
+import 'navigation/app_router.dart';
 
 void main() {
   runApp(const VetAnalyticsApp());
@@ -10,10 +10,10 @@ class VetAnalyticsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
+    return CupertinoApp.router(
       title: 'VetAnalytics',
-      home: LandingPage(),
       debugShowCheckedModeBanner: false,
+      routerConfig: AppRouter.createRouter(),
     );
   }
 }

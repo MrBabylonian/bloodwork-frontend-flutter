@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
 
 /// A customized text input field following Cupertino design principles,
 /// aligned with the styling from input.tsx mock.
@@ -93,23 +92,14 @@ class AppTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = AppTheme.of(context);
     final bool hasError = errorText != null && errorText!.isNotEmpty;
 
-    // Determine background color based on enabled state and theme.
-    // CupertinoTextFields typically use a light gray background.
-    // The mock uses `bg-background` which we map to `AppColors.backgroundSecondary` (lightGray) for enabled, and `AppColors.backgroundDisabled` for disabled.
+    // Determine background color based on enabled state
     Color textFieldFillColor;
     if (!enabled) {
       textFieldFillColor = AppColors.backgroundDisabled;
     } else {
-      // For light theme, use AppColors.backgroundSecondary. For dark theme, a darker equivalent would be needed.
-      // Since darkTheme currently maps to lightTheme, this will resolve to AppColors.backgroundSecondary.
-      textFieldFillColor =
-          appTheme.isDarkMode
-              ? AppColors.backgroundSecondary
-              : AppColors
-                  .backgroundSecondary; // Placeholder for actual dark theme color
+      textFieldFillColor = AppColors.backgroundSecondary;
     }
 
     BoxDecoration decoration = BoxDecoration(
@@ -121,28 +111,19 @@ class AppTextInput extends StatelessWidget {
       ),
     );
 
-    // Style for the input text itself, matching text-base or md:text-sm from mock
+    // Style for the input text itself
     TextStyle inputTextStyle = AppTextStyles.formInput.copyWith(
-      color:
-          enabled
-              ? (appTheme.isDarkMode
-                  ? AppColors.white
-                  : AppColors
-                      .foregroundDark) // Adjust for dark mode if implemented
-              : AppColors.textDisabled,
+      color: enabled ? AppColors.foregroundDark : AppColors.textDisabled,
     );
 
-    // Style for placeholder text, matching placeholder:text-muted-foreground
+    // Style for placeholder text
     TextStyle placeholderTextStyle = AppTextStyles.formPlaceholder.copyWith(
-      color: AppColors.textDisabled, // text-muted-foreground equivalent
+      color: AppColors.textDisabled,
     );
 
     // Style for the label
     TextStyle labelStyle = AppTextStyles.formLabel.copyWith(
-      color:
-          appTheme.isDarkMode
-              ? AppColors.white.withValues(alpha: 0.8)
-              : AppColors.foregroundDark, // Adjust for dark mode
+      color: AppColors.foregroundDark,
     );
 
     return Column(

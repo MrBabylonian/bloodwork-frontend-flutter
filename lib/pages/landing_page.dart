@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
@@ -161,13 +162,13 @@ class LandingPage extends StatelessWidget {
             children: [
               GhostButton(
                 size: ButtonSize.small,
-                onPressed: () => debugPrint('Accedi tapped'),
+                onPressed: () => context.go('/login'),
                 child: const Text('Accedi'),
               ),
               const SizedBox(width: AppDimensions.spacingS),
               PrimaryButton(
                 size: ButtonSize.small,
-                onPressed: () => debugPrint('Inizia tapped'),
+                onPressed: () => context.go('/login'),
                 child: const Text('Inizia'),
               ),
             ],
@@ -275,7 +276,7 @@ class LandingPage extends StatelessWidget {
                 width: double.infinity,
                 child: PrimaryButton(
                   size: ButtonSize.large,
-                  onPressed: () => debugPrint('Inizia Analisi tapped'),
+                  onPressed: () => context.go('/login'),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -316,7 +317,7 @@ class LandingPage extends StatelessWidget {
                 children: [
                   PrimaryButton(
                     size: ButtonSize.large,
-                    onPressed: () => debugPrint('Inizia Analisi tapped'),
+                    onPressed: () => context.go('/login'),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -633,7 +634,7 @@ class LandingPage extends StatelessWidget {
               // CTA button
               Button(
                 size: ButtonSize.large,
-                onPressed: () => debugPrint('Inizia Oggi tapped'),
+                onPressed: () => context.go('/login'),
                 variant: ButtonVariant.secondary,
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
