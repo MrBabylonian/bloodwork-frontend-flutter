@@ -10,7 +10,6 @@ enum AppToggleVariant { default_, outline }
 
 /// A toggle button widget that can be pressed to toggle between states.
 ///
-/// This component is equivalent to the toggle.tsx from the React mock,
 /// providing a pressable toggle button with different visual states.
 class AppToggle extends StatefulWidget {
   /// Creates a toggle button.

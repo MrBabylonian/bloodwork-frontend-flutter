@@ -7,7 +7,6 @@ enum AppSheetSide { left, right, top, bottom }
 
 /// A sheet widget that slides in from a specified side of the screen.
 ///
-/// This component is equivalent to the sheet.tsx from the React mock,
 /// providing modal-like overlays that slide in from screen edges.
 class AppSheet extends StatelessWidget {
   /// Creates a sheet widget.

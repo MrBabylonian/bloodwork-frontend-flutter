@@ -3,7 +3,6 @@ import '../../theme/app_colors.dart';
 
 /// A separator widget that creates visual divisions between content.
 ///
-/// This component is equivalent to the separator.tsx from the React mock,
 /// providing consistent visual separation throughout the application.
 class AppSeparator extends StatelessWidget {
   /// Creates a separator widget.

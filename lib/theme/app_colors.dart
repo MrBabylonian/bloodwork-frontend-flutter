@@ -68,6 +68,9 @@ class AppColors {
   /// Red color for error states, delete actions, and critical alerts
   static const Color destructiveRed = Color(0xFFFF3B30);
 
+  /// Alias for error red color
+  static const Color errorRed = destructiveRed;
+
   // Gradient colors
 
   /// Starting color for primary gradient (matches primaryBlue)

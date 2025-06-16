@@ -27,7 +27,6 @@ class AppTab {
 
 /// A tabs widget providing tabbed navigation interface.
 ///
-/// This component is equivalent to the tabs.tsx from the React mock,
 /// providing a clean tabbed interface for organizing content.
 class AppTabs extends StatefulWidget {
   /// Creates a tabs widget.

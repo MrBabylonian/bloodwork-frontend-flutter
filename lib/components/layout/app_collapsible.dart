@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 
 /// A collapsible widget that can expand and collapse its content.
 ///
-/// This component is equivalent to the collapsible.tsx from the React mock,
 /// providing smooth expand/collapse animations for content sections.
 class AppCollapsible extends StatefulWidget {
   /// Creates a collapsible widget.

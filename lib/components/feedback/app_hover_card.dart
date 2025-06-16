@@ -5,7 +5,6 @@ import '../../theme/app_dimensions.dart';
 
 /// A card that appears when hovering over a trigger widget.
 ///
-/// This component is equivalent to the hover-card.tsx from the React mock,
 /// providing hover-triggered popup content.
 class AppHoverCard extends StatefulWidget {
   /// Creates a hover card.

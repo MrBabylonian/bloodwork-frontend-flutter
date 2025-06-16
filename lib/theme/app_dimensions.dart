@@ -41,12 +41,12 @@ class AppDimensions {
   /// Large padding (maps to spacingL)
   static const double paddingLarge = spacingL;
 
-  // Border radius values (updated to match React design system)
+  // Border radius values
 
   /// Small radius - used for subtle rounding (8px)
   static const double radiusSmall = 8.0;
 
-  /// Medium radius - default for most elements (12px) - matches React --radius
+  /// Medium radius - default for most elements (12px)
   static const double radiusMedium = 12.0;
 
   /// Large radius - used for prominent elements (16px)
@@ -66,15 +66,15 @@ class AppDimensions {
   /// Large border radius (maps to radiusLarge)
   static const double borderRadiusLarge = radiusLarge;
 
-  // Element sizing (updated to match React button system)
+  // Element sizing
 
-  /// Small button height (36px) - matches React 'sm' size (h-9)
+  /// Small button height (36px)
   static const double buttonHeightSmall = 36.0;
 
-  /// Standard button height (40px) - matches React 'default' size (h-10)
+  /// Standard button height (40px)
   static const double buttonHeightMedium = 40.0;
 
-  /// Large button height (44px) - matches React 'lg' size (h-11)
+  /// Large button height (44px)
   static const double buttonHeightLarge = 44.0;
 
   /// Button widths - minimum widths for consistent sizing
@@ -87,14 +87,14 @@ class AppDimensions {
   /// Large button minimum width (160px)
   static const double buttonWidthLarge = 160.0;
 
-  /// Button horizontal padding - matches React system
-  /// Small button padding (12px) - matches React 'sm' (px-3)
+  /// Button horizontal padding
+  /// Small button padding (12px)
   static const double buttonPaddingSmall = 12.0;
 
-  /// Medium button padding (16px) - matches React 'default' (px-4)
+  /// Medium button padding (16px)
   static const double buttonPaddingMedium = 16.0;
 
-  /// Large button padding (32px) - matches React 'lg' (px-8)
+  /// Large button padding (32px)
   static const double buttonPaddingLarge = 32.0;
 
   /// Icon size - extra small (12px) - Added for finer icon control

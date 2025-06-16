@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 
 /// A widget that attempts to size the child to a specific aspect ratio.
 ///
-/// This component is equivalent to the aspect-ratio.tsx from the React mock,
 /// providing a way to maintain consistent aspect ratios for content.
 class AppAspectRatio extends StatelessWidget {
   /// Creates an aspect ratio widget.

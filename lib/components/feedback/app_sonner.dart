@@ -61,7 +61,6 @@ class AppSonnerToast {
 
 /// A modern toast notification system.
 ///
-/// This component is equivalent to the sonner.tsx from the React mock,
 /// providing a clean and modern toast notification system.
 class AppSonner extends StatefulWidget {
   /// Creates a Sonner toast system.

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 
 /// A customizable scroll area with consistent styling.
 ///
-/// This component is equivalent to the scroll-area.tsx from the React mock,
 /// providing a consistent scrollable area with optional custom scrollbars.
 class AppScrollArea extends StatelessWidget {
   /// Creates a scroll area.

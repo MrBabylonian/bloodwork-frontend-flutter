@@ -38,7 +38,6 @@ class AppNavigationMenuItem {
 
 /// A horizontal navigation menu component.
 ///
-/// This component is equivalent to the navigation-menu.tsx from the React mock,
 /// providing a clean horizontal navigation interface.
 class AppNavigationMenu extends StatefulWidget {
   /// Creates a navigation menu.

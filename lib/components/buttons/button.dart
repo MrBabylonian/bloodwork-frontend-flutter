@@ -3,7 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
 
-/// Button size variants matching React implementation
+/// Button size variants
 enum ButtonSize {
   /// Small button (height: 36px)
   small,
@@ -18,7 +18,7 @@ enum ButtonSize {
   icon,
 }
 
-/// Button variants matching React implementation
+/// Button variants
 enum ButtonVariant {
   /// Primary button with filled background
   primary,
@@ -39,10 +39,9 @@ enum ButtonVariant {
   link,
 }
 
-/// Main Button component matching React structure
+/// Main Button component
 ///
 /// This is the primary button component that supports all variants and sizes.
-/// It follows the same API pattern as the React button component.
 class Button extends StatelessWidget {
   /// Creates a button with the specified properties
   const Button({
@@ -111,7 +110,7 @@ class Button extends StatelessWidget {
     }
   }
 
-  /// Get horizontal padding based on size - matches React button system
+  /// Get horizontal padding based on size
   double get _horizontalPadding {
     switch (size) {
       case ButtonSize.small:

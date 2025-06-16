@@ -1,0 +1,912 @@
+import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_dimensions.dart';
+import '../components/buttons/index.dart';
+import '../components/forms/text_input.dart';
+import '../components/navigation/app_header.dart';
+import '../components/dialogs/add_patient_modal.dart';
+
+/// Patient status enum for type safety
+enum PatientStatus { healthy, needsAttention, critical }
+
+/// Patient model
+class Patient {
+  final String id;
+  final String name;
+  final String owner;
+  final String species;
+  final String breed;
+  final String age;
+  final DateTime lastVisit;
+  final PatientStatus status;
+  final int testsCount;
+
+  const Patient({
+    required this.id,
+    required this.name,
+    required this.owner,
+    required this.species,
+    required this.breed,
+    required this.age,
+    required this.lastVisit,
+    required this.status,
+    required this.testsCount,
+  });
+}
+
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _isAddPatientModalOpen = false;
+  String _searchQuery = '';
+
+  // Mock data
+  final List<Patient> _patients = [
+    Patient(
+      id: '1',
+      name: 'Buddy',
+      owner: 'John Smith',
+      species: 'Cane',
+      breed: 'Golden Retriever',
+      age: '5 anni',
+      lastVisit: DateTime(2024, 6, 8),
+      status: PatientStatus.healthy,
+      testsCount: 3,
+    ),
+    Patient(
+      id: '2',
+      name: 'Whiskers',
+      owner: 'Sarah Johnson',
+      species: 'Gatto',
+      breed: 'Persiano',
+      age: '2 anni',
+      lastVisit: DateTime(2024, 6, 7),
+      status: PatientStatus.needsAttention,
+      testsCount: 2,
+    ),
+    Patient(
+      id: '3',
+      name: 'Max',
+      owner: 'Mike Davis',
+      species: 'Cane',
+      breed: 'Pastore Tedesco',
+      age: '7 anni',
+      lastVisit: DateTime(2024, 6, 6),
+      status: PatientStatus.critical,
+      testsCount: 5,
+    ),
+    Patient(
+      id: '4',
+      name: 'Luna',
+      owner: 'Emily Wilson',
+      species: 'Gatto',
+      breed: 'Maine Coon',
+      age: '3 anni',
+      lastVisit: DateTime(2024, 6, 5),
+      status: PatientStatus.healthy,
+      testsCount: 1,
+    ),
+  ];
+
+  List<Patient> get _filteredPatients {
+    if (_searchQuery.isEmpty) return _patients;
+
+    return _patients.where((patient) {
+      final query = _searchQuery.toLowerCase();
+      return patient.name.toLowerCase().contains(query) ||
+          patient.owner.toLowerCase().contains(query) ||
+          patient.breed.toLowerCase().contains(query);
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Performs logout operation with confirmation dialog
+  void _performLogout(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => _buildCustomConfirmationDialog(context),
+    );
+  }
+
+  /// Custom confirmation dialog that looks good on desktop web
+  Widget _buildCustomConfirmationDialog(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 400,
+        margin: const EdgeInsets.all(AppDimensions.spacingL),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.foregroundDark.withValues(alpha: 0.15),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              child: Column(
+                children: [
+                  Text(
+                    'Conferma Logout',
+                    style: AppTextStyles.title2.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingS),
+                  Text(
+                    'Sei sicuro di voler uscire dal tuo account?',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+
+            // Divider
+            Container(
+              height: 1,
+              color: AppColors.borderGray.withValues(alpha: 0.3),
+            ),
+
+            // Actions
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SecondaryButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Annulla'),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: DestructiveButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close dialog
+                        // Clear any stored authentication state here
+                        // For now, redirect to login page
+                        context.go('/login');
+                      },
+                      child: const Text('Esci'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(PatientStatus status) {
+    switch (status) {
+      case PatientStatus.healthy:
+        return AppColors.successGreen;
+      case PatientStatus.needsAttention:
+        return AppColors.warningOrange;
+      case PatientStatus.critical:
+        return AppColors.errorRed;
+    }
+  }
+
+  String _getStatusText(PatientStatus status) {
+    switch (status) {
+      case PatientStatus.healthy:
+        return 'Sano';
+      case PatientStatus.needsAttention:
+        return 'Attenzione';
+      case PatientStatus.critical:
+        return 'Critico';
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CupertinoPageScaffold(
+          backgroundColor: AppColors.backgroundWhite,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.backgroundWhite,
+                  Color(0xFFF8F9FA),
+                  AppColors.backgroundWhite,
+                ],
+              ),
+            ),
+            child: Column(
+              children: [
+                // Header
+                AppHeader(
+                  showAuth: true,
+                  onProfileTap: () => context.go('/profile'),
+                  onLogoutTap: () {
+                    // Perform logout operation
+                    _performLogout(context);
+                  },
+                ),
+
+                // Main Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Page Header
+                        _buildPageHeader(),
+
+                        const SizedBox(height: AppDimensions.spacingXl),
+
+                        // Stats Cards
+                        _buildStatsCards(),
+
+                        const SizedBox(height: AppDimensions.spacingXl),
+
+                        // Search and Filters
+                        _buildSearchAndFilters(),
+
+                        const SizedBox(height: AppDimensions.spacingXl),
+
+                        // Patient Grid
+                        _buildPatientGrid(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Add Patient Modal
+        AddPatientModal(
+          isOpen: _isAddPatientModalOpen,
+          onClose: () => setState(() => _isAddPatientModalOpen = false),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPageHeader() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Mobile layout (stacked)
+        if (constraints.maxWidth < 768) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Dashboard Pazienti', style: AppTextStyles.pageTitle),
+              const SizedBox(height: AppDimensions.spacingS),
+              Text(
+                'Gestisci i tuoi pazienti e le loro analisi del sangue',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+
+              // Stacked buttons on mobile
+              Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: PrimaryButton(
+                      size: ButtonSize.large,
+                      onPressed: () => context.go('/upload'),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(CupertinoIcons.cloud_upload, size: 16),
+                          SizedBox(width: AppDimensions.spacingS),
+                          Text('Carica Risultati'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingM),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SecondaryButton(
+                      size: ButtonSize.large,
+                      onPressed:
+                          () => setState(() => _isAddPatientModalOpen = true),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(CupertinoIcons.plus, size: 16),
+                          SizedBox(width: AppDimensions.spacingS),
+                          Text('Aggiungi Paziente'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        // Desktop layout (horizontal)
+        return Row(
+          children: [
+            // Left side - Title and Description
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Dashboard Pazienti', style: AppTextStyles.pageTitle),
+                  const SizedBox(height: AppDimensions.spacingS),
+                  Text(
+                    'Gestisci i tuoi pazienti e le loro analisi del sangue',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: AppDimensions.spacingL),
+
+            // Right side - Action Buttons (horizontal layout)
+            Row(
+              children: [
+                PrimaryButton(
+                  size: ButtonSize.medium,
+                  onPressed: () => context.go('/upload'),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(CupertinoIcons.cloud_upload, size: 16),
+                      SizedBox(width: AppDimensions.spacingS),
+                      Text('Carica Risultati'),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacingM),
+                SecondaryButton(
+                  size: ButtonSize.medium,
+                  onPressed:
+                      () => setState(() => _isAddPatientModalOpen = true),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(CupertinoIcons.plus, size: 16),
+                      SizedBox(width: AppDimensions.spacingS),
+                      Text('Aggiungi Paziente'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStatsCards() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Mobile layout - 2x2 grid with proper distribution
+        if (constraints.maxWidth < 768) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: _buildStatCard(
+                        title: 'Pazienti Totali',
+                        value: '247',
+                        icon: CupertinoIcons.person_2,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: _buildStatCard(
+                        title: 'Test Oggi',
+                        value: '12',
+                        icon: CupertinoIcons.heart,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.spacingM),
+              Row(
+                children: [
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: _buildStatCard(
+                        title: 'Revisioni Pendenti',
+                        value: '8',
+                        icon: CupertinoIcons.doc_text,
+                        color: AppColors.warningOrange,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: _buildStatCard(
+                        title: 'Casi Critici',
+                        value: '3',
+                        icon: CupertinoIcons.exclamationmark_triangle,
+                        color: AppColors.errorRed,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        // Desktop layout - single row with proper distribution
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute evenly
+          children: [
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 280,
+                ), // Slightly larger max width
+                child: _buildStatCard(
+                  title: 'Pazienti Totali',
+                  value: '247',
+                  icon: CupertinoIcons.person_2,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 280,
+                ), // Slightly larger max width
+                child: _buildStatCard(
+                  title: 'Test Oggi',
+                  value: '12',
+                  icon: CupertinoIcons.heart,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 280,
+                ), // Slightly larger max width
+                child: _buildStatCard(
+                  title: 'Revisioni Pendenti',
+                  value: '8',
+                  icon: CupertinoIcons.doc_text,
+                  color: AppColors.warningOrange,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 280,
+                ), // Slightly larger max width
+                child: _buildStatCard(
+                  title: 'Casi Critici',
+                  value: '3',
+                  icon: CupertinoIcons.exclamationmark_triangle,
+                  color: AppColors.errorRed,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      // Remove fixed width to use all available space
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderGray.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.foregroundDark.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTextStyles.title2.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(icon, size: 24, color: color),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchAndFilters() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderGray.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.foregroundDark.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: AppTextInput(
+                controller: _searchController,
+                placeholder: 'Cerca pazienti per nome, proprietario o razza...',
+                onChanged: (value) => setState(() => _searchQuery = value),
+                prefix: const Padding(
+                  padding: EdgeInsets.only(left: 12, right: 16),
+                  child: Icon(
+                    CupertinoIcons.search,
+                    color: AppColors.mediumGray,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          SecondaryButton(
+            size: ButtonSize.medium,
+            onPressed: () => debugPrint('Filtri tapped'),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(CupertinoIcons.slider_horizontal_3, size: 16),
+                SizedBox(width: 8),
+                Text('Filtri'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPatientGrid() {
+    if (_filteredPatients.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive grid
+        int crossAxisCount = 1;
+        if (constraints.maxWidth > 1400) {
+          crossAxisCount = 4; // xl: 4 columns
+        } else if (constraints.maxWidth > 1024) {
+          crossAxisCount = 3; // lg: 3 columns
+        } else if (constraints.maxWidth > 768) {
+          crossAxisCount = 2; // md: 2 columns
+        } else {
+          crossAxisCount = 1; // sm: 1 column
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: AppDimensions.spacingL,
+            mainAxisSpacing: AppDimensions.spacingL,
+            childAspectRatio:
+                constraints.maxWidth >= 1024
+                    ? 1.6
+                    : 1.3, // Higher ratio for desktop = shorter cards, balanced for mobile
+          ),
+          itemCount: _filteredPatients.length,
+          itemBuilder: (context, index) {
+            final patient = _filteredPatients[index];
+            return _buildPatientCard(patient);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPatientCard(Patient patient) {
+    return GestureDetector(
+      onTap: () => context.go('/patient/${patient.id}'),
+      child: Container(
+        padding: const EdgeInsets.all(
+          16,
+        ), // Reduced from 20 for more compact layout
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.borderGray.withValues(alpha: 0.2),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.foregroundDark.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        patient.name,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Owner: ${patient.owner}',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 0,
+                  child: const Icon(
+                    CupertinoIcons.ellipsis,
+                    color: AppColors.mediumGray,
+                    size: 16,
+                  ),
+                  onPressed:
+                      () => debugPrint('More options for ${patient.name}'),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12), // Reduced from 16 for compactness
+            // Patient Details
+            Column(
+              children: [
+                _buildPatientDetailRow('Species:', patient.species),
+                const SizedBox(height: 6), // Reduced from 8
+                _buildPatientDetailRow('Breed:', patient.breed),
+                const SizedBox(height: 6), // Reduced from 8
+                _buildPatientDetailRow('Age:', patient.age),
+              ],
+            ),
+
+            const SizedBox(height: 12), // Reduced from 16 for compactness
+            // Status and Last Visit
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(patient.status),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _getStatusText(patient.status),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      CupertinoIcons.calendar,
+                      size: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatDate(patient.lastVisit),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12), // Reduced from 16 for compactness
+            // Tests Count - this is where the card should end
+            Container(
+              padding: const EdgeInsets.only(
+                top: 12,
+              ), // Reduced from 16 for compactness
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.borderGray, width: 1),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Tests performed:',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    '${patient.testsCount}',
+                    style: AppTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Card ends here - no additional content
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatientDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          value,
+          style: AppTextStyles.caption.copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+        border: Border.all(color: AppColors.borderGray.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.foregroundDark.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            CupertinoIcons.search,
+            size: 48,
+            color: AppColors.mediumGray,
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          Text(
+            'Nessun paziente trovato',
+            style: AppTextStyles.subtitle.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(
+            'Prova ad aggiustare i termini di ricerca o aggiungi un nuovo paziente.',
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}

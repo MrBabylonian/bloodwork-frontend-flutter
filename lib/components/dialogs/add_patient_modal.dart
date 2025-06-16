@@ -2,66 +2,18 @@ import 'package:flutter/cupertino.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
-import '../dialogs/app_generic_dialog.dart';
-import '../forms/app_form.dart';
-import '../forms/app_label.dart';
 import '../buttons/index.dart';
+import '../forms/text_input.dart';
 
-/// Data model for patient form
-class PatientFormData {
-  final String name;
-  final String owner;
-  final String species;
-  final String breed;
-  final String age;
-  final String weight;
-  final String contactEmail;
-  final String contactPhone;
-
-  const PatientFormData({
-    required this.name,
-    required this.owner,
-    required this.species,
-    required this.breed,
-    required this.age,
-    required this.weight,
-    required this.contactEmail,
-    required this.contactPhone,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'owner': owner,
-      'species': species,
-      'breed': breed,
-      'age': age,
-      'weight': weight,
-      'contactEmail': contactEmail,
-      'contactPhone': contactPhone,
-    };
-  }
-}
-
-/// A modal dialog for adding new patient information
-///
-/// This modal provides a comprehensive form for entering patient details
-/// including personal information, physical characteristics, and contact details.
+/// Modal for adding a new patient
 class AddPatientModal extends StatefulWidget {
-  /// Whether the modal is currently visible
   final bool isOpen;
-
-  /// Callback when the modal should be closed
-  final ValueChanged<bool> onOpenChanged;
-
-  /// Callback when a new patient is submitted
-  final ValueChanged<PatientFormData>? onPatientAdded;
+  final VoidCallback onClose;
 
   const AddPatientModal({
     super.key,
     required this.isOpen,
-    required this.onOpenChanged,
-    this.onPatientAdded,
+    required this.onClose,
   });
 
   @override
@@ -69,303 +21,252 @@ class AddPatientModal extends StatefulWidget {
 }
 
 class _AddPatientModalState extends State<AddPatientModal> {
-  late AppFormController _formController;
-  bool _isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _formController = AppFormController();
-    _setupForm();
-  }
+  final _nameController = TextEditingController();
+  final _ownerController = TextEditingController();
+  final _speciesController = TextEditingController();
+  final _breedController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   @override
   void dispose() {
-    _formController.dispose();
+    _nameController.dispose();
+    _ownerController.dispose();
+    _speciesController.dispose();
+    _breedController.dispose();
+    _ageController.dispose();
+    _weightController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  void _setupForm() {
-    // Register form fields with validators
-    _formController.registerField<String>(
-      'name',
-      validator: AppFormValidators.required('Patient name is required'),
-    );
-    _formController.registerField<String>(
-      'owner',
-      validator: AppFormValidators.required('Owner name is required'),
-    );
-    _formController.registerField<String>(
-      'species',
-      validator: AppFormValidators.required('Species is required'),
-    );
-    _formController.registerField<String>('breed');
-    _formController.registerField<String>('age');
-    _formController.registerField<String>('weight');
-    _formController.registerField<String>(
-      'contactEmail',
-      validator: AppFormValidators.combine([
-        AppFormValidators.required('Email is required'),
-        AppFormValidators.email(),
-      ]),
-    );
-    _formController.registerField<String>('contactPhone');
+  void _handleSubmit() {
+    // Mock submission
+    debugPrint('New patient data:');
+    debugPrint('Name: ${_nameController.text}');
+    debugPrint('Owner: ${_ownerController.text}');
+    debugPrint('Species: ${_speciesController.text}');
+    debugPrint('Breed: ${_breedController.text}');
+    debugPrint('Age: ${_ageController.text}');
+    debugPrint('Weight: ${_weightController.text}');
+    debugPrint('Email: ${_emailController.text}');
+    debugPrint('Phone: ${_phoneController.text}');
+
+    // Clear form and close modal
+    _clearForm();
+    widget.onClose();
   }
 
-  void _onSubmit() async {
-    if (_isSubmitting) return;
-
-    if (!_formController.validateAll()) {
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      final data = _formController.getData();
-      final patientData = PatientFormData(
-        name: data['name'] ?? '',
-        owner: data['owner'] ?? '',
-        species: data['species'] ?? '',
-        breed: data['breed'] ?? '',
-        age: data['age'] ?? '',
-        weight: data['weight'] ?? '',
-        contactEmail: data['contactEmail'] ?? '',
-        contactPhone: data['contactPhone'] ?? '',
-      );
-
-      // Simulate API call delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      widget.onPatientAdded?.call(patientData);
-      _formController.reset();
-      widget.onOpenChanged(false);
-    } catch (e) {
-      // Handle error - in a real app you'd show a toast or snackbar
-      debugPrint('Error adding patient: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
-  void _onCancel() {
-    _formController.reset();
-    widget.onOpenChanged(false);
+  void _clearForm() {
+    _nameController.clear();
+    _ownerController.clear();
+    _speciesController.clear();
+    _breedController.clear();
+    _ageController.clear();
+    _weightController.clear();
+    _emailController.clear();
+    _phoneController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isOpen) {
-      return const SizedBox.shrink();
-    }
+    if (!widget.isOpen) return const SizedBox.shrink();
 
-    return AppGenericDialog(
-      title: Row(
-        children: [
-          Icon(CupertinoIcons.add, size: 20, color: AppColors.primaryBlue),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text('Add New Patient', style: AppTextStyles.title3),
-        ],
-      ),
-      content: SizedBox(
-        width: 500,
-        child: AppForm(
-          controller: _formController,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Patient and Owner Info
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'name',
-                      label: 'Patient Name',
-                      placeholder: 'Buddy',
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'owner',
-                      label: 'Owner Name',
-                      placeholder: 'John Smith',
-                    ),
+    return GestureDetector(
+      onTap: widget.onClose,
+      child: Container(
+        color: AppColors.foregroundDark.withValues(alpha: 0.5),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // Prevent closing when tapping on modal content
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              constraints: const BoxConstraints(maxWidth: 500),
+              margin: const EdgeInsets.all(AppDimensions.spacingL),
+              padding: const EdgeInsets.all(AppDimensions.spacingXl),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundWhite,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.foregroundDark.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
-
-              const SizedBox(height: AppDimensions.spacingM),
-
-              // Species and Breed
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'species',
-                      label: 'Species',
-                      placeholder: 'Dog',
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        const Icon(
+                          CupertinoIcons.plus,
+                          color: AppColors.primaryBlue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        Text(
+                          'Aggiungi Nuovo Paziente',
+                          style: AppTextStyles.title3.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minSize: 0,
+                          onPressed: widget.onClose,
+                          child: const Icon(
+                            CupertinoIcons.xmark,
+                            color: AppColors.mediumGray,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'breed',
-                      label: 'Breed',
-                      placeholder: 'Golden Retriever',
+
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Form
+                    _buildForm(),
+
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GhostButton(
+                            size: ButtonSize.large,
+                            onPressed: widget.onClose,
+                            child: const Text('Annulla'),
+                          ),
+                        ),
+                        const SizedBox(width: AppDimensions.spacingM),
+                        Expanded(
+                          child: PrimaryButton(
+                            size: ButtonSize.large,
+                            onPressed: _handleSubmit,
+                            child: const Text('Aggiungi Paziente'),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-
-              const SizedBox(height: AppDimensions.spacingM),
-
-              // Age and Weight
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'age',
-                      label: 'Age',
-                      placeholder: '5 years',
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: _buildFormField(
-                      name: 'weight',
-                      label: 'Weight',
-                      placeholder: '25 kg',
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppDimensions.spacingM),
-
-              // Contact Information
-              _buildFormField(
-                name: 'contactEmail',
-                label: 'Contact Email',
-                placeholder: 'owner@email.com',
-                keyboardType: TextInputType.emailAddress,
-              ),
-
-              const SizedBox(height: AppDimensions.spacingM),
-
-              _buildFormField(
-                name: 'contactPhone',
-                label: 'Contact Phone',
-                placeholder: '+1 (555) 123-4567',
-                keyboardType: TextInputType.phone,
-              ),
-            ],
+            ),
           ),
         ),
       ),
-      actions: [
-        OutlineButton(
-          onPressed: _isSubmitting ? null : _onCancel,
-          child: const Text('Cancel'),
+    );
+  }
+
+  Widget _buildForm() {
+    return Column(
+      children: [
+        // Name and Owner
+        Row(
+          children: [
+            Expanded(
+              child: AppTextInput(
+                controller: _nameController,
+                label: 'Nome Paziente',
+                placeholder: 'Buddy',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: AppTextInput(
+                controller: _ownerController,
+                label: 'Nome Proprietario',
+                placeholder: 'Mario Rossi',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppDimensions.spacingS),
-        PrimaryButton(
-          onPressed: _isSubmitting ? null : _onSubmit,
-          isLoading: _isSubmitting,
-          child: const Text('Add Patient'),
+
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Species and Breed
+        Row(
+          children: [
+            Expanded(
+              child: AppTextInput(
+                controller: _speciesController,
+                label: 'Specie',
+                placeholder: 'Cane',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: AppTextInput(
+                controller: _breedController,
+                label: 'Razza',
+                placeholder: 'Golden Retriever',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Age and Weight
+        Row(
+          children: [
+            Expanded(
+              child: AppTextInput(
+                controller: _ageController,
+                label: 'Età',
+                placeholder: '5 anni',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              child: AppTextInput(
+                controller: _weightController,
+                label: 'Peso',
+                placeholder: '25 kg',
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Contact Email
+        AppTextInput(
+          controller: _emailController,
+          label: 'Email di Contatto',
+          placeholder: 'proprietario@email.com',
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+        ),
+
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Contact Phone
+        AppTextInput(
+          controller: _phoneController,
+          label: 'Telefono di Contatto',
+          placeholder: '+39 123 456 7890',
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.done,
         ),
       ],
     );
   }
-
-  Widget _buildFormField({
-    required String name,
-    required String label,
-    required String placeholder,
-    TextInputType? keyboardType,
-  }) {
-    return AppFormField<String>(
-      name: name,
-      builder: (context, value, error, onChanged) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppLabel(
-              text: label,
-              required:
-                  name == 'name' ||
-                  name == 'owner' ||
-                  name == 'species' ||
-                  name == 'contactEmail',
-            ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            CupertinoTextField(
-              controller: TextEditingController(text: value ?? ''),
-              placeholder: placeholder,
-              onChanged: onChanged,
-              keyboardType: keyboardType,
-              decoration: BoxDecoration(
-                color: AppColors.backgroundSecondary,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-                border:
-                    error != null
-                        ? Border.all(color: AppColors.primaryBlue, width: 1)
-                        : null,
-              ),
-              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-              style: AppTextStyles.body,
-            ),
-            if (error != null) ...[
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                error,
-                style: AppTextStyles.footnote.copyWith(
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Helper function to show the AddPatientModal
-Future<PatientFormData?> showAddPatientModal({
-  required BuildContext context,
-  ValueChanged<PatientFormData>? onPatientAdded,
-}) {
-  return showCupertinoDialog<PatientFormData>(
-    context: context,
-    barrierDismissible: true,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          bool isOpen = true;
-
-          return AddPatientModal(
-            isOpen: isOpen,
-            onOpenChanged: (open) {
-              if (!open) {
-                setState(() => isOpen = false);
-                Navigator.of(context).pop();
-              }
-            },
-            onPatientAdded: (data) {
-              onPatientAdded?.call(data);
-              Navigator.of(context).pop(data);
-            },
-          );
-        },
-      );
-    },
-  );
 }

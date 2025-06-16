@@ -268,7 +268,6 @@ class _AppInputOtpSlotState extends State<AppInputOtpSlot> {
 
 //   @override
 //   Widget build(BuildContext context) {
-//     // Mock uses <Dot /> from lucide-react
 //     return child ?? const Icon(
 //       CupertinoIcons.circle_fill,
 //       size: AppDimensions.iconSizeSmall,

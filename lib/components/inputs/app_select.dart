@@ -38,7 +38,6 @@ class AppSelectOption<T> {
 
 /// An enhanced select component with search functionality.
 ///
-/// This component is equivalent to the select.tsx from the React mock,
 /// providing an advanced dropdown with search, filtering, and custom rendering.
 class AppSelect<T> extends StatefulWidget {
   /// Creates an enhanced select component.

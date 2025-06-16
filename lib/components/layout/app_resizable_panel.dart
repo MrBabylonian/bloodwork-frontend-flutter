@@ -3,8 +3,6 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
 // TODO: Implement Resizable Panel Group, Panel, and Handle.
-// This will be a custom implementation inspired by react-resizable-panels.
-
 // --- Data Models (if necessary) ---
 // May not be strictly needed if state is managed within widgets.
 

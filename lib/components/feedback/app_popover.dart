@@ -16,7 +16,6 @@ enum AppPopoverPosition {
 
 /// A popover widget that displays content in a floating overlay.
 ///
-/// This component is equivalent to the popover.tsx from the React mock,
 /// providing positioned popup content that can be triggered by user interaction.
 class AppPopover extends StatefulWidget {
   /// Creates a popover.

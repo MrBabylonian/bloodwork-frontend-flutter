@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
-import '../../theme/app_gradients.dart';
 import '../buttons/index.dart';
 
 /// A header component for the application
@@ -52,50 +51,36 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final shouldShowBackButton = showBackButton ?? canPop;
 
     return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingS,
+      ),
       decoration: BoxDecoration(
         color:
             backgroundColor ??
             AppColors.backgroundWhite.withValues(alpha: 0.95),
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: const Border(
+          bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
+        ),
       ),
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingLarge,
-            vertical: AppDimensions.paddingMedium,
-          ),
-          child: Row(
-            children: [
-              // Leading section (back button or logo)
-              if (shouldShowBackButton)
-                _buildBackButton(context)
-              else
-                _buildLogo(context),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Leading section (back button or logo)
+            if (shouldShowBackButton)
+              _buildBackButton(context)
+            else
+              _buildLogo(context),
 
-              // Spacer
-              const Spacer(),
+            // Custom title or default title (only show if there's a back button)
+            if (title != null && shouldShowBackButton)
+              Expanded(child: Center(child: title!)),
 
-              // Custom title or default title
-              if (title != null)
-                title!
-              else if (!shouldShowBackButton)
-                _buildTitle(context),
-
-              // Spacer
-              const Spacer(),
-
-              // Actions section
-              _buildActions(context),
-            ],
-          ),
+            // Actions section
+            _buildActions(context),
+          ],
         ),
       ),
     );
@@ -116,16 +101,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            gradient: AppGradients.primary,
-            borderRadius: BorderRadius.circular(8),
+            gradient: const LinearGradient(
+              colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
+            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
           ),
           child: const Center(
             child: Text(
               'V',
               style: TextStyle(
-                color: CupertinoColors.white,
+                color: AppColors.white,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
               ),
             ),
           ),
@@ -133,22 +120,9 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         const SizedBox(width: AppDimensions.spacingS),
         Text(
           'VetAnalytics',
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+          style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
-    );
-  }
-
-  Widget _buildTitle(BuildContext context) {
-    return Text(
-      'VetAnalytics',
-      style: AppTextStyles.body.copyWith(
-        fontWeight: FontWeight.w600,
-        fontSize: 18,
-      ),
     );
   }
 
@@ -158,34 +132,27 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     if (showAuth) {
       defaultActions.addAll([
         GhostButton(
+          size: ButtonSize.small,
           onPressed: onProfileTap,
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(CupertinoIcons.person, size: 16),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text('Profile', style: AppTextStyles.bodySmall),
+              Icon(CupertinoIcons.person, size: 16),
+              SizedBox(width: AppDimensions.spacingXs),
+              Text('Profilo'),
             ],
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         GhostButton(
+          size: ButtonSize.small,
           onPressed: onLogoutTap,
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                CupertinoIcons.square_arrow_right,
-                size: 16,
-                color: AppColors.primaryBlue,
-              ),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                'Logout',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue,
-                ),
-              ),
+              Icon(CupertinoIcons.arrow_right_square, size: 16),
+              SizedBox(width: AppDimensions.spacingXs),
+              Text('Esci'),
             ],
           ),
         ),

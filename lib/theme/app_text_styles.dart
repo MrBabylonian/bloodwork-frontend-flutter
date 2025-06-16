@@ -48,6 +48,22 @@ class AppTextStyles {
     height: 1.4,
   );
 
+  /// Page title style - alias for title1
+  static const TextStyle pageTitle = title1;
+
+  /// Card title style - alias for title3
+  static const TextStyle title = title3;
+
+  /// Subtitle style for secondary headings
+  static const TextStyle subtitle = TextStyle(
+    fontFamily: 'SF Pro Display',
+    fontSize: 18.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.24,
+    color: AppColors.foregroundDark,
+    height: 1.4,
+  );
+
   // Body text styles
 
   /// Primary body text style used for most content

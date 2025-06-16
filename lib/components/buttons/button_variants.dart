@@ -1,8 +1,6 @@
 import 'button.dart';
 
 /// Convenience constructors for common button variants
-/// These provide a more convenient API similar to the React implementation
-
 class PrimaryButton extends Button {
   const PrimaryButton({
     super.key,

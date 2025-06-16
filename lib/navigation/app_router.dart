@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
+import '../pages/dashboard_page.dart';
 
 /// Application router configuration using go_router
 ///
@@ -34,15 +35,11 @@ class AppRouter {
           builder: (context, state) => const LoginPage(),
         ),
 
-        // Dashboard Page (to be implemented)
+        // Dashboard Page
         GoRoute(
           path: dashboard,
           name: 'dashboard',
-          builder:
-              (context, state) => const _ComingSoonPage(
-                title: 'Dashboard',
-                description: 'Patient management dashboard coming soon...',
-              ),
+          builder: (context, state) => const DashboardPage(),
         ),
 
         // Upload Page (to be implemented)

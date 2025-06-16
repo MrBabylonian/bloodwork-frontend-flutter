@@ -4,7 +4,6 @@ import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
 
 /// A multiline text input field following Cupertino design principles,
-/// similar to the textarea.tsx component from the React mock.
 ///
 /// This component provides a consistent textarea experience throughout
 /// the application with built-in label, placeholder, and validation support.

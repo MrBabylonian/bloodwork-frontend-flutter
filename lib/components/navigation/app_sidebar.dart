@@ -49,7 +49,6 @@ class AppSidebarItem {
 
 /// A customizable sidebar navigation component.
 ///
-/// This component is equivalent to the sidebar.tsx from the React mock,
 /// providing a comprehensive sidebar system with expansion/collapse functionality.
 class AppSidebar extends StatefulWidget {
   /// Creates a sidebar.
