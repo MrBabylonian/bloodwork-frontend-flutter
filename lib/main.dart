@@ -1,8 +1,22 @@
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import 'navigation/app_router.dart';
+import 'core/providers/auth_provider.dart';
+import 'core/providers/patient_provider.dart';
+import 'core/widgets/auth_loading_widget.dart';
 
 void main() {
-  runApp(const VetAnalyticsApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider()..initialize(),
+        ),
+        ChangeNotifierProvider(create: (context) => PatientProvider()),
+      ],
+      child: const VetAnalyticsApp(),
+    ),
+  );
 }
 
 class VetAnalyticsApp extends StatelessWidget {
@@ -10,10 +24,22 @@ class VetAnalyticsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp.router(
-      title: 'VetAnalytics',
-      debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.createRouter(),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Show loading widget during initial authentication check
+        if (authProvider.status == AuthStatus.initial) {
+          return const CupertinoApp(
+            home: AuthLoadingWidget(),
+            debugShowCheckedModeBanner: false,
+          );
+        }
+
+        return CupertinoApp.router(
+          title: 'VetAnalytics',
+          debugShowCheckedModeBanner: false,
+          routerConfig: AppRouter.createRouter(authProvider),
+        );
+      },
     );
   }
 }

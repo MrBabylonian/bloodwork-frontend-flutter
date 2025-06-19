@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
 import '../pages/dashboard_page.dart';
+import '../pages/profile_page.dart';
+import '../pages/patient_details_page.dart';
+import '../pages/upload_page.dart';
+import '../core/providers/auth_provider.dart';
 
 /// Application router configuration using go_router
 ///
@@ -16,10 +20,63 @@ class AppRouter {
   static const String profile = '/profile';
   static const String patientDetails = '/patient';
 
-  /// Creates the router configuration
-  static GoRouter createRouter() {
+  /// Creates the router configuration with authentication support
+  static GoRouter createRouter(AuthProvider authProvider) {
     return GoRouter(
       initialLocation: landing,
+      refreshListenable: authProvider, // Listen to auth state changes
+      redirect: (context, state) {
+        final isAuthenticated = authProvider.isAuthenticated;
+        final isLoading = authProvider.isLoading;
+        final currentLocation = state.matchedLocation;
+
+        // Debug logging to track routing behavior
+        print('🔄 ROUTER REDIRECT:');
+        print('   Current Location: $currentLocation');
+        print('   Is Authenticated: $isAuthenticated');
+        print('   Is Loading: $isLoading');
+        print('   Auth Status: ${authProvider.status}');
+
+        // CRITICAL: Don't redirect while authentication is in progress
+        if (isLoading) {
+          print('   ➡️ Loading - no redirect');
+          return null;
+        }
+
+        // If authenticated user is on login page, redirect to dashboard
+        if (isAuthenticated && currentLocation == login) {
+          print(
+            '   ➡️ Authenticated user on login page → redirecting to dashboard',
+          );
+          return dashboard;
+        }
+
+        // If authenticated user is on landing page, redirect to dashboard
+        if (isAuthenticated && currentLocation == landing) {
+          print(
+            '   ➡️ Authenticated user on landing page → redirecting to dashboard',
+          );
+          return dashboard;
+        }
+
+        // Protected routes - redirect unauthenticated users to login
+        final protectedRoutes = [dashboard, upload, profile];
+        final isProtectedRoute = protectedRoutes.any(
+          (route) =>
+              currentLocation.startsWith(route) ||
+              currentLocation == patientDetails,
+        );
+
+        if (!isAuthenticated && isProtectedRoute) {
+          print(
+            '   ➡️ Unauthenticated user accessing protected route → redirecting to login',
+          );
+          return login;
+        }
+
+        print('   ➡️ No redirect needed');
+        return null;
+      },
       routes: [
         // Landing Page (Home)
         GoRoute(
@@ -42,90 +99,31 @@ class AppRouter {
           builder: (context, state) => const DashboardPage(),
         ),
 
-        // Upload Page (to be implemented)
+        // Upload Page
         GoRoute(
           path: upload,
           name: 'upload',
-          builder:
-              (context, state) => const _ComingSoonPage(
-                title: 'Upload',
-                description: 'File upload page coming soon...',
-              ),
+          builder: (context, state) => const UploadPage(),
         ),
 
-        // Profile Page (to be implemented)
+        // Profile Page
         GoRoute(
           path: profile,
           name: 'profile',
-          builder:
-              (context, state) => const _ComingSoonPage(
-                title: 'Profile',
-                description: 'User profile page coming soon...',
-              ),
+          builder: (context, state) => const ProfilePage(),
         ),
 
-        // Patient Details Page (to be implemented)
+        // Patient Details Page
         GoRoute(
           path: '$patientDetails/:id',
           name: 'patient-details',
           builder: (context, state) {
-            final patientId = state.pathParameters['id'] ?? 'unknown';
-            return _ComingSoonPage(
-              title: 'Patient Details',
-              description: 'Patient details for ID: $patientId coming soon...',
-            );
+            final patientId = state.pathParameters['id'] ?? '1';
+            return PatientDetailsPage(patientId: patientId);
           },
         ),
       ],
       errorBuilder: (context, state) => const _NotFoundPage(),
-    );
-  }
-}
-
-/// Temporary page for routes that haven't been implemented yet
-class _ComingSoonPage extends StatelessWidget {
-  final String title;
-  final String description;
-
-  const _ComingSoonPage({required this.title, required this.description});
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(title),
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.back),
-          onPressed: () => context.go('/'),
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              CupertinoIcons.gear,
-              size: 64,
-              color: CupertinoColors.systemGrey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: CupertinoColors.systemGrey),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

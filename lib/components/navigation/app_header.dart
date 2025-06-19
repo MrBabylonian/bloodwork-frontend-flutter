@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
@@ -88,8 +89,22 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildBackButton(BuildContext context) {
     return GhostButton(
-      onPressed: onBackPressed ?? () => Navigator.maybePop(context),
-      child: const Icon(CupertinoIcons.chevron_left, size: 20),
+      onPressed:
+          onBackPressed ??
+          () {
+            // Navigate to landing page using go_router
+            if (context.mounted) {
+              context.go('/');
+            }
+          },
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(CupertinoIcons.chevron_left, size: 20),
+          SizedBox(width: AppDimensions.spacingXs),
+          Text('Torna Alla Home'),
+        ],
+      ),
     );
   }
 

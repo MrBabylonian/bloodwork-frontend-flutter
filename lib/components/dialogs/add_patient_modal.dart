@@ -1,19 +1,24 @@
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
 import '../buttons/index.dart';
 import '../forms/text_input.dart';
+import '../../core/providers/patient_provider.dart';
+import '../../core/models/patient_models.dart';
 
 /// Modal for adding a new patient
 class AddPatientModal extends StatefulWidget {
   final bool isOpen;
   final VoidCallback onClose;
+  final VoidCallback? onPatientCreated; // Callback for when patient is created
 
   const AddPatientModal({
     super.key,
     required this.isOpen,
     required this.onClose,
+    this.onPatientCreated,
   });
 
   @override
@@ -30,6 +35,8 @@ class _AddPatientModalState extends State<AddPatientModal> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -43,21 +50,89 @@ class _AddPatientModalState extends State<AddPatientModal> {
     super.dispose();
   }
 
-  void _handleSubmit() {
-    // Mock submission
-    debugPrint('New patient data:');
-    debugPrint('Name: ${_nameController.text}');
-    debugPrint('Owner: ${_ownerController.text}');
-    debugPrint('Species: ${_speciesController.text}');
-    debugPrint('Breed: ${_breedController.text}');
-    debugPrint('Age: ${_ageController.text}');
-    debugPrint('Weight: ${_weightController.text}');
-    debugPrint('Email: ${_emailController.text}');
-    debugPrint('Phone: ${_phoneController.text}');
+  Future<void> _handleSubmit() async {
+    // Basic validation
+    if (_nameController.text.trim().isEmpty ||
+        _ownerController.text.trim().isEmpty ||
+        _speciesController.text.trim().isEmpty) {
+      _showErrorDialog('Please fill in all required fields');
+      return;
+    }
 
-    // Clear form and close modal
-    _clearForm();
-    widget.onClose();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Generate a simple patient ID
+      final now = DateTime.now();
+      final patientId =
+          'PAT-${now.year}-${now.millisecondsSinceEpoch.toString().substring(8)}';
+
+      // Parse age and weight
+      int ageYears = int.tryParse(_ageController.text) ?? 0;
+      double? weight;
+      if (_weightController.text.isNotEmpty) {
+        weight = double.tryParse(_weightController.text);
+      }
+
+      // Create patient request
+      final request = PatientCreateRequest(
+        patientId: patientId,
+        name: _nameController.text.trim(),
+        species: _speciesController.text.trim(),
+        breed: _breedController.text.trim(),
+        age: PatientAge(years: ageYears, months: 0),
+        sex: 'Unknown', // Default for now
+        weight: weight,
+        ownerInfo: PatientOwnerInfo(
+          name: _ownerController.text.trim(),
+          email: _emailController.text.trim(),
+          phone: _phoneController.text.trim(),
+        ),
+        medicalHistory: const {}, // Empty medical history
+      );
+
+      // Create patient through provider
+      final patientProvider = Provider.of<PatientProvider>(
+        context,
+        listen: false,
+      );
+      final success = await patientProvider.createPatient(request);
+
+      if (success) {
+        _clearForm();
+        widget.onClose();
+        widget.onPatientCreated?.call(); // Notify parent
+      } else {
+        _showErrorDialog('Failed to create patient. Please try again.');
+      }
+    } catch (e) {
+      _showErrorDialog('Error creating patient: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showCupertinoDialog(
+      context: context,
+      builder:
+          (context) => CupertinoAlertDialog(
+            title: const Text('Error'),
+            content: Text(message),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+    );
   }
 
   void _clearForm() {
@@ -153,8 +228,11 @@ class _AddPatientModalState extends State<AddPatientModal> {
                         Expanded(
                           child: PrimaryButton(
                             size: ButtonSize.large,
-                            onPressed: _handleSubmit,
-                            child: const Text('Aggiungi Paziente'),
+                            onPressed: _isLoading ? null : _handleSubmit,
+                            child:
+                                _isLoading
+                                    ? const CupertinoActivityIndicator()
+                                    : const Text('Aggiungi Paziente'),
                           ),
                         ),
                       ],

@@ -1,0 +1,233 @@
+/// Patient models that match the backend schema exactly
+class PatientAge {
+  final int years;
+  final int months;
+
+  const PatientAge({required this.years, required this.months});
+
+  factory PatientAge.fromJson(Map<String, dynamic> json) {
+    return PatientAge(years: json['years'] ?? 0, months: json['months'] ?? 0);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'years': years, 'months': months};
+  }
+
+  @override
+  String toString() {
+    if (months == 0) {
+      return '$years anni';
+    } else if (years == 0) {
+      return '$months mesi';
+    } else {
+      return '$years anni e $months mesi';
+    }
+  }
+}
+
+class PatientOwnerInfo {
+  final String name;
+  final String email;
+  final String phone;
+
+  const PatientOwnerInfo({
+    required this.name,
+    required this.email,
+    required this.phone,
+  });
+
+  factory PatientOwnerInfo.fromJson(Map<String, dynamic> json) {
+    return PatientOwnerInfo(
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      phone: json['phone'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'email': email, 'phone': phone};
+  }
+}
+
+class PatientModel {
+  final String id;
+  final String patientId;
+  final String name;
+  final String species;
+  final String breed;
+  final PatientAge age;
+  final String sex;
+  final double? weight;
+  final PatientOwnerInfo ownerInfo;
+  final Map<String, dynamic> medicalHistory;
+  final Map<String, dynamic> diagnosticSummary;
+  final String createdBy;
+  final String assignedTo;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isActive;
+
+  const PatientModel({
+    required this.id,
+    required this.patientId,
+    required this.name,
+    required this.species,
+    required this.breed,
+    required this.age,
+    required this.sex,
+    required this.weight,
+    required this.ownerInfo,
+    required this.medicalHistory,
+    required this.diagnosticSummary,
+    required this.createdBy,
+    required this.assignedTo,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isActive,
+  });
+
+  factory PatientModel.fromJson(Map<String, dynamic> json) {
+    return PatientModel(
+      id: json['id'],
+      patientId: json['patient_id'],
+      name: json['name'],
+      species: json['species'],
+      breed: json['breed'],
+      age: PatientAge.fromJson(json['age']),
+      sex: json['sex'],
+      weight: json['weight']?.toDouble(),
+      ownerInfo: PatientOwnerInfo.fromJson(json['owner_info']),
+      medicalHistory: json['medical_history'] ?? {},
+      diagnosticSummary: json['diagnostic_summary'] ?? {},
+      createdBy: json['created_by'],
+      assignedTo: json['assigned_to'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+      isActive: json['is_active'] ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'patient_id': patientId,
+      'name': name,
+      'species': species,
+      'breed': breed,
+      'age': age.toJson(),
+      'sex': sex,
+      'weight': weight,
+      'owner_info': ownerInfo.toJson(),
+      'medical_history': medicalHistory,
+      'diagnostic_summary': diagnosticSummary,
+      'created_by': createdBy,
+      'assigned_to': assignedTo,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'is_active': isActive,
+    };
+  }
+}
+
+class PatientCreateRequest {
+  final String patientId;
+  final String name;
+  final String species;
+  final String breed;
+  final PatientAge age;
+  final String sex;
+  final double? weight;
+  final PatientOwnerInfo ownerInfo;
+  final Map<String, dynamic> medicalHistory;
+
+  const PatientCreateRequest({
+    required this.patientId,
+    required this.name,
+    required this.species,
+    required this.breed,
+    required this.age,
+    required this.sex,
+    this.weight,
+    required this.ownerInfo,
+    this.medicalHistory = const {},
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'patient_id': patientId,
+      'name': name,
+      'species': species,
+      'breed': breed,
+      'age': age.toJson(),
+      'sex': sex,
+      'weight': weight,
+      'owner_info': ownerInfo.toJson(),
+      'medical_history': medicalHistory,
+    };
+  }
+}
+
+class PatientUpdateRequest {
+  final String? name;
+  final String? species;
+  final String? breed;
+  final PatientAge? age;
+  final String? sex;
+  final double? weight;
+  final PatientOwnerInfo? ownerInfo;
+  final Map<String, dynamic>? medicalHistory;
+  final Map<String, dynamic>? diagnosticSummary;
+
+  const PatientUpdateRequest({
+    this.name,
+    this.species,
+    this.breed,
+    this.age,
+    this.sex,
+    this.weight,
+    this.ownerInfo,
+    this.medicalHistory,
+    this.diagnosticSummary,
+  });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = {};
+    if (name != null) json['name'] = name;
+    if (species != null) json['species'] = species;
+    if (breed != null) json['breed'] = breed;
+    if (age != null) json['age'] = age!.toJson();
+    if (sex != null) json['sex'] = sex;
+    if (weight != null) json['weight'] = weight;
+    if (ownerInfo != null) json['owner_info'] = ownerInfo!.toJson();
+    if (medicalHistory != null) json['medical_history'] = medicalHistory;
+    if (diagnosticSummary != null)
+      json['diagnostic_summary'] = diagnosticSummary;
+    return json;
+  }
+}
+
+class PatientListResponse {
+  final List<PatientModel> patients;
+  final int total;
+  final int page;
+  final int limit;
+
+  const PatientListResponse({
+    required this.patients,
+    required this.total,
+    required this.page,
+    required this.limit,
+  });
+
+  factory PatientListResponse.fromJson(Map<String, dynamic> json) {
+    return PatientListResponse(
+      patients:
+          (json['patients'] as List)
+              .map((patient) => PatientModel.fromJson(patient))
+              .toList(),
+      total: json['total'],
+      page: json['page'],
+      limit: json['limit'],
+    );
+  }
+}

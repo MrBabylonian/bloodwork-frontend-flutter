@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
@@ -7,34 +8,11 @@ import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
+import '../core/models/patient_models.dart';
+import '../core/providers/patient_provider.dart';
 
-/// Patient status enum for type safety
-enum PatientStatus { healthy, needsAttention, critical }
-
-/// Patient model
-class Patient {
-  final String id;
-  final String name;
-  final String owner;
-  final String species;
-  final String breed;
-  final String age;
-  final DateTime lastVisit;
-  final PatientStatus status;
-  final int testsCount;
-
-  const Patient({
-    required this.id,
-    required this.name,
-    required this.owner,
-    required this.species,
-    required this.breed,
-    required this.age,
-    required this.lastVisit,
-    required this.status,
-    required this.testsCount,
-  });
-}
+/// Patient health status enum for UI display
+enum PatientHealthStatus { healthy, needsAttention, critical }
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -48,63 +26,21 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isAddPatientModalOpen = false;
   String _searchQuery = '';
 
-  // Mock data
-  final List<Patient> _patients = [
-    Patient(
-      id: '1',
-      name: 'Buddy',
-      owner: 'John Smith',
-      species: 'Cane',
-      breed: 'Golden Retriever',
-      age: '5 anni',
-      lastVisit: DateTime(2024, 6, 8),
-      status: PatientStatus.healthy,
-      testsCount: 3,
-    ),
-    Patient(
-      id: '2',
-      name: 'Whiskers',
-      owner: 'Sarah Johnson',
-      species: 'Gatto',
-      breed: 'Persiano',
-      age: '2 anni',
-      lastVisit: DateTime(2024, 6, 7),
-      status: PatientStatus.needsAttention,
-      testsCount: 2,
-    ),
-    Patient(
-      id: '3',
-      name: 'Max',
-      owner: 'Mike Davis',
-      species: 'Cane',
-      breed: 'Pastore Tedesco',
-      age: '7 anni',
-      lastVisit: DateTime(2024, 6, 6),
-      status: PatientStatus.critical,
-      testsCount: 5,
-    ),
-    Patient(
-      id: '4',
-      name: 'Luna',
-      owner: 'Emily Wilson',
-      species: 'Gatto',
-      breed: 'Maine Coon',
-      age: '3 anni',
-      lastVisit: DateTime(2024, 6, 5),
-      status: PatientStatus.healthy,
-      testsCount: 1,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load patients when dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPatients();
+    });
+  }
 
-  List<Patient> get _filteredPatients {
-    if (_searchQuery.isEmpty) return _patients;
-
-    return _patients.where((patient) {
-      final query = _searchQuery.toLowerCase();
-      return patient.name.toLowerCase().contains(query) ||
-          patient.owner.toLowerCase().contains(query) ||
-          patient.breed.toLowerCase().contains(query);
-    }).toList();
+  void _loadPatients() {
+    final patientProvider = Provider.of<PatientProvider>(
+      context,
+      listen: false,
+    );
+    patientProvider.loadPatients();
   }
 
   @override
@@ -203,30 +139,48 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Color _getStatusColor(PatientStatus status) {
+  Color _getStatusColor(PatientHealthStatus status) {
     switch (status) {
-      case PatientStatus.healthy:
+      case PatientHealthStatus.healthy:
         return AppColors.successGreen;
-      case PatientStatus.needsAttention:
+      case PatientHealthStatus.needsAttention:
         return AppColors.warningOrange;
-      case PatientStatus.critical:
+      case PatientHealthStatus.critical:
         return AppColors.errorRed;
     }
   }
 
-  String _getStatusText(PatientStatus status) {
+  String _getStatusText(PatientHealthStatus status) {
     switch (status) {
-      case PatientStatus.healthy:
+      case PatientHealthStatus.healthy:
         return 'Sano';
-      case PatientStatus.needsAttention:
+      case PatientHealthStatus.needsAttention:
         return 'Attenzione';
-      case PatientStatus.critical:
+      case PatientHealthStatus.critical:
         return 'Critico';
     }
   }
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  /// Helper method to determine patient status based on diagnostic summary
+  PatientHealthStatus _getPatientStatus(PatientModel patient) {
+    // For now, return healthy as default since we don't have specific status logic
+    // This could be enhanced based on diagnostic_summary or medical_history
+    if (patient.diagnosticSummary.containsKey('critical')) {
+      return PatientHealthStatus.critical;
+    } else if (patient.diagnosticSummary.containsKey('attention')) {
+      return PatientHealthStatus.needsAttention;
+    }
+    return PatientHealthStatus.healthy;
+  }
+
+  /// Helper method to get tests count from medical history
+  int _getTestsCount(PatientModel patient) {
+    // Default to 0, could be enhanced based on medical_history structure
+    return (patient.medicalHistory['tests_count'] as int?) ?? 0;
   }
 
   @override
@@ -295,6 +249,10 @@ class _DashboardPageState extends State<DashboardPage> {
         AddPatientModal(
           isOpen: _isAddPatientModalOpen,
           onClose: () => setState(() => _isAddPatientModalOpen = false),
+          onPatientCreated: () {
+            // Refresh patient list after creation
+            _loadPatients();
+          },
         ),
       ],
     );
@@ -653,47 +611,95 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildPatientGrid() {
-    if (_filteredPatients.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Responsive grid
-        int crossAxisCount = 1;
-        if (constraints.maxWidth > 1400) {
-          crossAxisCount = 4; // xl: 4 columns
-        } else if (constraints.maxWidth > 1024) {
-          crossAxisCount = 3; // lg: 3 columns
-        } else if (constraints.maxWidth > 768) {
-          crossAxisCount = 2; // md: 2 columns
-        } else {
-          crossAxisCount = 1; // sm: 1 column
+    return Consumer<PatientProvider>(
+      builder: (context, patientProvider, child) {
+        // Handle loading state
+        if (patientProvider.isLoading) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CupertinoActivityIndicator(),
+                SizedBox(height: 16),
+                Text('Caricamento pazienti...'),
+              ],
+            ),
+          );
         }
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: AppDimensions.spacingL,
-            mainAxisSpacing: AppDimensions.spacingL,
-            childAspectRatio:
-                constraints.maxWidth >= 1024
-                    ? 1.6
-                    : 1.3, // Higher ratio for desktop = shorter cards, balanced for mobile
-          ),
-          itemCount: _filteredPatients.length,
-          itemBuilder: (context, index) {
-            final patient = _filteredPatients[index];
-            return _buildPatientCard(patient);
+        // Handle error state
+        if (patientProvider.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  CupertinoIcons.exclamationmark_triangle,
+                  size: 48,
+                  color: CupertinoColors.systemRed,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  patientProvider.errorMessage ?? 'Errore nel caricamento',
+                  style: const TextStyle(color: CupertinoColors.systemRed),
+                ),
+                const SizedBox(height: 16),
+                CupertinoButton.filled(
+                  child: const Text('Riprova'),
+                  onPressed: () => patientProvider.refresh(),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Get filtered patients
+        final filteredPatients = patientProvider.filterPatients(_searchQuery);
+
+        // Handle empty state
+        if (filteredPatients.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Responsive grid
+            int crossAxisCount = 1;
+            if (constraints.maxWidth > 1400) {
+              crossAxisCount = 4; // xl: 4 columns
+            } else if (constraints.maxWidth > 1024) {
+              crossAxisCount = 3; // lg: 3 columns
+            } else if (constraints.maxWidth > 768) {
+              crossAxisCount = 2; // md: 2 columns
+            } else {
+              crossAxisCount = 1; // sm: 1 column
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: AppDimensions.spacingL,
+                mainAxisSpacing: AppDimensions.spacingL,
+                childAspectRatio:
+                    constraints.maxWidth >= 1024
+                        ? 1.6
+                        : 1.3, // Higher ratio for desktop = shorter cards, balanced for mobile
+              ),
+              itemCount: filteredPatients.length,
+              itemBuilder: (context, index) {
+                final patient = filteredPatients[index];
+                return _buildPatientCard(patient);
+              },
+            );
           },
         );
       },
     );
   }
 
-  Widget _buildPatientCard(Patient patient) {
+  Widget _buildPatientCard(PatientModel patient) {
     return GestureDetector(
       onTap: () => context.go('/patient/${patient.id}'),
       child: Container(
@@ -734,7 +740,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Owner: ${patient.owner}',
+                        'Owner: ${patient.ownerInfo.name}',
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.textSecondary,
                           fontSize: 14,
@@ -765,7 +771,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 const SizedBox(height: 6), // Reduced from 8
                 _buildPatientDetailRow('Breed:', patient.breed),
                 const SizedBox(height: 6), // Reduced from 8
-                _buildPatientDetailRow('Age:', patient.age),
+                _buildPatientDetailRow('Age:', patient.age.toString()),
               ],
             ),
 
@@ -780,11 +786,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(patient.status),
+                    color: _getStatusColor(_getPatientStatus(patient)),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    _getStatusText(patient.status),
+                    _getStatusText(_getPatientStatus(patient)),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.w500,
@@ -801,7 +807,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDate(patient.lastVisit),
+                      _formatDate(patient.updatedAt),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -834,7 +840,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                   Text(
-                    '${patient.testsCount}',
+                    '${_getTestsCount(patient)}',
                     style: AppTextStyles.caption.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
