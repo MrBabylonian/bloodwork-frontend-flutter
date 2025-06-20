@@ -3,16 +3,23 @@ import 'package:provider/provider.dart';
 import 'navigation/app_router.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/providers/patient_provider.dart';
+import 'core/providers/analysis_provider.dart';
+import 'core/services/service_locator.dart';
 import 'core/widgets/auth_loading_widget.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize ServiceLocator with all dependencies
+  await ServiceLocator().initialize();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => AuthProvider()..initialize(),
-        ),
+        ChangeNotifierProvider.value(value: ServiceLocator().authProvider),
         ChangeNotifierProvider(create: (context) => PatientProvider()),
+        ChangeNotifierProvider(create: (context) => AnalysisProvider()),
       ],
       child: const VetAnalyticsApp(),
     ),

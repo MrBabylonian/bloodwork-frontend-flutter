@@ -1,13 +1,29 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
+import '../interceptors/auth_interceptor.dart';
+import '../providers/auth_provider.dart';
+import '../services/storage_service.dart';
+
+/// Production-grade API service with automatic authentication
+///
+/// This service provides a clean interface for all HTTP requests
+/// with automatic auth header injection through middleware.
+/// Features:
+/// - Automatic token injection
+/// - Token refresh on 401 errors
+/// - Clean error handling
+/// - Production-ready logging
 class ApiService {
   static const String _baseUrl = 'http://localhost:8000';
 
   late final Dio _dio;
   final Logger _logger = Logger();
 
-  ApiService() {
+  ApiService({
+    required StorageService storageService,
+    required AuthProvider authProvider,
+  }) {
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
@@ -17,10 +33,22 @@ class ApiService {
       ),
     );
 
-    _setupInterceptors();
+    _setupInterceptors(storageService, authProvider);
   }
 
-  void _setupInterceptors() {
+  void _setupInterceptors(
+    StorageService storageService,
+    AuthProvider authProvider,
+  ) {
+    // Add authentication interceptor first
+    _dio.interceptors.add(
+      AuthInterceptor(
+        storageService: storageService,
+        authProvider: authProvider,
+      ),
+    );
+
+    // Add logging interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -56,9 +84,17 @@ class ApiService {
   }
 
   // POST request
-  Future<Response> post(String path, {dynamic data}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? headers,
+  }) async {
     try {
-      final response = await _dio.post(path, data: data);
+      final response = await _dio.post(
+        path,
+        data: data,
+        options: headers != null ? Options(headers: headers) : null,
+      );
       return response;
     } catch (e) {
       _logger.e('POST request failed: $e');
@@ -86,15 +122,5 @@ class ApiService {
       _logger.e('DELETE request failed: $e');
       rethrow;
     }
-  }
-
-  // Set authorization token
-  void setAuthToken(String token) {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
-  }
-
-  // Clear authorization token
-  void clearAuthToken() {
-    _dio.options.headers.remove('Authorization');
   }
 }

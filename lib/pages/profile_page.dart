@@ -349,7 +349,8 @@ class _ProfilePageState extends State<ProfilePage> {
           // Header
           AppHeader(
             title: const Text("Profilo", style: AppTextStyles.title2),
-            showBackButton: true,
+            showAuth: true,
+            onProfileTap: () => context.go('/profile'),
             onLogoutTap: _handleLogout,
           ),
 

@@ -283,22 +283,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     width: double.infinity,
                     child: PrimaryButton(
                       size: ButtonSize.large,
-                      onPressed: () => context.go('/upload'),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(CupertinoIcons.cloud_upload, size: 16),
-                          SizedBox(width: AppDimensions.spacingS),
-                          Text('Carica Risultati'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SecondaryButton(
-                      size: ButtonSize.large,
                       onPressed:
                           () => setState(() => _isAddPatientModalOpen = true),
                       child: const Row(
@@ -340,35 +324,17 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(width: AppDimensions.spacingL),
 
             // Right side - Action Buttons (horizontal layout)
-            Row(
-              children: [
-                PrimaryButton(
-                  size: ButtonSize.medium,
-                  onPressed: () => context.go('/upload'),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(CupertinoIcons.cloud_upload, size: 16),
-                      SizedBox(width: AppDimensions.spacingS),
-                      Text('Carica Risultati'),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                SecondaryButton(
-                  size: ButtonSize.medium,
-                  onPressed:
-                      () => setState(() => _isAddPatientModalOpen = true),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(CupertinoIcons.plus, size: 16),
-                      SizedBox(width: AppDimensions.spacingS),
-                      Text('Aggiungi Paziente'),
-                    ],
-                  ),
-                ),
-              ],
+            PrimaryButton(
+              size: ButtonSize.medium,
+              onPressed: () => setState(() => _isAddPatientModalOpen = true),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(CupertinoIcons.plus, size: 16),
+                  SizedBox(width: AppDimensions.spacingS),
+                  Text('Aggiungi Paziente'),
+                ],
+              ),
             ),
           ],
         );

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
@@ -28,12 +27,6 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Background color override
   final Color? backgroundColor;
 
-  /// Whether to show a back button (automatically determined if null)
-  final bool? showBackButton;
-
-  /// Custom back button callback
-  final VoidCallback? onBackPressed;
-
   const AppHeader({
     super.key,
     this.showAuth = true,
@@ -42,15 +35,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.title,
     this.actions,
     this.backgroundColor,
-    this.showBackButton,
-    this.onBackPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final canPop = Navigator.canPop(context);
-    final shouldShowBackButton = showBackButton ?? canPop;
-
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
@@ -69,41 +57,16 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Leading section (back button or logo)
-            if (shouldShowBackButton)
-              _buildBackButton(context)
-            else
-              _buildLogo(context),
+            // Always show logo (branding)
+            _buildLogo(context),
 
-            // Custom title or default title (only show if there's a back button)
-            if (title != null && shouldShowBackButton)
-              Expanded(child: Center(child: title!)),
+            // Custom title (show if provided)
+            if (title != null) Expanded(child: Center(child: title!)),
 
             // Actions section
             _buildActions(context),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBackButton(BuildContext context) {
-    return GhostButton(
-      onPressed:
-          onBackPressed ??
-          () {
-            // Navigate to landing page using go_router
-            if (context.mounted) {
-              context.go('/');
-            }
-          },
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(CupertinoIcons.chevron_left, size: 20),
-          SizedBox(width: AppDimensions.spacingXs),
-          Text('Torna Alla Home'),
-        ],
       ),
     );
   }

@@ -187,21 +187,36 @@ class _FileUploadFieldState extends State<FileUploadField> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SecondaryButton(
-                                onPressed: () => _pickFiles(FileType.image),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      CupertinoIcons.photo_fill,
-                                      color: AppColors.primaryBlue,
-                                      size: AppDimensions.iconSizeSmall,
+                              // Disabled images button with warning
+                              Column(
+                                children: [
+                                  SecondaryButton(
+                                    onPressed: null, // Disabled
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.photo_fill,
+                                          color: AppColors.mediumGray,
+                                          size: AppDimensions.iconSizeSmall,
+                                        ),
+                                        const SizedBox(
+                                          width: AppDimensions.spacingXs,
+                                        ),
+                                        const Text('Seleziona Immagini'),
+                                      ],
                                     ),
-                                    const SizedBox(
-                                      width: AppDimensions.spacingXs,
+                                  ),
+                                  const SizedBox(
+                                    height: AppDimensions.spacingXs,
+                                  ),
+                                  Text(
+                                    'In costruzione',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.mediumGray,
+                                      fontStyle: FontStyle.italic,
                                     ),
-                                    const Text('Seleziona Immagini'),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(width: AppDimensions.spacingM),
                               SecondaryButton(
@@ -224,7 +239,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
                           Text(
-                            'Puoi selezionare più immagini o un singolo PDF',
+                            'Seleziona un file PDF per l\'analisi del sangue',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.mediumGray,
                             ),
@@ -242,9 +257,10 @@ class _FileUploadFieldState extends State<FileUploadField> {
                               ),
                               Row(
                                 children: [
+                                  // Disabled add images button
                                   SecondaryButton(
                                     size: ButtonSize.small,
-                                    onPressed: () => _pickFiles(FileType.image),
+                                    onPressed: null, // Disabled
                                     child: const Text('Aggiungi Immagini'),
                                   ),
                                   if (!_selectedFiles.any(

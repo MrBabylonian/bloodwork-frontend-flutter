@@ -99,11 +99,21 @@ class AppRouter {
           builder: (context, state) => const DashboardPage(),
         ),
 
-        // Upload Page
+        // Upload Page (general)
         GoRoute(
           path: upload,
           name: 'upload',
           builder: (context, state) => const UploadPage(),
+        ),
+
+        // Upload Page (patient-specific)
+        GoRoute(
+          path: '$upload/:patientId',
+          name: 'upload-patient',
+          builder: (context, state) {
+            final patientId = state.pathParameters['patientId'] ?? '';
+            return UploadPage(patientId: patientId);
+          },
         ),
 
         // Profile Page

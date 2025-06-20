@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import '../repositories/patient_repository.dart';
 import '../models/patient_models.dart';
+import '../services/service_locator.dart';
 
 enum PatientStatus { loading, loaded, error, empty }
 
@@ -10,7 +11,8 @@ class PatientProvider extends ChangeNotifier {
   final Logger _logger = Logger();
 
   PatientProvider({PatientRepository? patientRepository})
-    : _patientRepository = patientRepository ?? PatientRepository();
+    : _patientRepository =
+          patientRepository ?? ServiceLocator().patientRepository;
 
   // State
   PatientStatus _status = PatientStatus.empty;

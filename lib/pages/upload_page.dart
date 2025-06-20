@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
@@ -10,10 +11,13 @@ import '../components/navigation/app_header.dart';
 import '../components/cards/info_card.dart';
 import '../components/forms/file_upload.dart';
 import '../components/feedback/app_progress_indicator.dart';
+import '../core/providers/analysis_provider.dart';
 
 /// Upload page for analyzing bloodwork files
 class UploadPage extends StatefulWidget {
-  const UploadPage({super.key});
+  final String? patientId;
+
+  const UploadPage({super.key, this.patientId});
 
   @override
   State<UploadPage> createState() => _UploadPageState();
@@ -35,6 +39,17 @@ class _UploadPageState extends State<UploadPage> {
     setState(() {
       _selectedFiles = files;
     });
+
+    // Show warning if non-PDF files are selected
+    final nonPdfFiles =
+        files.where((file) => file.extension?.toLowerCase() != 'pdf').toList();
+
+    if (nonPdfFiles.isNotEmpty) {
+      final fileNames = nonPdfFiles.map((f) => f.name).join(', ');
+      _showErrorDialog(
+        "Attenzione: I file non-PDF ($fileNames) non possono essere caricati al momento. Solo i file PDF sono supportati per l'analisi.",
+      );
+    }
   }
 
   void _removeFile(int index) {
@@ -49,35 +64,85 @@ class _UploadPageState extends State<UploadPage> {
     });
   }
 
-  void _handleUpload() {
+  void _handleUpload() async {
     if (_selectedFiles.isEmpty) {
       _showErrorDialog("Seleziona dei file da caricare");
       return;
     }
 
-    setState(() {
-      _isUploading = true;
-      _uploadProgress = 0.0;
-    });
+    // Filter only PDF files for upload
+    final pdfFiles =
+        _selectedFiles
+            .where((file) => file.extension?.toLowerCase() == 'pdf')
+            .toList();
 
-    // Simulate upload progress
-    _progressTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    if (pdfFiles.isEmpty) {
+      _showErrorDialog(
+        "Nessun file PDF selezionato. Solo i file PDF possono essere caricati al momento.",
+      );
+      return;
+    }
+
+    try {
       setState(() {
-        _uploadProgress += 0.1;
-        if (_uploadProgress >= 1.0) {
-          _uploadProgress = 1.0;
-          timer.cancel();
-          _isUploading = false;
-          _showSuccessDialog("File caricati e analizzati con successo!");
-          // Navigate to dashboard after a short delay
-          Future.delayed(const Duration(seconds: 1), () {
-            if (mounted) {
+        _isUploading = true;
+        _uploadProgress = 0.0;
+      });
+
+      final analysisProvider = Provider.of<AnalysisProvider>(
+        context,
+        listen: false,
+      );
+
+      // Upload each PDF file
+      bool allUploadsSuccessful = true;
+
+      for (final platformFile in pdfFiles) {
+        final success = await analysisProvider.uploadPdfFile(
+          file: platformFile,
+          patientId: widget.patientId,
+        );
+
+        if (!success) {
+          allUploadsSuccessful = false;
+          break;
+        }
+
+        // Update progress for each file
+        setState(() {
+          _uploadProgress += 1.0 / pdfFiles.length;
+        });
+      }
+
+      setState(() {
+        _isUploading = false;
+        _uploadProgress = 1.0;
+      });
+
+      if (allUploadsSuccessful) {
+        _showSuccessDialog("File PDF caricati e analizzati con successo!");
+        // Navigate back to patient details or dashboard
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            if (widget.patientId != null) {
+              context.go('/patient/${widget.patientId}');
+            } else {
               context.go('/dashboard');
             }
-          });
-        }
+          }
+        });
+      } else {
+        _showErrorDialog(
+          analysisProvider.errorMessage ?? "Errore durante il caricamento",
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isUploading = false;
+        _uploadProgress = 0.0;
       });
-    });
+      _showErrorDialog("Errore durante il caricamento: $e");
+    }
   }
 
   void _showSuccessDialog(String message) {
@@ -219,7 +284,8 @@ class _UploadPageState extends State<UploadPage> {
           // Header
           AppHeader(
             title: const Text("Carica File", style: AppTextStyles.title2),
-            showBackButton: true,
+            showAuth: true,
+            onProfileTap: () => context.go('/profile'),
             onLogoutTap: () => context.go('/login'),
           ),
 
@@ -242,11 +308,41 @@ class _UploadPageState extends State<UploadPage> {
                     ),
                     const SizedBox(height: AppDimensions.spacingS),
                     Text(
-                      "Carica report PDF o immagini per analisi alimentata da IA",
+                      "Carica report PDF per analisi alimentata da IA",
                       style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingM,
+                        vertical: AppDimensions.spacingS,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightGray,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusSmall,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            CupertinoIcons.info_circle,
+                            size: 16,
+                            color: AppColors.primaryBlue,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(
+                            "Al momento supportiamo solo file PDF. Upload immagini in arrivo!",
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: AppDimensions.spacingXl),
@@ -256,7 +352,7 @@ class _UploadPageState extends State<UploadPage> {
                       padding: const EdgeInsets.all(AppDimensions.spacingXl),
                       child: FileUploadField(
                         onFileSelected: _handleFileSelected,
-                        label: "Trascina e rilascia i tuoi file qui",
+                        label: "Trascina e rilascia i tuoi file PDF qui",
                         maxFileSizeMB: 10,
                         isLoading: _isUploading,
                       ),
@@ -284,11 +380,38 @@ class _UploadPageState extends State<UploadPage> {
                                     const SizedBox(
                                       width: AppDimensions.spacingS,
                                     ),
-                                    Text(
-                                      "File Selezionati (${_selectedFiles.length})",
-                                      style: AppTextStyles.body.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "File Selezionati (${_selectedFiles.length})",
+                                          style: AppTextStyles.body.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Builder(
+                                          builder: (context) {
+                                            final pdfCount =
+                                                _selectedFiles
+                                                    .where(
+                                                      (f) =>
+                                                          f.extension
+                                                              ?.toLowerCase() ==
+                                                          'pdf',
+                                                    )
+                                                    .length;
+                                            return Text(
+                                              "$pdfCount PDF pronti per il caricamento",
+                                              style: AppTextStyles.caption
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -303,10 +426,13 @@ class _UploadPageState extends State<UploadPage> {
 
                             const SizedBox(height: AppDimensions.spacingM),
 
-                            // File list
+                            // File list with PDF/non-PDF indicators
                             ..._selectedFiles.asMap().entries.map((entry) {
                               final index = entry.key;
                               final file = entry.value;
+                              final isPdf =
+                                  file.extension?.toLowerCase() == 'pdf';
+
                               return Container(
                                 margin: EdgeInsets.only(
                                   bottom:
@@ -318,18 +444,34 @@ class _UploadPageState extends State<UploadPage> {
                                   AppDimensions.spacingM,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.backgroundSecondary
-                                      .withValues(alpha: 0.5),
+                                  color:
+                                      isPdf
+                                          ? AppColors.backgroundSecondary
+                                              .withValues(alpha: 0.5)
+                                          : AppColors.destructiveRed.withValues(
+                                            alpha: 0.1,
+                                          ),
                                   borderRadius: BorderRadius.circular(
                                     AppDimensions.radiusMedium,
                                   ),
+                                  border:
+                                      !isPdf
+                                          ? Border.all(
+                                            color: AppColors.destructiveRed
+                                                .withValues(alpha: 0.3),
+                                            width: 1,
+                                          )
+                                          : null,
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
                                       _getFileIcon(file.extension ?? ''),
                                       size: 20,
-                                      color: AppColors.primaryBlue,
+                                      color:
+                                          isPdf
+                                              ? AppColors.primaryBlue
+                                              : AppColors.destructiveRed,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
@@ -339,18 +481,73 @@ class _UploadPageState extends State<UploadPage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            file.name,
-                                            style: AppTextStyles.body.copyWith(
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  file.name,
+                                                  style: AppTextStyles.body
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            isPdf
+                                                                ? null
+                                                                : AppColors
+                                                                    .destructiveRed,
+                                                      ),
+                                                ),
+                                              ),
+                                              if (!isPdf) ...[
+                                                const SizedBox(
+                                                  width:
+                                                      AppDimensions.spacingXs,
+                                                ),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            AppDimensions
+                                                                .spacingXs,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        AppColors
+                                                            .destructiveRed,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          AppDimensions
+                                                              .radiusSmall,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    'NON SUPPORTATO',
+                                                    style: AppTextStyles.caption
+                                                        .copyWith(
+                                                          color:
+                                                              AppColors.white,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           Text(
                                             _formatFileSize(file.size),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                                   color:
-                                                      AppColors.textSecondary,
+                                                      isPdf
+                                                          ? AppColors
+                                                              .textSecondary
+                                                          : AppColors
+                                                              .destructiveRed
+                                                              .withValues(
+                                                                alpha: 0.8,
+                                                              ),
                                                 ),
                                           ),
                                         ],

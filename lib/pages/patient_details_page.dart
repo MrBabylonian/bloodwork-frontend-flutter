@@ -217,7 +217,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           // Header
           AppHeader(
             title: Text("Dettagli Paziente", style: AppTextStyles.title2),
-            showBackButton: true,
+            showAuth: true,
+            onProfileTap: () => context.go('/profile'),
             onLogoutTap: () => context.go('/login'),
           ),
 
@@ -371,7 +372,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               ),
               // Upload button
               PrimaryButton(
-                onPressed: () => context.go('/upload'),
+                onPressed: () => context.go('/upload/${widget.patientId}'),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -535,7 +536,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             PrimaryButton(
-              onPressed: () => context.go('/upload'),
+              onPressed: () => context.go('/upload/${widget.patientId}'),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

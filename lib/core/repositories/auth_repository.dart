@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
-import '../api/api_service.dart';
+import '../api/simple_api_service.dart';
 import '../services/storage_service.dart';
 import '../models/auth_models.dart';
 
 class AuthRepository {
-  final ApiService _apiService;
+  final SimpleApiService _apiService;
   final StorageService _storageService;
   final Logger _logger = Logger();
 
-  AuthRepository({ApiService? apiService, StorageService? storageService})
-    : _apiService = apiService ?? ApiService(),
+  AuthRepository({SimpleApiService? apiService, StorageService? storageService})
+    : _apiService = apiService ?? SimpleApiService(),
       _storageService = storageService ?? StorageService();
 
   // Login user
@@ -28,8 +28,8 @@ class AuthRepository {
         data: loginRequest.toJson(),
       );
 
-      if (response.statusCode == 200) {
-        final loginResponse = LoginResponse.fromJson(response.data);
+      if (response?.statusCode == 200) {
+        final loginResponse = LoginResponse.fromJson(response!.data);
 
         // Save authentication data
         await _storageService.saveAuthData(
@@ -45,7 +45,7 @@ class AuthRepository {
         _logger.d('Login successful for user: $username');
         return loginResponse;
       } else {
-        _logger.w('Login failed with status: ${response.statusCode}');
+        _logger.w('Login failed with status: ${response?.statusCode}');
         return null;
       }
     } on DioException catch (e) {
@@ -117,8 +117,8 @@ class AuthRepository {
         data: refreshRequest.toJson(),
       );
 
-      if (response.statusCode == 200) {
-        final refreshResponse = RefreshTokenResponse.fromJson(response.data);
+      if (response?.statusCode == 200) {
+        final refreshResponse = RefreshTokenResponse.fromJson(response!.data);
 
         // Update access token
         await _storageService.updateAccessToken(
@@ -132,7 +132,7 @@ class AuthRepository {
         _logger.d('Token refresh successful');
         return true;
       } else {
-        _logger.w('Token refresh failed with status: ${response.statusCode}');
+        _logger.w('Token refresh failed with status: ${response?.statusCode}');
         return false;
       }
     } on DioException catch (e) {
@@ -235,11 +235,11 @@ class AuthRepository {
         data: registrationRequest.toJson(),
       );
 
-      if (response.statusCode == 201) {
+      if (response?.statusCode == 201) {
         _logger.d('Registration successful for user: $username');
-        return RegistrationResponse.fromJson(response.data);
+        return RegistrationResponse.fromJson(response!.data);
       } else {
-        _logger.w('Registration failed with status: ${response.statusCode}');
+        _logger.w('Registration failed with status: ${response?.statusCode}');
         return null;
       }
     } on DioException catch (e) {

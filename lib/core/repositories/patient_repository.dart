@@ -1,22 +1,22 @@
 import 'package:logger/logger.dart';
 import '../api/api_service.dart';
 import '../models/patient_models.dart';
-import '../services/storage_service.dart';
 
+/// Patient repository with automatic authentication via interceptor
+///
+/// This repository provides clean CRUD operations for patient management
+/// without manual auth header management - all handled by middleware.
 class PatientRepository {
   final ApiService _apiService;
-  final StorageService _storageService;
   final Logger _logger = Logger();
 
-  PatientRepository({ApiService? apiService, StorageService? storageService})
-    : _apiService = apiService ?? ApiService(),
-      _storageService = storageService ?? StorageService();
+  PatientRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   /// Get all patients
   Future<List<PatientModel>> getAllPatients() async {
     try {
       _logger.d('🏥 Fetching all patients');
-      await _setAuthToken();
 
       final response = await _apiService.get('/api/v1/patients/');
       final List<dynamic> patientsJson = response.data;
@@ -36,7 +36,6 @@ class PatientRepository {
   Future<PatientModel?> getPatientById(String patientId) async {
     try {
       _logger.d('🏥 Fetching patient with ID: $patientId');
-      await _setAuthToken();
 
       final response = await _apiService.get('/api/v1/patients/$patientId');
       final patient = PatientModel.fromJson(response.data);
@@ -53,7 +52,6 @@ class PatientRepository {
   Future<PatientModel?> createPatient(PatientCreateRequest request) async {
     try {
       _logger.d('🏥 Creating patient: ${request.name}');
-      await _setAuthToken();
 
       final response = await _apiService.post(
         '/api/v1/patients/',
@@ -76,7 +74,6 @@ class PatientRepository {
   ) async {
     try {
       _logger.d('🏥 Updating patient: $patientId');
-      await _setAuthToken();
 
       final response = await _apiService.put(
         '/api/v1/patients/$patientId',
@@ -96,7 +93,6 @@ class PatientRepository {
   Future<bool> deletePatient(String patientId) async {
     try {
       _logger.d('🏥 Deleting patient: $patientId');
-      await _setAuthToken();
 
       await _apiService.delete('/api/v1/patients/$patientId');
 
@@ -112,7 +108,6 @@ class PatientRepository {
   Future<List<PatientModel>> searchPatients(String name) async {
     try {
       _logger.d('🏥 Searching patients with name: $name');
-      await _setAuthToken();
 
       final response = await _apiService.get('/api/v1/patients/search/$name');
       final List<dynamic> patientsJson = response.data;
@@ -125,14 +120,6 @@ class PatientRepository {
     } catch (e) {
       _logger.e('🏥 Error searching patients: $e');
       return [];
-    }
-  }
-
-  /// Set auth token for API requests
-  Future<void> _setAuthToken() async {
-    final token = await _storageService.getAccessToken();
-    if (token != null) {
-      _apiService.setAuthToken(token);
     }
   }
 }
