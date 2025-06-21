@@ -78,6 +78,18 @@ class StorageService {
     }
   }
 
+  // Save user data
+  Future<void> saveUserData(UserModel user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userDataKey, jsonEncode(user.toJson()));
+      _logger.d('User data saved successfully');
+    } catch (e) {
+      _logger.e('Error saving user data: $e');
+      rethrow;
+    }
+  }
+
   // Check if token is expired
   Future<bool> isTokenExpired() async {
     try {

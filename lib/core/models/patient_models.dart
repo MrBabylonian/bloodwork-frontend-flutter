@@ -50,7 +50,10 @@ class PatientOwnerInfo {
 }
 
 class PatientModel {
+  /// Human-readable sequential ID (e.g., PAT-001)
   final String id;
+
+  /// Patient ID - can be a custom ID assigned by the clinic
   final String patientId;
   final String name;
   final String species;
@@ -61,7 +64,11 @@ class PatientModel {
   final PatientOwnerInfo ownerInfo;
   final Map<String, dynamic> medicalHistory;
   final Map<String, dynamic> diagnosticSummary;
+
+  /// ID of the user who created the patient (e.g., VET-001 or TEC-001)
   final String createdBy;
+
+  /// ID of the user assigned to the patient (e.g., VET-001 or TEC-001)
   final String assignedTo;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -88,7 +95,7 @@ class PatientModel {
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
     return PatientModel(
-      id: json['id'],
+      id: json['patient_id'],
       patientId: json['patient_id'],
       name: json['name'],
       species: json['species'],
@@ -130,7 +137,6 @@ class PatientModel {
 }
 
 class PatientCreateRequest {
-  final String patientId;
   final String name;
   final String species;
   final String breed;
@@ -141,7 +147,6 @@ class PatientCreateRequest {
   final Map<String, dynamic> medicalHistory;
 
   const PatientCreateRequest({
-    required this.patientId,
     required this.name,
     required this.species,
     required this.breed,
@@ -154,7 +159,6 @@ class PatientCreateRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'patient_id': patientId,
       'name': name,
       'species': species,
       'breed': breed,

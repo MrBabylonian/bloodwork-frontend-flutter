@@ -28,6 +28,27 @@ class SimpleApiService {
     }
   }
 
+  Future<Response?> put(String path, {Object? data}) async {
+    try {
+      return await _dio.put(path, data: data);
+    } catch (e) {
+      print('Simple API PUT error: $e');
+      return null;
+    }
+  }
+
+  Future<Response?> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      return await _dio.get(path, queryParameters: queryParameters);
+    } catch (e) {
+      print('Simple API GET error: $e');
+      return null;
+    }
+  }
+
   void setAuthToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }

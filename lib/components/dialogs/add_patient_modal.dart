@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/patient_models.dart';
+import '../../core/providers/patient_provider.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../buttons/index.dart';
 import '../forms/text_input.dart';
-import '../../core/providers/patient_provider.dart';
-import '../../core/models/patient_models.dart';
+import 'app_custom_dialog.dart';
 
 /// Modal for adding a new patient
 class AddPatientModal extends StatefulWidget {
@@ -64,11 +65,6 @@ class _AddPatientModalState extends State<AddPatientModal> {
     });
 
     try {
-      // Generate a simple patient ID
-      final now = DateTime.now();
-      final patientId =
-          'PAT-${now.year}-${now.millisecondsSinceEpoch.toString().substring(8)}';
-
       // Parse age and weight
       int ageYears = int.tryParse(_ageController.text) ?? 0;
       double? weight;
@@ -78,7 +74,6 @@ class _AddPatientModalState extends State<AddPatientModal> {
 
       // Create patient request
       final request = PatientCreateRequest(
-        patientId: patientId,
         name: _nameController.text.trim(),
         species: _speciesController.text.trim(),
         breed: _breedController.text.trim(),
@@ -119,20 +114,7 @@ class _AddPatientModalState extends State<AddPatientModal> {
   }
 
   void _showErrorDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      builder:
-          (context) => CupertinoAlertDialog(
-            title: const Text('Error'),
-            content: Text(message),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('OK'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-    );
+    showErrorDialog(context: context, message: message);
   }
 
   void _clearForm() {

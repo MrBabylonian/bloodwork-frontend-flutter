@@ -14,6 +14,7 @@ class AuthRepository {
       _storageService = storageService ?? StorageService();
 
   // Login user
+  /// Returns a LoginResponse with user data including human-readable ID (e.g., VET-001)
   Future<LoginResponse?> login({
     required String username,
     required String password,
@@ -42,7 +43,9 @@ class AuthRepository {
         // Set token in API service for future requests
         _apiService.setAuthToken(loginResponse.accessToken);
 
-        _logger.d('Login successful for user: $username');
+        _logger.d(
+          'Login successful for user: $username with ID: ${loginResponse.user.id}',
+        );
         return loginResponse;
       } else {
         _logger.w('Login failed with status: ${response?.statusCode}');
@@ -182,6 +185,7 @@ class AuthRepository {
   }
 
   // Get current user data
+  /// Returns a UserModel with human-readable ID (e.g., VET-001)
   Future<UserModel?> getCurrentUser() async {
     try {
       return await _storageService.getUserData();
@@ -212,6 +216,7 @@ class AuthRepository {
   }
 
   // Register new user
+  /// Returns a RegistrationResponse with human-readable user ID (e.g., VET-001)
   Future<RegistrationResponse?> register({
     required String username,
     required String email,
@@ -236,8 +241,13 @@ class AuthRepository {
       );
 
       if (response?.statusCode == 201) {
-        _logger.d('Registration successful for user: $username');
-        return RegistrationResponse.fromJson(response!.data);
+        final registrationResponse = RegistrationResponse.fromJson(
+          response!.data,
+        );
+        _logger.d(
+          'Registration successful for user: $username with ID: ${registrationResponse.userId}',
+        );
+        return registrationResponse;
       } else {
         _logger.w('Registration failed with status: ${response?.statusCode}');
         return null;
@@ -253,6 +263,85 @@ class AuthRepository {
     } catch (e) {
       _logger.e('Unexpected error during registration: $e');
       return null;
+    }
+  }
+
+  // Update user profile
+  /// Updates the user profile and returns success status
+  Future<bool> updateProfile({
+    required String userId,
+    required Map<String, dynamic> profileData,
+  }) async {
+    try {
+      _logger.d('Updating profile for user: $userId');
+
+      // The backend expects direct field values, not nested under 'profile'
+      final response = await _apiService.put(
+        '/api/v1/auth/profile',
+        data: profileData,
+      );
+
+      if (response?.statusCode == 200) {
+        // Update local user data
+        final currentUser = await _storageService.getUserData();
+        if (currentUser != null) {
+          // Update the profile in the user model
+          final updatedProfile = {...currentUser.profile};
+          profileData.forEach((key, value) {
+            updatedProfile[key] = value;
+          });
+
+          final updatedUser = UserModel(
+            id: currentUser.id,
+            username: currentUser.username,
+            email: currentUser.email,
+            role: currentUser.role,
+            profile: updatedProfile,
+          );
+          await _storageService.saveUserData(updatedUser);
+        }
+
+        _logger.d('Profile updated successfully for user: $userId');
+        return true;
+      } else {
+        _logger.w('Profile update failed with status: ${response?.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error updating profile: $e');
+      return false;
+    }
+  }
+
+  // Update password
+  /// Updates the user password and returns success status
+  Future<bool> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      _logger.d('Attempting to update password');
+
+      final response = await _apiService.put(
+        '/api/v1/auth/password',
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        },
+      );
+
+      if (response?.statusCode == 200) {
+        _logger.d('Password updated successfully');
+        return true;
+      } else {
+        _logger.w(
+          'Password update failed with status: ${response?.statusCode}',
+        );
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error updating password: $e');
+      return false;
     }
   }
 }

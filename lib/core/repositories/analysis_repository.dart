@@ -12,6 +12,8 @@ class AnalysisRepository {
     : _apiService = apiService;
 
   /// Upload a PDF file for analysis
+  ///
+  /// @param patientId Optional human-readable sequential ID (e.g., PAT-001)
   Future<AnalysisUploadResponse?> uploadPdfFile({
     required PlatformFile file,
     String? patientId,
@@ -51,6 +53,8 @@ class AnalysisRepository {
   }
 
   /// Get analysis result by diagnostic ID
+  ///
+  /// @param diagnosticId Human-readable sequential ID (e.g., DGN-001)
   Future<AnalysisResult?> getAnalysisResult(String diagnosticId) async {
     try {
       _logger.d('📄 REPO: Getting analysis result: $diagnosticId');
@@ -74,6 +78,8 @@ class AnalysisRepository {
   }
 
   /// Get all analysis results for a patient
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
   Future<List<AnalysisResult>> getPatientAnalysisResults(
     String patientId,
   ) async {

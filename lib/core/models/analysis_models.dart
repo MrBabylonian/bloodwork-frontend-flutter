@@ -1,6 +1,7 @@
 /// Analysis models that match the backend schema for file upload and results
 
 class AnalysisUploadRequest {
+  /// Human-readable sequential ID of the patient (e.g., PAT-001)
   final String? patientId;
   final String? notes;
 
@@ -15,6 +16,7 @@ class AnalysisUploadRequest {
 }
 
 class AnalysisUploadResponse {
+  /// Human-readable sequential ID of the diagnostic (e.g., DGN-001)
   final String diagnosticId;
   final String message;
   final String status;
@@ -35,7 +37,10 @@ class AnalysisUploadResponse {
 }
 
 class AnalysisResult {
+  /// Human-readable sequential ID of the diagnostic (e.g., DGN-001)
   final String id;
+
+  /// Human-readable sequential ID of the patient (e.g., PAT-001)
   final String patientId;
   final String status;
   final DateTime createdAt;

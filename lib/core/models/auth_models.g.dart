@@ -20,6 +20,7 @@ Map<String, dynamic> _$LoginRequestToJson(LoginRequest instance) =>
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   id: json['id'] as String,
   username: json['username'] as String,
+  email: json['email'] as String,
   role: json['role'] as String,
   profile: json['profile'] as Map<String, dynamic>,
 );
@@ -27,6 +28,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'id': instance.id,
   'username': instance.username,
+  'email': instance.email,
   'role': instance.role,
   'profile': instance.profile,
 };

@@ -10,6 +10,7 @@ import '../components/forms/app_switch.dart';
 import '../components/navigation/app_header.dart';
 import '../components/navigation/app_tabs.dart';
 import '../components/cards/info_card.dart';
+import '../components/dialogs/app_custom_dialog.dart';
 import '../core/providers/auth_provider.dart';
 
 /// Profile data model
@@ -17,6 +18,7 @@ class ProfileData {
   final String firstName;
   final String lastName;
   final String email;
+  final String username;
   final String phone;
   final String clinic;
   final String license;
@@ -26,6 +28,7 @@ class ProfileData {
     required this.firstName,
     required this.lastName,
     required this.email,
+    required this.username,
     required this.phone,
     required this.clinic,
     required this.license,
@@ -36,6 +39,7 @@ class ProfileData {
     String? firstName,
     String? lastName,
     String? email,
+    String? username,
     String? phone,
     String? clinic,
     String? license,
@@ -45,10 +49,29 @@ class ProfileData {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
+      username: username ?? this.username,
       phone: phone ?? this.phone,
       clinic: clinic ?? this.clinic,
       license: license ?? this.license,
       specialty: specialty ?? this.specialty,
+    );
+  }
+
+  // Create from user profile map
+  factory ProfileData.fromUserProfile(
+    Map<String, dynamic> profile, {
+    required String username,
+    required String email,
+  }) {
+    return ProfileData(
+      firstName: profile['first_name'] ?? '',
+      lastName: profile['last_name'] ?? '',
+      email: email,
+      username: username,
+      phone: profile['phone'] ?? '',
+      clinic: profile['clinic_name'] ?? '',
+      license: profile['license_number'] ?? '',
+      specialty: profile['specialty'] ?? '',
     );
   }
 }
@@ -91,18 +114,12 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Mock profile data
-  ProfileData _profile = const ProfileData(
-    firstName: "Dr. Sarah",
-    lastName: "Johnson",
-    email: "sarah.johnson@vetclinic.com",
-    phone: "+1 (555) 123-4567",
-    clinic: "Happy Paws Veterinary Clinic",
-    license: "VET-2024-001234",
-    specialty: "Small Animal Medicine",
-  );
+  // Profile data from user
+  ProfileData? _profile;
+  bool _isLoadingProfile = true;
+  bool _isAdmin = false; // Track if user is admin
 
-  // Mock notification preferences
+  // Notification preferences
   NotificationPreferences _notifications = const NotificationPreferences(
     emailAlerts: true,
     smsAlerts: false,
@@ -114,6 +131,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
+  late TextEditingController _usernameController;
   late TextEditingController _phoneController;
   late TextEditingController _clinicController;
   late TextEditingController _licenseController;
@@ -130,16 +148,53 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _initializeControllers();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+    });
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser;
+
+    if (user != null) {
+      // Check if user is admin
+      _isAdmin = authProvider.isAdmin;
+
+      setState(() {
+        _profile = ProfileData.fromUserProfile(
+          user.profile,
+          username: user.username,
+          email: user.email,
+        );
+        _usernameController.text = _profile!.username;
+        _emailController.text = _profile!.email;
+        _firstNameController.text = _profile!.firstName;
+        _lastNameController.text = _profile!.lastName;
+        _phoneController.text = _profile!.phone;
+        _clinicController.text = _profile!.clinic;
+        _licenseController.text = _profile!.license;
+        _specialtyController.text = _profile!.specialty;
+        _isLoadingProfile = false;
+      });
+    } else {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
   }
 
   void _initializeControllers() {
-    _firstNameController = TextEditingController(text: _profile.firstName);
-    _lastNameController = TextEditingController(text: _profile.lastName);
-    _emailController = TextEditingController(text: _profile.email);
-    _phoneController = TextEditingController(text: _profile.phone);
-    _clinicController = TextEditingController(text: _profile.clinic);
-    _licenseController = TextEditingController(text: _profile.license);
-    _specialtyController = TextEditingController(text: _profile.specialty);
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _usernameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _clinicController = TextEditingController();
+    _licenseController = TextEditingController();
+    _specialtyController = TextEditingController();
   }
 
   @override
@@ -147,6 +202,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _usernameController.dispose();
     _phoneController.dispose();
     _clinicController.dispose();
     _licenseController.dispose();
@@ -175,12 +231,15 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _handleProfileSave() {
+  Future<void> _handleProfileSave() async {
+    if (_profile == null) return;
+
     setState(() {
       _profile = ProfileData(
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
         email: _emailController.text,
+        username: _usernameController.text,
         phone: _phoneController.text,
         clinic: _clinicController.text,
         license: _licenseController.text,
@@ -188,8 +247,30 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     });
 
-    // Show success message
-    _showSuccessDialog("Profilo aggiornato con successo!");
+    // Save to backend - only send fields appropriate for the user type
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    final profileMap = {
+      'first_name': _profile!.firstName,
+      'last_name': _profile!.lastName,
+      'email': _profile!.email,
+      'phone': _profile!.phone,
+    };
+
+    // Add fields specific to veterinarians/technicians
+    if (!_isAdmin) {
+      profileMap['license_number'] = _profile!.license;
+      profileMap['clinic_name'] = _profile!.clinic;
+      profileMap['specialty'] = _profile!.specialty;
+    }
+
+    final success = await authProvider.updateProfile(profileMap);
+
+    if (success) {
+      _showSuccessDialog("Profilo aggiornato con successo!");
+    } else {
+      _showErrorDialog("Errore durante l'aggiornamento del profilo. Riprova.");
+    }
   }
 
   void _handleNotificationSave() {
@@ -197,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _showSuccessDialog("Preferenze notifiche aggiornate!");
   }
 
-  void _handlePasswordUpdate() {
+  Future<void> _handlePasswordUpdate() async {
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showErrorDialog("Le password non corrispondono!");
       return;
@@ -208,136 +289,33 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    // Clear password fields
-    _currentPasswordController.clear();
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
+    // Update password in backend
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.updatePassword(
+      currentPassword: _currentPasswordController.text,
+      newPassword: _newPasswordController.text,
+    );
 
-    _showSuccessDialog("Password aggiornata con successo!");
+    if (success) {
+      // Clear password fields
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+
+      _showSuccessDialog("Password aggiornata con successo!");
+    } else {
+      _showErrorDialog(
+        "Errore durante l'aggiornamento della password. Verifica la password attuale e riprova.",
+      );
+    }
   }
 
   void _showSuccessDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      barrierDismissible: true,
-      builder:
-          (context) => _buildCustomDialog(
-            context: context,
-            title: 'Successo',
-            message: message,
-            isError: false,
-          ),
-    );
+    showSuccessDialog(context: context, message: message);
   }
 
   void _showErrorDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      barrierDismissible: true,
-      builder:
-          (context) => _buildCustomDialog(
-            context: context,
-            title: 'Errore',
-            message: message,
-            isError: true,
-          ),
-    );
-  }
-
-  /// Custom dialog that matches the desktop web design
-  Widget _buildCustomDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    required bool isError,
-  }) {
-    return Center(
-      child: Container(
-        width: 400,
-        margin: const EdgeInsets.all(AppDimensions.spacingL),
-        decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.foregroundDark.withValues(alpha: 0.15),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Column(
-                children: [
-                  // Icon
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color:
-                          isError
-                              ? AppColors.destructiveRed.withValues(alpha: 0.1)
-                              : AppColors.successGreen.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusFull,
-                      ),
-                    ),
-                    child: Icon(
-                      isError
-                          ? CupertinoIcons.xmark_circle_fill
-                          : CupertinoIcons.checkmark_circle_fill,
-                      color:
-                          isError
-                              ? AppColors.destructiveRed
-                              : AppColors.successGreen,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Text(
-                    title,
-                    style: AppTextStyles.title2.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingS),
-                  Text(
-                    message,
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            // Divider
-            Container(
-              height: 1,
-              color: AppColors.borderGray.withValues(alpha: 0.3),
-            ),
-
-            // Actions
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    showErrorDialog(context: context, message: message);
   }
 
   @override
@@ -356,66 +334,72 @@ class _ProfilePageState extends State<ProfilePage> {
 
           // Content
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1024),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Back button
-                    SecondaryButton(
-                      onPressed: () => context.go('/dashboard'),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(CupertinoIcons.back, size: 16),
-                          SizedBox(width: AppDimensions.spacingXs),
-                          Text("Torna alla Dashboard"),
-                        ],
+            child:
+                _isLoadingProfile
+                    ? const Center(child: CupertinoActivityIndicator())
+                    : _profile == null
+                    ? const Center(child: Text("Nessun profilo disponibile"))
+                    : SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1024),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Back button
+                            SecondaryButton(
+                              onPressed: () => context.go('/dashboard'),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(CupertinoIcons.back, size: 16),
+                                  SizedBox(width: AppDimensions.spacingXs),
+                                  Text("Torna alla Dashboard"),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: AppDimensions.spacingL),
+
+                            // Profile Header Card
+                            _buildProfileHeader(),
+
+                            const SizedBox(height: AppDimensions.spacingL),
+
+                            // Tabs
+                            SizedBox(
+                              height: 600, // Fixed height for tabs content
+                              child: AppTabs(
+                                tabAlignment:
+                                    Alignment.center, // Center the tabs
+                                tabs: const [
+                                  AppTab(
+                                    id: 'profile',
+                                    label: 'Profilo',
+                                    icon: CupertinoIcons.person,
+                                  ),
+                                  AppTab(
+                                    id: 'notifications',
+                                    label: 'Notifiche',
+                                    icon: CupertinoIcons.bell,
+                                  ),
+                                  AppTab(
+                                    id: 'security',
+                                    label: 'Sicurezza',
+                                    icon: CupertinoIcons.shield,
+                                  ),
+                                ],
+                                children: [
+                                  _buildProfileTab(),
+                                  _buildNotificationsTab(),
+                                  _buildSecurityTab(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-
-                    const SizedBox(height: AppDimensions.spacingL),
-
-                    // Profile Header Card
-                    _buildProfileHeader(),
-
-                    const SizedBox(height: AppDimensions.spacingL),
-
-                    // Tabs
-                    SizedBox(
-                      height: 600, // Fixed height for tabs content
-                      child: AppTabs(
-                        tabAlignment: Alignment.center, // Center the tabs
-                        tabs: const [
-                          AppTab(
-                            id: 'profile',
-                            label: 'Profilo',
-                            icon: CupertinoIcons.person,
-                          ),
-                          AppTab(
-                            id: 'notifications',
-                            label: 'Notifiche',
-                            icon: CupertinoIcons.bell,
-                          ),
-                          AppTab(
-                            id: 'security',
-                            label: 'Sicurezza',
-                            icon: CupertinoIcons.shield,
-                          ),
-                        ],
-                        children: [
-                          _buildProfileTab(),
-                          _buildNotificationsTab(),
-                          _buildSecurityTab(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -423,6 +407,18 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader() {
+    if (_profile == null) {
+      return const SizedBox.shrink();
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final roleDisplay =
+        _isAdmin
+            ? 'Amministratore'
+            : (authProvider.isVeterinarian
+                ? 'Veterinario'
+                : 'Tecnico Veterinario');
+
     return InfoCard(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Row(
@@ -439,7 +435,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Center(
                   child: Text(
-                    "${_profile.firstName[0]}${_profile.lastName[0]}",
+                    "${_profile!.firstName.isNotEmpty ? _profile!.firstName[0] : ''}${_profile!.lastName.isNotEmpty ? _profile!.lastName[0] : ''}",
                     style: AppTextStyles.title2.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.bold,
@@ -484,23 +480,31 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${_profile.firstName} ${_profile.lastName}",
+                  "${_profile!.firstName} ${_profile!.lastName}",
                   style: AppTextStyles.title2,
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
-                  _profile.specialty,
+                  roleDisplay,
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.mediumGray,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXxs),
-                Text(
-                  _profile.clinic,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.mediumGray,
+                if (!_isAdmin && _profile!.specialty.isNotEmpty)
+                  Text(
+                    _profile!.specialty,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.mediumGray,
+                    ),
                   ),
-                ),
+                if (!_isAdmin && _profile!.clinic.isNotEmpty)
+                  Text(
+                    _profile!.clinic,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.mediumGray,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -547,6 +551,29 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Two-column layout for wider screens
                   return Column(
                     children: [
+                      // Username field (non-editable)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextInput(
+                              controller: _usernameController,
+                              label: "Username",
+                              placeholder: "Username",
+                              enabled: false, // Username is not editable
+                            ),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                          Expanded(
+                            child: AppTextInput(
+                              controller: _emailController,
+                              label: "Email",
+                              placeholder: "Email",
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
                       Row(
                         children: [
                           Expanded(
@@ -571,55 +598,71 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           Expanded(
                             child: AppTextInput(
-                              controller: _emailController,
-                              label: "Email",
-                              placeholder: "Inserisci l'email",
-                              keyboardType: TextInputType.emailAddress,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.spacingM),
-                          Expanded(
-                            child: AppTextInput(
                               controller: _phoneController,
                               label: "Telefono",
                               placeholder: "Inserisci il telefono",
                               keyboardType: TextInputType.phone,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppTextInput(
-                              controller: _clinicController,
-                              label: "Nome Clinica",
-                              placeholder: "Inserisci il nome della clinica",
-                            ),
-                          ),
                           const SizedBox(width: AppDimensions.spacingM),
-                          Expanded(
-                            child: AppTextInput(
-                              controller: _licenseController,
-                              label: "Numero Licenza",
-                              placeholder: "Inserisci il numero di licenza",
-                            ),
-                          ),
+                          // Empty space for alignment when not showing clinic fields
+                          if (!_isAdmin)
+                            Expanded(
+                              child: AppTextInput(
+                                controller: _clinicController,
+                                label: "Nome Clinica",
+                                placeholder: "Inserisci il nome della clinica",
+                              ),
+                            )
+                          else
+                            const Expanded(child: SizedBox()),
                         ],
                       ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      AppTextInput(
-                        controller: _specialtyController,
-                        label: "Specialità",
-                        placeholder: "Inserisci la specialità",
-                      ),
+
+                      // Only show these fields for veterinarians/technicians
+                      if (!_isAdmin) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppTextInput(
+                                controller: _licenseController,
+                                label: "Numero Licenza",
+                                placeholder: "Inserisci il numero di licenza",
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.spacingM),
+                            Expanded(
+                              child: AppTextInput(
+                                controller: _specialtyController,
+                                label: "Specialità",
+                                placeholder: "Inserisci la specialità",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   );
                 } else {
                   // Single-column layout for narrower screens
                   return Column(
                     children: [
+                      // Username field (non-editable)
+                      AppTextInput(
+                        controller: _usernameController,
+                        label: "Username",
+                        placeholder: "Username",
+                        enabled: false, // Username is not editable
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+                      AppTextInput(
+                        controller: _emailController,
+                        label: "Email",
+                        placeholder: "Email",
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
                       AppTextInput(
                         controller: _firstNameController,
                         label: "Nome",
@@ -633,36 +676,33 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: AppDimensions.spacingM),
                       AppTextInput(
-                        controller: _emailController,
-                        label: "Email",
-                        placeholder: "Inserisci l'email",
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      AppTextInput(
                         controller: _phoneController,
                         label: "Telefono",
                         placeholder: "Inserisci il telefono",
                         keyboardType: TextInputType.phone,
                       ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      AppTextInput(
-                        controller: _clinicController,
-                        label: "Nome Clinica",
-                        placeholder: "Inserisci il nome della clinica",
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      AppTextInput(
-                        controller: _licenseController,
-                        label: "Numero Licenza",
-                        placeholder: "Inserisci il numero di licenza",
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      AppTextInput(
-                        controller: _specialtyController,
-                        label: "Specialità",
-                        placeholder: "Inserisci la specialità",
-                      ),
+
+                      // Only show these fields for veterinarians/technicians
+                      if (!_isAdmin) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        AppTextInput(
+                          controller: _clinicController,
+                          label: "Nome Clinica",
+                          placeholder: "Inserisci il nome della clinica",
+                        ),
+                        const SizedBox(height: AppDimensions.spacingM),
+                        AppTextInput(
+                          controller: _licenseController,
+                          label: "Numero Licenza",
+                          placeholder: "Inserisci il numero di licenza",
+                        ),
+                        const SizedBox(height: AppDimensions.spacingM),
+                        AppTextInput(
+                          controller: _specialtyController,
+                          label: "Specialità",
+                          placeholder: "Inserisci la specialità",
+                        ),
+                      ],
                     ],
                   );
                 }

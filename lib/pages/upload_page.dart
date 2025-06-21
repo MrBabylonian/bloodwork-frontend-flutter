@@ -12,6 +12,9 @@ import '../components/cards/info_card.dart';
 import '../components/forms/file_upload.dart';
 import '../components/feedback/app_progress_indicator.dart';
 import '../core/providers/analysis_provider.dart';
+import '../core/providers/patient_provider.dart';
+import '../core/models/patient_models.dart';
+import '../components/dialogs/app_custom_dialog.dart';
 
 /// Upload page for analyzing bloodwork files
 class UploadPage extends StatefulWidget {
@@ -146,127 +149,11 @@ class _UploadPageState extends State<UploadPage> {
   }
 
   void _showSuccessDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      barrierDismissible: true,
-      builder:
-          (context) => _buildCustomDialog(
-            context: context,
-            title: 'Successo',
-            message: message,
-            isError: false,
-          ),
-    );
+    showSuccessDialog(context: context, message: message);
   }
 
   void _showErrorDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      barrierDismissible: true,
-      builder:
-          (context) => _buildCustomDialog(
-            context: context,
-            title: 'Errore',
-            message: message,
-            isError: true,
-          ),
-    );
-  }
-
-  /// Custom dialog that matches the desktop web design
-  Widget _buildCustomDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    required bool isError,
-  }) {
-    return Center(
-      child: Container(
-        width: 400,
-        margin: const EdgeInsets.all(AppDimensions.spacingL),
-        decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.foregroundDark.withValues(alpha: 0.15),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Column(
-                children: [
-                  // Icon
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color:
-                          isError
-                              ? AppColors.destructiveRed.withValues(alpha: 0.1)
-                              : AppColors.successGreen.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusFull,
-                      ),
-                    ),
-                    child: Icon(
-                      isError
-                          ? CupertinoIcons.xmark_circle_fill
-                          : CupertinoIcons.checkmark_circle_fill,
-                      color:
-                          isError
-                              ? AppColors.destructiveRed
-                              : AppColors.successGreen,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Text(
-                    title,
-                    style: AppTextStyles.title2.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingS),
-                  Text(
-                    message,
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            // Divider
-            Container(
-              height: 1,
-              color: AppColors.borderGray.withValues(alpha: 0.3),
-            ),
-
-            // Actions
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    showErrorDialog(context: context, message: message);
   }
 
   String _formatFileSize(int bytes) {

@@ -17,14 +17,17 @@ class LoginRequest {
 
 @JsonSerializable()
 class UserModel {
+  /// Human-readable sequential ID (e.g., VET-001, TEC-001, ADM-001)
   final String id;
   final String username;
+  final String email;
   final String role;
   final Map<String, dynamic> profile;
 
   UserModel({
     required this.id,
     required this.username,
+    required this.email,
     required this.role,
     required this.profile,
   });
@@ -175,6 +178,7 @@ class RegistrationRequest {
 class RegistrationResponse {
   final String message;
 
+  /// Human-readable sequential ID of the registered user (e.g., VET-001, TEC-001)
   @JsonKey(name: 'user_id')
   final String userId;
 

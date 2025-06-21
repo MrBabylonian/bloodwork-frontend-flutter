@@ -33,6 +33,8 @@ class PatientRepository {
   }
 
   /// Get patient by ID
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
   Future<PatientModel?> getPatientById(String patientId) async {
     try {
       _logger.d('🏥 Fetching patient with ID: $patientId');
@@ -59,7 +61,9 @@ class PatientRepository {
       );
 
       final patient = PatientModel.fromJson(response.data);
-      _logger.d('🏥 Successfully created patient: ${patient.name}');
+      _logger.d(
+        '🏥 Successfully created patient: ${patient.name} with ID: ${patient.id}',
+      );
       return patient;
     } catch (e) {
       _logger.e('🏥 Error creating patient: $e');
@@ -68,6 +72,8 @@ class PatientRepository {
   }
 
   /// Update patient
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
   Future<PatientModel?> updatePatient(
     String patientId,
     PatientUpdateRequest request,
@@ -90,6 +96,8 @@ class PatientRepository {
   }
 
   /// Delete patient
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
   Future<bool> deletePatient(String patientId) async {
     try {
       _logger.d('🏥 Deleting patient: $patientId');

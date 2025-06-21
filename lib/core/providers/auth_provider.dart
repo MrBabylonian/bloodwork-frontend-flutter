@@ -247,11 +247,53 @@ class AuthProvider extends ChangeNotifier {
   void clearError() {
     _clearError();
     if (_status == AuthStatus.error) {
-      _setStatus(
-        _currentUser != null
-            ? AuthStatus.authenticated
-            : AuthStatus.unauthenticated,
+      _setStatus(AuthStatus.unauthenticated);
+    }
+  }
+
+  // Update user profile
+  Future<bool> updateProfile(Map<String, dynamic> profileData) async {
+    try {
+      if (_currentUser == null) {
+        _logger.e('Cannot update profile: No user logged in');
+        return false;
+      }
+
+      final success = await _authRepository.updateProfile(
+        userId: _currentUser!.id,
+        profileData: profileData,
       );
+
+      if (success) {
+        // Refresh current user data
+        final user = await _authRepository.getCurrentUser();
+        _currentUser = user;
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error updating profile: $e');
+      return false;
+    }
+  }
+
+  // Update password
+  Future<bool> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final success = await _authRepository.updatePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+
+      return success;
+    } catch (e) {
+      _logger.e('Error updating password: $e');
+      return false;
     }
   }
 

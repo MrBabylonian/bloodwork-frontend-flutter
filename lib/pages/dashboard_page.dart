@@ -8,6 +8,7 @@ import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
+import '../components/dialogs/app_custom_dialog.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
 
@@ -51,92 +52,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Performs logout operation with confirmation dialog
   void _performLogout(BuildContext context) {
-    showCupertinoDialog(
+    showConfirmationDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => _buildCustomConfirmationDialog(context),
-    );
-  }
-
-  /// Custom confirmation dialog that looks good on desktop web
-  Widget _buildCustomConfirmationDialog(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 400,
-        margin: const EdgeInsets.all(AppDimensions.spacingL),
-        decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.foregroundDark.withValues(alpha: 0.15),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Column(
-                children: [
-                  Text(
-                    'Conferma Logout',
-                    style: AppTextStyles.title2.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingS),
-                  Text(
-                    'Sei sicuro di voler uscire dal tuo account?',
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            // Divider
-            Container(
-              height: 1,
-              color: AppColors.borderGray.withValues(alpha: 0.3),
-            ),
-
-            // Actions
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SecondaryButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Annulla'),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: DestructiveButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close dialog
-                        // Clear any stored authentication state here
-                        // For now, redirect to login page
-                        context.go('/login');
-                      },
-                      child: const Text('Esci'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+      title: 'Conferma Logout',
+      message: 'Sei sicuro di voler uscire dal tuo account?',
+      confirmText: 'Esci',
+      cancelText: 'Annulla',
+      isDestructive: true,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        // Clear any stored authentication state here
+        // For now, redirect to login page
+        context.go('/login');
+      }
+    });
   }
 
   Color _getStatusColor(PatientHealthStatus status) {
