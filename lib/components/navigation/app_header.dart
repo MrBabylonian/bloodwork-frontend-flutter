@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
@@ -192,6 +193,104 @@ class UnauthenticatedAppHeader extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppHeader(showAuth: false, actions: actions);
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(72); // 56 + 16 (standard toolbar height + padding)
+}
+
+/// A specialized header for the landing page with login/signup buttons
+class LandingHeader extends StatelessWidget implements PreferredSizeWidget {
+  /// Callback when login button is tapped
+  final VoidCallback? onLoginTap;
+
+  /// Callback when signup/start button is tapped
+  final VoidCallback? onStartTap;
+
+  /// Background color override
+  final Color? backgroundColor;
+
+  const LandingHeader({
+    super.key,
+    this.onLoginTap,
+    this.onStartTap,
+    this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppHeader(
+      showAuth: false,
+      backgroundColor: backgroundColor,
+      actions: [
+        GhostButton(
+          size: ButtonSize.small,
+          onPressed: onLoginTap ?? () => context.go('/login'),
+          child: const Text('Accedi'),
+        ),
+        const SizedBox(width: AppDimensions.spacingS),
+        PrimaryButton(
+          size: ButtonSize.small,
+          onPressed: onStartTap ?? () => context.go('/login'),
+          child: const Text('Inizia'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(72); // 56 + 16 (standard toolbar height + padding)
+}
+
+/// A specialized header for the login/registration page with just a back button
+class LoginHeader extends StatelessWidget implements PreferredSizeWidget {
+  /// Callback when back button is tapped
+  final VoidCallback? onBackTap;
+
+  /// Background color override
+  final Color? backgroundColor;
+
+  const LoginHeader({super.key, this.onBackTap, this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingS,
+      ),
+      decoration: BoxDecoration(
+        color:
+            backgroundColor ??
+            AppColors.backgroundWhite.withValues(alpha: 0.95),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            // Back button
+            GhostButton(
+              size: ButtonSize.small,
+              onPressed: onBackTap ?? () => context.go('/'),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(CupertinoIcons.chevron_left, size: 16),
+                  SizedBox(width: AppDimensions.spacingXs),
+                  Text('Torna alla Home'),
+                ],
+              ),
+            ),
+
+            // Empty space to push the back button to the left
+            const Spacer(),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

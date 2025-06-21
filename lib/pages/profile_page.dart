@@ -12,6 +12,8 @@ import '../components/navigation/app_tabs.dart';
 import '../components/cards/info_card.dart';
 import '../components/dialogs/app_custom_dialog.dart';
 import '../core/providers/auth_provider.dart';
+import '../core/services/logout_service.dart';
+import '../utils/auth_utils.dart';
 
 /// Profile data model
 class ProfileData {
@@ -213,38 +215,51 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  Future<void> _handleLogout() async {
-    try {
-      print('🔑 PROFILE PAGE: Starting logout process');
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.logout();
-      // Navigation will be handled automatically by the router
-      print(
-        '🔑 PROFILE PAGE: Logout completed, router should handle navigation',
-      );
-    } catch (e) {
-      print('🔑 PROFILE PAGE: Logout error: $e');
-      // Even if logout fails, try to navigate to login
-      if (mounted) {
-        context.go('/login');
-      }
-    }
-  }
-
   Future<void> _handleProfileSave() async {
     if (_profile == null) return;
 
-    setState(() {
-      _profile = ProfileData(
-        firstName: _firstNameController.text,
-        lastName: _lastNameController.text,
-        email: _emailController.text,
-        username: _usernameController.text,
-        phone: _phoneController.text,
-        clinic: _clinicController.text,
-        license: _licenseController.text,
-        specialty: _specialtyController.text,
+    // Create new profile data from form fields
+    final newProfile = ProfileData(
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      email: _emailController.text.trim(),
+      username: _usernameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      clinic: _clinicController.text.trim(),
+      license: _licenseController.text.trim(),
+      specialty: _specialtyController.text.trim(),
+    );
+
+    // Check if any changes were made
+    bool hasChanges = false;
+
+    if (newProfile.firstName != _profile!.firstName ||
+        newProfile.lastName != _profile!.lastName ||
+        newProfile.email != _profile!.email ||
+        newProfile.phone != _profile!.phone) {
+      hasChanges = true;
+    }
+
+    // Check non-admin specific fields
+    if (!_isAdmin) {
+      if (newProfile.license != _profile!.license ||
+          newProfile.clinic != _profile!.clinic ||
+          newProfile.specialty != _profile!.specialty) {
+        hasChanges = true;
+      }
+    }
+
+    // If no changes, show info message and return
+    if (!hasChanges) {
+      _showInfoDialog(
+        "Nessuna modifica da salvare. Modifica i campi per aggiornare il profilo.",
       );
+      return;
+    }
+
+    // Update local profile state
+    setState(() {
+      _profile = newProfile;
     });
 
     // Save to backend - only send fields appropriate for the user type
@@ -266,9 +281,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final success = await authProvider.updateProfile(profileMap);
 
+    // Ensure the widget is still mounted before showing dialogs
+    if (!mounted) return;
+
     if (success) {
+      print('✅ PROFILE: Update successful - showing dialog');
       _showSuccessDialog("Profilo aggiornato con successo!");
     } else {
+      print('❌ PROFILE: Update failed');
       _showErrorDialog("Errore durante l'aggiornamento del profilo. Riprova.");
     }
   }
@@ -294,6 +314,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final success = await authProvider.updatePassword(
       currentPassword: _currentPasswordController.text,
       newPassword: _newPasswordController.text,
+      confirmPassword: _confirmPasswordController.text,
     );
 
     if (success) {
@@ -311,15 +332,39 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showSuccessDialog(String message) {
-    showSuccessDialog(context: context, message: message);
+    showSuccessDialog(
+      context: context,
+      message: message,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      onPressed: () {
+        Navigator.of(
+          context,
+        ).pop(); // Just close the dialog, stay on profile page
+      },
+    );
   }
 
   void _showErrorDialog(String message) {
     showErrorDialog(context: context, message: message);
   }
 
+  void _showInfoDialog(String message) {
+    showAppCustomDialog(
+      context: context,
+      title: 'Informazione',
+      message: message,
+      isError: false,
+      buttonText: 'OK',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Simple auth check - show login screen if not authenticated
+    if (!AuthUtils.isAuthenticated(context)) {
+      return AuthUtils.buildLoginRequiredScreen(context);
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundWhite,
       child: Column(
@@ -329,7 +374,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: const Text("Profilo", style: AppTextStyles.title2),
             showAuth: true,
             onProfileTap: () => context.go('/profile'),
-            onLogoutTap: _handleLogout,
+            onLogoutTap: () => LogoutService.showLogoutDialog(context),
           ),
 
           // Content
@@ -420,94 +465,99 @@ class _ProfilePageState extends State<ProfilePage> {
                 : 'Tecnico Veterinario');
 
     return InfoCard(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Row(
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      child: Column(
         children: [
-          // Avatar
-          Stack(
+          // Main profile info - centered with role on left, name on right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Role badge on the left
               Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingM,
+                  vertical: AppDimensions.spacingS,
                 ),
-                child: Center(
-                  child: Text(
-                    "${_profile!.firstName.isNotEmpty ? _profile!.firstName[0] : ''}${_profile!.lastName.isNotEmpty ? _profile!.lastName[0] : ''}",
-                    style: AppTextStyles.title2.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                ),
+                child: Text(
+                  roleDisplay,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              Positioned(
-                bottom: -4,
-                right: -4,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusFull,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.foregroundDark.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    CupertinoIcons.camera,
-                    color: AppColors.white,
-                    size: 16,
-                  ),
+
+              const SizedBox(width: AppDimensions.spacingM),
+
+              // Full name on the right
+              Text(
+                "${_profile!.firstName} ${_profile!.lastName}",
+                style: AppTextStyles.title1.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(width: AppDimensions.spacingL),
-
-          // Profile info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Additional info below (if available) - centered
+          if (!_isAdmin &&
+              (_profile!.specialty.isNotEmpty ||
+                  _profile!.clinic.isNotEmpty)) ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "${_profile!.firstName} ${_profile!.lastName}",
-                  style: AppTextStyles.title2,
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                Text(
-                  roleDisplay,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.mediumGray,
+                if (_profile!.specialty.isNotEmpty) ...[
+                  Column(
+                    children: [
+                      Text(
+                        "Specializzazione",
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.mediumGray,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXxs),
+                      Text(
+                        _profile!.specialty,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXxs),
-                if (!_isAdmin && _profile!.specialty.isNotEmpty)
-                  Text(
-                    _profile!.specialty,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.mediumGray,
-                    ),
+                  if (_profile!.clinic.isNotEmpty)
+                    const SizedBox(width: AppDimensions.spacingXl),
+                ],
+                if (_profile!.clinic.isNotEmpty) ...[
+                  Column(
+                    children: [
+                      Text(
+                        "Clinica",
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.mediumGray,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXxs),
+                      Text(
+                        _profile!.clinic,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                if (!_isAdmin && _profile!.clinic.isNotEmpty)
-                  Text(
-                    _profile!.clinic,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.mediumGray,
-                    ),
-                  ),
+                ],
               ],
             ),
-          ),
+          ],
         ],
       ),
     );

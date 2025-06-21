@@ -318,6 +318,7 @@ class AuthRepository {
   Future<bool> updatePassword({
     required String currentPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
     try {
       _logger.d('Attempting to update password');
@@ -327,6 +328,7 @@ class AuthRepository {
         data: {
           'current_password': currentPassword,
           'new_password': newPassword,
+          'confirm_password': confirmPassword,
         },
       );
 

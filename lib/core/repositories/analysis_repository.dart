@@ -34,7 +34,7 @@ class AnalysisRepository {
       });
 
       final response = await _apiService.post(
-        '/analysis/pdf_analysis',
+        '/api/v1/analysis/pdf_analysis',
         data: formData,
       );
 
@@ -60,7 +60,7 @@ class AnalysisRepository {
       _logger.d('📄 REPO: Getting analysis result: $diagnosticId');
 
       final response = await _apiService.get(
-        '/analysis/pdf_analysis_result/$diagnosticId',
+        '/api/v1/analysis/pdf_analysis_result/$diagnosticId',
       );
 
       if (response.statusCode == 200) {
@@ -87,7 +87,7 @@ class AnalysisRepository {
       _logger.d('📄 REPO: Getting patient analysis results: $patientId');
 
       final response = await _apiService.get(
-        '/analysis/patient/$patientId/results',
+        '/api/v1/analysis/patient/$patientId/results',
       );
 
       if (response.statusCode == 200) {

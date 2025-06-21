@@ -3,7 +3,6 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
 import '../buttons/button_variants.dart';
-import '../buttons/button.dart';
 
 /// A custom dialog component with a consistent design across the app.
 ///

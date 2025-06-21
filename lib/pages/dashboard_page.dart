@@ -8,9 +8,10 @@ import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
-import '../components/dialogs/app_custom_dialog.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
+import '../core/services/logout_service.dart';
+import '../utils/auth_utils.dart';
 
 /// Patient health status enum for UI display
 enum PatientHealthStatus { healthy, needsAttention, critical }
@@ -48,24 +49,6 @@ class _DashboardPageState extends State<DashboardPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  /// Performs logout operation with confirmation dialog
-  void _performLogout(BuildContext context) {
-    showConfirmationDialog(
-      context: context,
-      title: 'Conferma Logout',
-      message: 'Sei sicuro di voler uscire dal tuo account?',
-      confirmText: 'Esci',
-      cancelText: 'Annulla',
-      isDestructive: true,
-    ).then((confirmed) {
-      if (confirmed == true) {
-        // Clear any stored authentication state here
-        // For now, redirect to login page
-        context.go('/login');
-      }
-    });
   }
 
   Color _getStatusColor(PatientHealthStatus status) {
@@ -114,6 +97,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple auth check - show login screen if not authenticated
+    if (!AuthUtils.isAuthenticated(context)) {
+      return AuthUtils.buildLoginRequiredScreen(context);
+    }
+
     return Stack(
       children: [
         CupertinoPageScaffold(
@@ -136,10 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 AppHeader(
                   showAuth: true,
                   onProfileTap: () => context.go('/profile'),
-                  onLogoutTap: () {
-                    // Perform logout operation
-                    _performLogout(context);
-                  },
+                  onLogoutTap: () => LogoutService.showLogoutDialog(context),
                 ),
 
                 // Main Content

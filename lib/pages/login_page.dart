@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/dialogs/app_custom_dialog.dart';
+import '../components/navigation/app_header.dart';
 import '../core/models/auth_models.dart';
 import '../core/providers/auth_provider.dart';
 import '../theme/app_colors.dart';
@@ -165,18 +166,15 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      print('🔑 LOGIN PAGE: Starting login process');
+      print('🔑 LOGIN: Attempting login');
       final success = await authProvider.login(
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
 
       if (success) {
-        // Navigation will be handled automatically by the router
-        // due to the authentication state change - no need for dialog
-        print(
-          '🔑 LOGIN PAGE: Login successful, router should handle navigation',
-        );
+        print('✅ LOGIN: Success - navigating to dashboard');
+        context.go('/dashboard');
       } else {
         // Show error from auth provider
         final errorMessage =
@@ -307,26 +305,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
           child: Column(
             children: [
-              // Back Button - Fixed at top
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingM),
-                child: Row(
-                  children: [
-                    GhostButton(
-                      size: ButtonSize.small,
-                      onPressed: () => context.go('/'),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(CupertinoIcons.chevron_left, size: 16),
-                          SizedBox(width: AppDimensions.spacingXs),
-                          Text('Torna alla Home'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Header with back button
+              const LoginHeader(),
 
               // Main Content - Centered
               Expanded(

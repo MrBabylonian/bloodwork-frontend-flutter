@@ -11,6 +11,8 @@ import '../components/cards/info_card.dart';
 import '../components/display/badge.dart';
 import '../core/providers/patient_provider.dart';
 import '../core/models/patient_models.dart';
+import '../core/services/logout_service.dart';
+import '../utils/auth_utils.dart';
 
 /// Blood work finding model
 class BloodworkFinding {
@@ -210,6 +212,11 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple auth check - show login screen if not authenticated
+    if (!AuthUtils.isAuthenticated(context)) {
+      return AuthUtils.buildLoginRequiredScreen(context);
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundWhite,
       child: Column(
@@ -219,7 +226,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             title: Text("Dettagli Paziente", style: AppTextStyles.title2),
             showAuth: true,
             onProfileTap: () => context.go('/profile'),
-            onLogoutTap: () => context.go('/login'),
+            onLogoutTap: () => LogoutService.showLogoutDialog(context),
           ),
 
           // Content

@@ -283,11 +283,13 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updatePassword({
     required String currentPassword,
     required String newPassword,
+    required String confirmPassword,
   }) async {
     try {
       final success = await _authRepository.updatePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
+        confirmPassword: confirmPassword,
       );
 
       return success;

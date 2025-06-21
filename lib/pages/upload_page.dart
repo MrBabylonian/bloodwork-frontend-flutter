@@ -12,9 +12,9 @@ import '../components/cards/info_card.dart';
 import '../components/forms/file_upload.dart';
 import '../components/feedback/app_progress_indicator.dart';
 import '../core/providers/analysis_provider.dart';
-import '../core/providers/patient_provider.dart';
-import '../core/models/patient_models.dart';
 import '../components/dialogs/app_custom_dialog.dart';
+import '../core/services/logout_service.dart';
+import '../utils/auth_utils.dart';
 
 /// Upload page for analyzing bloodwork files
 class UploadPage extends StatefulWidget {
@@ -164,6 +164,11 @@ class _UploadPageState extends State<UploadPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple auth check - show login screen if not authenticated
+    if (!AuthUtils.isAuthenticated(context)) {
+      return AuthUtils.buildLoginRequiredScreen(context);
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundWhite,
       child: Column(
@@ -173,7 +178,7 @@ class _UploadPageState extends State<UploadPage> {
             title: const Text("Carica File", style: AppTextStyles.title2),
             showAuth: true,
             onProfileTap: () => context.go('/profile'),
-            onLogoutTap: () => context.go('/login'),
+            onLogoutTap: () => LogoutService.showLogoutDialog(context),
           ),
 
           // Content

@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
 import '../components/buttons/index.dart';
+import '../components/navigation/app_header.dart';
 
 // Data models for the landing page sections
 class FeatureItem {
@@ -30,9 +31,14 @@ class StatItem {
   });
 }
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
 
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
   // Features data in Italian
   static const List<FeatureItem> features = [
     FeatureItem(
@@ -82,7 +88,7 @@ class LandingPage extends StatelessWidget {
         child: Column(
           children: [
             // Header
-            _buildHeader(context),
+            const LandingHeader(),
 
             // Hero Section
             _buildHeroSection(context),
@@ -100,80 +106,6 @@ class LandingPage extends StatelessWidget {
             _buildFooter(context),
           ],
         ),
-      ),
-    );
-  }
-
-  // Header with navigation
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingS,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundWhite.withValues(alpha: 0.95),
-        border: const Border(
-          bottom: BorderSide(color: AppColors.borderGray, width: 0.5),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryBlue, Color(0xFF4A90E2)],
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusSmall,
-                  ),
-                ),
-                child: const Center(
-                  child: Text(
-                    'V',
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Text(
-                'VetAnalytics',
-                style: AppTextStyles.title3.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-
-          // Navigation buttons
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GhostButton(
-                size: ButtonSize.small,
-                onPressed: () => context.go('/login'),
-                child: const Text('Accedi'),
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              PrimaryButton(
-                size: ButtonSize.small,
-                onPressed: () => context.go('/login'),
-                child: const Text('Inizia'),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
