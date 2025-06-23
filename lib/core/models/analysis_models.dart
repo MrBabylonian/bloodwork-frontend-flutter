@@ -46,6 +46,8 @@ class AnalysisResult {
   final DateTime createdAt;
   final DateTime? completedAt;
   final Map<String, dynamic>? results;
+  final Map<String, dynamic>? aiDiagnostic;
+  final Map<String, dynamic>? diagnosticSummary;
   final String? errorMessage;
 
   const AnalysisResult({
@@ -55,12 +57,14 @@ class AnalysisResult {
     required this.createdAt,
     this.completedAt,
     this.results,
+    this.aiDiagnostic,
+    this.diagnosticSummary,
     this.errorMessage,
   });
 
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
     return AnalysisResult(
-      id: json['id'] ?? '',
+      id: json['diagnostic_id'] ?? json['id'] ?? '',
       patientId: json['patient_id'] ?? '',
       status: json['status'] ?? 'pending',
       createdAt: DateTime.parse(json['created_at']),
@@ -69,6 +73,8 @@ class AnalysisResult {
               ? DateTime.parse(json['completed_at'])
               : null,
       results: json['results'],
+      aiDiagnostic: json['ai_diagnostic'],
+      diagnosticSummary: json['diagnostic_summary'],
       errorMessage: json['error_message'],
     );
   }

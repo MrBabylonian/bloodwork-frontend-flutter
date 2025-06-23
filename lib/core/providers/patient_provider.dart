@@ -19,6 +19,13 @@ class PatientProvider extends ChangeNotifier {
   List<PatientModel> _patients = [];
   String? _errorMessage;
 
+  // Pagination state
+  int _currentPage = 1;
+  int _limit = 10;
+  int _totalPatients = 0;
+  bool _hasMorePages = false;
+  bool _isLoadingMore = false;
+
   // Getters
   PatientStatus get status => _status;
   List<PatientModel> get patients => _patients;
@@ -27,39 +34,127 @@ class PatientProvider extends ChangeNotifier {
   bool get hasError => _status == PatientStatus.error;
   bool get isEmpty => _status == PatientStatus.empty;
 
-  /// Load all patients
-  Future<void> loadPatients() async {
+  // Pagination getters
+  int get currentPage => _currentPage;
+  int get limit => _limit;
+  int get totalPatients => _totalPatients;
+  bool get hasMorePages => _hasMorePages;
+  bool get isLoadingMore => _isLoadingMore;
+
+  /// Load patients with pagination
+  Future<void> loadPatients({bool reset = false}) async {
     try {
-      _logger.d('🏥 PROVIDER: Loading patients');
-      _setStatus(PatientStatus.loading);
+      if (reset) {
+        _currentPage = 1;
+        _logger.d('🏥 PROVIDER: Resetting pagination and loading patients');
+        _setStatus(PatientStatus.loading);
+      } else {
+        _logger.d('🏥 PROVIDER: Loading patients (page $_currentPage)');
+        if (_currentPage == 1) {
+          _setStatus(PatientStatus.loading);
+        }
+      }
 
-      final patients = await _patientRepository.getAllPatients();
+      final response = await _patientRepository.getAllPatients(
+        page: _currentPage,
+        limit: _limit,
+      );
 
-      _patients = patients;
-      _setStatus(patients.isEmpty ? PatientStatus.empty : PatientStatus.loaded);
-      _logger.d('🏥 PROVIDER: Loaded ${patients.length} patients');
+      // Update pagination state
+      _totalPatients = response.total;
+
+      // Calculate if there are more pages
+      _hasMorePages = (_currentPage * _limit) < response.total;
+
+      // Update patients list
+      if (reset || _currentPage == 1) {
+        _patients = response.patients;
+      } else {
+        _patients.addAll(response.patients);
+      }
+
+      _setStatus(
+        response.patients.isEmpty && _patients.isEmpty
+            ? PatientStatus.empty
+            : PatientStatus.loaded,
+      );
+
+      _logger.d(
+        '🏥 PROVIDER: Loaded ${response.patients.length} patients ' +
+            '(page $_currentPage of ${(response.total + _limit - 1) ~/ _limit})',
+      );
     } catch (e) {
       _logger.e('🏥 PROVIDER: Error loading patients: $e');
       _setError('Failed to load patients');
     }
   }
 
-  /// Search patients
-  Future<void> searchPatients(String query) async {
+  /// Load next page of patients
+  Future<void> loadMorePatients() async {
+    if (!_hasMorePages || _isLoadingMore) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    _currentPage++;
+    await loadPatients();
+
+    _isLoadingMore = false;
+    notifyListeners();
+  }
+
+  /// Search patients with pagination
+  Future<void> searchPatients(String query, {bool reset = false}) async {
     if (query.isEmpty) {
-      await loadPatients();
+      await loadPatients(reset: true);
       return;
     }
 
     try {
-      _logger.d('🏥 PROVIDER: Searching patients: $query');
-      _setStatus(PatientStatus.loading);
+      if (reset) {
+        _currentPage = 1;
+        _logger.d(
+          '🏥 PROVIDER: Resetting pagination and searching patients: $query',
+        );
+        _setStatus(PatientStatus.loading);
+      } else {
+        _logger.d(
+          '🏥 PROVIDER: Searching patients: $query (page $_currentPage)',
+        );
+        if (_currentPage == 1) {
+          _setStatus(PatientStatus.loading);
+        }
+      }
 
-      final patients = await _patientRepository.searchPatients(query);
+      final response = await _patientRepository.searchPatients(
+        query,
+        page: _currentPage,
+        limit: _limit,
+      );
 
-      _patients = patients;
-      _setStatus(patients.isEmpty ? PatientStatus.empty : PatientStatus.loaded);
-      _logger.d('🏥 PROVIDER: Found ${patients.length} patients');
+      // Update pagination state
+      _totalPatients = response.total;
+
+      // Calculate if there are more pages
+      _hasMorePages = (_currentPage * _limit) < response.total;
+
+      // Update patients list
+      if (reset || _currentPage == 1) {
+        _patients = response.patients;
+      } else {
+        _patients.addAll(response.patients);
+      }
+
+      _setStatus(
+        response.patients.isEmpty && _patients.isEmpty
+            ? PatientStatus.empty
+            : PatientStatus.loaded,
+      );
+
+      _logger.d(
+        '🏥 PROVIDER: Found ${response.patients.length} patients matching "$query" ' +
+            '(page $_currentPage of ${(response.total + _limit - 1) ~/ _limit})',
+      );
     } catch (e) {
       _logger.e('🏥 PROVIDER: Error searching patients: $e');
       _setError('Failed to search patients');
@@ -80,7 +175,7 @@ class PatientProvider extends ChangeNotifier {
 
   /// Refresh patients
   Future<void> refresh() async {
-    await loadPatients();
+    await loadPatients(reset: true);
   }
 
   /// Create new patient

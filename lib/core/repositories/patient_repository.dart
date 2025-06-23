@@ -13,19 +13,30 @@ class PatientRepository {
   PatientRepository({required ApiService apiService})
     : _apiService = apiService;
 
-  /// Get all patients
-  Future<List<PatientModel>> getAllPatients() async {
+  /// Get all patients with pagination
+  ///
+  /// @param page Page number (1-indexed)
+  /// @param limit Number of items per page
+  Future<PatientListResponse> getAllPatients({
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      _logger.d('🏥 Fetching all patients');
+      _logger.d('🏥 Fetching patients (page: $page, limit: $limit)');
 
-      final response = await _apiService.get('/api/v1/patients/');
-      final List<dynamic> patientsJson = response.data;
+      final response = await _apiService.get(
+        '/api/v1/patients/',
+        queryParameters: {'page': page, 'limit': limit},
+      );
 
-      final patients =
-          patientsJson.map((json) => PatientModel.fromJson(json)).toList();
+      final patientListResponse = PatientListResponse.fromJson(response.data);
 
-      _logger.d('🏥 Successfully fetched ${patients.length} patients');
-      return patients;
+      _logger.d(
+        '🏥 Successfully fetched ${patientListResponse.patients.length} patients ' +
+            '(page ${patientListResponse.page} of ${(patientListResponse.total + patientListResponse.limit - 1) ~/ patientListResponse.limit})',
+      );
+
+      return patientListResponse;
     } catch (e) {
       _logger.e('🏥 Error fetching patients: $e');
       throw Exception('Failed to fetch patients: $e');
@@ -113,21 +124,42 @@ class PatientRepository {
   }
 
   /// Search patients by name
-  Future<List<PatientModel>> searchPatients(String name) async {
+  ///
+  /// @param name Name to search for
+  /// @param page Page number (1-indexed)
+  /// @param limit Number of items per page
+  Future<PatientListResponse> searchPatients(
+    String name, {
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      _logger.d('🏥 Searching patients with name: $name');
+      _logger.d(
+        '🏥 Searching patients with name: $name (page: $page, limit: $limit)',
+      );
 
-      final response = await _apiService.get('/api/v1/patients/search/$name');
-      final List<dynamic> patientsJson = response.data;
+      final response = await _apiService.get(
+        '/api/v1/patients/search/$name',
+        queryParameters: {'page': page, 'limit': limit},
+      );
 
-      final patients =
-          patientsJson.map((json) => PatientModel.fromJson(json)).toList();
+      final patientListResponse = PatientListResponse.fromJson(response.data);
 
-      _logger.d('🏥 Found ${patients.length} patients matching: $name');
-      return patients;
+      _logger.d(
+        '🏥 Found ${patientListResponse.patients.length} patients matching: $name ' +
+            '(page ${patientListResponse.page} of ${(patientListResponse.total + patientListResponse.limit - 1) ~/ patientListResponse.limit})',
+      );
+
+      return patientListResponse;
     } catch (e) {
       _logger.e('🏥 Error searching patients: $e');
-      return [];
+      // Return empty response instead of throwing
+      return PatientListResponse(
+        patients: [],
+        total: 0,
+        page: page,
+        limit: limit,
+      );
     }
   }
 }

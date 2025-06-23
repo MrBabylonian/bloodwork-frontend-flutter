@@ -58,12 +58,11 @@ class PatientModel {
   final String name;
   final String species;
   final String breed;
-  final PatientAge age;
+  final DateTime birthdate;
   final String sex;
   final double? weight;
   final PatientOwnerInfo ownerInfo;
   final Map<String, dynamic> medicalHistory;
-  final Map<String, dynamic> diagnosticSummary;
 
   /// ID of the user who created the patient (e.g., VET-001 or TEC-001)
   final String createdBy;
@@ -80,12 +79,11 @@ class PatientModel {
     required this.name,
     required this.species,
     required this.breed,
-    required this.age,
+    required this.birthdate,
     required this.sex,
     required this.weight,
     required this.ownerInfo,
     required this.medicalHistory,
-    required this.diagnosticSummary,
     required this.createdBy,
     required this.assignedTo,
     required this.createdAt,
@@ -100,12 +98,11 @@ class PatientModel {
       name: json['name'],
       species: json['species'],
       breed: json['breed'],
-      age: PatientAge.fromJson(json['age']),
+      birthdate: DateTime.parse(json['birthdate']),
       sex: json['sex'],
       weight: json['weight']?.toDouble(),
       ownerInfo: PatientOwnerInfo.fromJson(json['owner_info']),
       medicalHistory: json['medical_history'] ?? {},
-      diagnosticSummary: json['diagnostic_summary'] ?? {},
       createdBy: json['created_by'],
       assignedTo: json['assigned_to'],
       createdAt: DateTime.parse(json['created_at']),
@@ -121,12 +118,11 @@ class PatientModel {
       'name': name,
       'species': species,
       'breed': breed,
-      'age': age.toJson(),
+      'birthdate': birthdate.toIso8601String(),
       'sex': sex,
       'weight': weight,
       'owner_info': ownerInfo.toJson(),
       'medical_history': medicalHistory,
-      'diagnostic_summary': diagnosticSummary,
       'created_by': createdBy,
       'assigned_to': assignedTo,
       'created_at': createdAt.toIso8601String(),
@@ -134,13 +130,37 @@ class PatientModel {
       'is_active': isActive,
     };
   }
+
+  /// Calculate age based on birthdate
+  PatientAge get age {
+    final now = DateTime.now();
+    int years = now.year - birthdate.year;
+    int months = now.month - birthdate.month;
+
+    // Adjust years and months if needed
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    // Further adjustment for day of month
+    if (now.day < birthdate.day) {
+      months--;
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+    }
+
+    return PatientAge(years: years, months: months);
+  }
 }
 
 class PatientCreateRequest {
   final String name;
   final String species;
   final String breed;
-  final PatientAge age;
+  final DateTime birthdate;
   final String sex;
   final double? weight;
   final PatientOwnerInfo ownerInfo;
@@ -150,7 +170,7 @@ class PatientCreateRequest {
     required this.name,
     required this.species,
     required this.breed,
-    required this.age,
+    required this.birthdate,
     required this.sex,
     this.weight,
     required this.ownerInfo,
@@ -162,7 +182,7 @@ class PatientCreateRequest {
       'name': name,
       'species': species,
       'breed': breed,
-      'age': age.toJson(),
+      'birthdate': birthdate.toIso8601String(),
       'sex': sex,
       'weight': weight,
       'owner_info': ownerInfo.toJson(),
@@ -175,23 +195,21 @@ class PatientUpdateRequest {
   final String? name;
   final String? species;
   final String? breed;
-  final PatientAge? age;
+  final DateTime? birthdate;
   final String? sex;
   final double? weight;
   final PatientOwnerInfo? ownerInfo;
   final Map<String, dynamic>? medicalHistory;
-  final Map<String, dynamic>? diagnosticSummary;
 
   const PatientUpdateRequest({
     this.name,
     this.species,
     this.breed,
-    this.age,
+    this.birthdate,
     this.sex,
     this.weight,
     this.ownerInfo,
     this.medicalHistory,
-    this.diagnosticSummary,
   });
 
   Map<String, dynamic> toJson() {
@@ -199,13 +217,11 @@ class PatientUpdateRequest {
     if (name != null) json['name'] = name;
     if (species != null) json['species'] = species;
     if (breed != null) json['breed'] = breed;
-    if (age != null) json['age'] = age!.toJson();
+    if (birthdate != null) json['birthdate'] = birthdate!.toIso8601String();
     if (sex != null) json['sex'] = sex;
     if (weight != null) json['weight'] = weight;
     if (ownerInfo != null) json['owner_info'] = ownerInfo!.toJson();
     if (medicalHistory != null) json['medical_history'] = medicalHistory;
-    if (diagnosticSummary != null)
-      json['diagnostic_summary'] = diagnosticSummary;
     return json;
   }
 }

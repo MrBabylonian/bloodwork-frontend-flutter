@@ -11,6 +11,8 @@ import '../components/cards/info_card.dart';
 import '../components/display/badge.dart';
 import '../core/providers/patient_provider.dart';
 import '../core/models/patient_models.dart';
+import '../core/providers/analysis_provider.dart';
+import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
 
@@ -31,22 +33,57 @@ class BloodworkFinding {
   });
 }
 
-/// Blood work result model
-class BloodworkResult {
-  final String id;
-  final DateTime date;
-  final String type;
-  final String status;
-  final String summary;
-  final List<BloodworkFinding> findings;
+/// Diagnostic plan item
+class DiagnosticPlanItem {
+  final String exam;
+  final String priority;
+  final String invasiveness;
 
-  const BloodworkResult({
-    required this.id,
-    required this.date,
+  const DiagnosticPlanItem({
+    required this.exam,
+    required this.priority,
+    required this.invasiveness,
+  });
+}
+
+/// Treatment item
+class TreatmentItem {
+  final String name;
+  final String? dosage;
+  final String? route;
+  final String? duration;
+  final String type; // 'farmaco', 'supplemento', 'supporto'
+
+  const TreatmentItem({
+    required this.name,
+    this.dosage,
+    this.route,
+    this.duration,
     required this.type,
-    required this.status,
-    required this.summary,
-    required this.findings,
+  });
+}
+
+/// Differential diagnosis
+class DifferentialDiagnosis {
+  final String diagnosis;
+  final String confidence;
+
+  const DifferentialDiagnosis({
+    required this.diagnosis,
+    required this.confidence,
+  });
+}
+
+/// Mathematical analysis result
+class MathematicalAnalysis {
+  final String name;
+  final String value;
+  final String interpretation;
+
+  const MathematicalAnalysis({
+    required this.name,
+    required this.value,
+    required this.interpretation,
   });
 }
 
@@ -75,10 +112,30 @@ class PatientDetailsPage extends StatefulWidget {
 
 class _PatientDetailsPageState extends State<PatientDetailsPage> {
   PatientModel? _patient;
+  AnalysisResult? _latestAnalysis;
   bool _isLoading = true;
+  bool _isLoadingAnalysis = true;
   String? _errorMessage;
-  late List<BloodworkResult> _bloodworkResults;
-  late List<MedicalHistoryEntry> _medicalHistory;
+
+  // Processed data for display
+  List<BloodworkFinding> _bloodworkFindings = [];
+  List<MathematicalAnalysis> _mathematicalAnalyses = [];
+  List<String> _clinicalAlterations = [];
+  List<DifferentialDiagnosis> _differentialDiagnoses = [];
+  Map<String, String> _compatiblePatterns = {};
+  List<DiagnosticPlanItem> _diagnosticPlan = [];
+  List<TreatmentItem> _treatments = [];
+  List<String> _redFlags = [];
+  List<MedicalHistoryEntry> _medicalHistory = [];
+
+  String? _diagnosticSummary;
+  String? _cytologyReport;
+  String? _urgencyLevel;
+  String? _urgencyReason;
+  String? _followUpPeriod;
+  List<String> _monitoringParameters = [];
+  String? _ownerEducation;
+  String? _prognosis;
 
   @override
   void initState() {
@@ -104,7 +161,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           _patient = patient;
           _isLoading = false;
         });
-        _loadMockAnalysisData(); // For now, keep mock analysis data
+        _loadAnalysisData();
       } else {
         setState(() {
           _isLoading = false;
@@ -119,58 +176,258 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
     }
   }
 
-  void _loadMockAnalysisData() {
-    // Mock bloodwork results (keep for now until we connect to analysis API)
-    _bloodworkResults = [
-      // Check if diagnostic summary exists and has data
-      if (_patient!.diagnosticSummary.isNotEmpty)
-        BloodworkResult(
-          id: "1",
-          date: _patient!.updatedAt,
-          type: "Analisi Disponibile",
-          status: "normal",
-          summary: "Dati di analisi salvati nel sistema",
-          findings: [
-            const BloodworkFinding(
-              parameter: "Stato Analisi",
-              value: "Disponibile",
-              unit: "",
-              range: "",
-              status: "normal",
-            ),
-          ],
-        ),
-    ];
+  Future<void> _loadAnalysisData() async {
+    try {
+      setState(() {
+        _isLoadingAnalysis = true;
+      });
 
-    // Real medical history from patient data
+      final analysisProvider = Provider.of<AnalysisProvider>(
+        context,
+        listen: false,
+      );
+
+      final latestAnalysis = await analysisProvider.getLatestAnalysisForPatient(
+        widget.patientId,
+      );
+
+      setState(() {
+        _latestAnalysis = latestAnalysis;
+        _isLoadingAnalysis = false;
+      });
+
+      _processAnalysisData();
+    } catch (e) {
+      setState(() {
+        _isLoadingAnalysis = false;
+      });
+    }
+  }
+
+  void _processAnalysisData() {
+    if (_latestAnalysis == null) {
+      debugPrint('❌ No analysis found');
+      return;
+    }
+
+    debugPrint('📊 Processing analysis data for ${_latestAnalysis!.id}');
+
+    // The AI diagnostic data is in the aiDiagnostic field
+    final aiDiagnostic = _latestAnalysis!.aiDiagnostic;
+
+    if (aiDiagnostic == null) {
+      debugPrint('❌ No aiDiagnostic found in analysis');
+      return;
+    }
+
+    debugPrint('🔍 AI Diagnostic data keys: ${aiDiagnostic.keys}');
+
+    // Process parameters
+    final parametri = aiDiagnostic['parametri'] as List<dynamic>?;
+    debugPrint('📋 Parameters found: ${parametri?.length ?? 0}');
+
+    if (parametri != null) {
+      _bloodworkFindings =
+          parametri.map((param) {
+            return BloodworkFinding(
+              parameter: param['parametro'] ?? '',
+              value: param['valore'] ?? '',
+              unit: param['unita'] ?? '',
+              range: param['range'] ?? '',
+              status: param['stato'] ?? 'normale',
+            );
+          }).toList();
+      debugPrint('✅ Processed ${_bloodworkFindings.length} bloodwork findings');
+    } else {
+      debugPrint('❌ No parametri found in ai_diagnostic');
+    }
+
+    // Process mathematical analysis
+    final analisiMatematica =
+        aiDiagnostic['analisi_matematica'] as Map<String, dynamic>?;
+    if (analisiMatematica != null) {
+      _mathematicalAnalyses =
+          analisiMatematica.entries.map((entry) {
+            final data = entry.value as Map<String, dynamic>;
+            return MathematicalAnalysis(
+              name: _formatMathAnalysisName(entry.key),
+              value: data['valore'] ?? '',
+              interpretation: data['interpretazione'] ?? '',
+            );
+          }).toList();
+      debugPrint(
+        '✅ Processed ${_mathematicalAnalyses.length} mathematical analyses',
+      );
+    }
+
+    // Process clinical interpretation
+    final interpretazioneClinica =
+        aiDiagnostic['interpretazione_clinica'] as Map<String, dynamic>?;
+    if (interpretazioneClinica != null) {
+      _clinicalAlterations = List<String>.from(
+        interpretazioneClinica['alterazioni'] ?? [],
+      );
+
+      final diagnosiDifferenziali =
+          interpretazioneClinica['diagnosi_differenziali'] as List<dynamic>?;
+      if (diagnosiDifferenziali != null) {
+        _differentialDiagnoses =
+            diagnosiDifferenziali.map((diag) {
+              return DifferentialDiagnosis(
+                diagnosis: diag['diagnosi'] ?? '',
+                confidence: diag['confidenza'] ?? '',
+              );
+            }).toList();
+      }
+
+      // Process compatible patterns
+      final patternCompatibili =
+          interpretazioneClinica['pattern_compatibili']
+              as Map<String, dynamic>?;
+      if (patternCompatibili != null) {
+        _compatiblePatterns = Map<String, String>.from(patternCompatibili);
+      }
+    }
+
+    // Process diagnostic plan
+    final pianoDiagnostico =
+        aiDiagnostic['piano_diagnostico'] as List<dynamic>?;
+    if (pianoDiagnostico != null) {
+      _diagnosticPlan =
+          pianoDiagnostico.map((plan) {
+            return DiagnosticPlanItem(
+              exam: plan['esame'] ?? '',
+              priority: plan['priorita'] ?? '',
+              invasiveness: plan['invasivita'] ?? '',
+            );
+          }).toList();
+    }
+
+    // Process treatments
+    final terapia = aiDiagnostic['terapia'] as Map<String, dynamic>?;
+    if (terapia != null) {
+      _treatments = [];
+
+      // Add medications
+      final farmaci = terapia['farmaci'] as List<dynamic>?;
+      if (farmaci != null) {
+        _treatments.addAll(
+          farmaci.map((farmaco) {
+            return TreatmentItem(
+              name: farmaco['nome'] ?? '',
+              dosage: farmaco['dosaggio'],
+              route: farmaco['via'],
+              duration: farmaco['durata'],
+              type: 'farmaco',
+            );
+          }),
+        );
+      }
+
+      // Add supplements
+      final supplementi = terapia['supplementi'] as List<dynamic>?;
+      if (supplementi != null) {
+        _treatments.addAll(
+          supplementi.map((supp) {
+            return TreatmentItem(name: supp.toString(), type: 'supplemento');
+          }),
+        );
+      }
+
+      // Add supports
+      final supporti = terapia['supporti'] as List<dynamic>?;
+      if (supporti != null) {
+        _treatments.addAll(
+          supporti.map((supp) {
+            return TreatmentItem(name: supp.toString(), type: 'supporto');
+          }),
+        );
+      }
+    }
+
+    // Process other fields
+    _diagnosticSummary = aiDiagnostic['sintesi_diagnostica'];
+    _cytologyReport = aiDiagnostic['referto_citologico'];
+    _ownerEducation = aiDiagnostic['educazione_proprietario'];
+
+    final classificazioneUrgenza =
+        aiDiagnostic['classificazione_urgenza'] as Map<String, dynamic>?;
+    if (classificazioneUrgenza != null) {
+      _urgencyLevel = classificazioneUrgenza['livello'];
+      _urgencyReason = classificazioneUrgenza['motivazione'];
+    }
+
+    final followUp = aiDiagnostic['follow_up'] as Map<String, dynamic>?;
+    if (followUp != null) {
+      _followUpPeriod = followUp['ripetere_esami'];
+      _monitoringParameters = List<String>.from(followUp['monitorare'] ?? []);
+      _prognosis = followUp['prognosi'];
+    }
+
+    _redFlags = List<String>.from(aiDiagnostic['bandierine_rosse'] ?? []);
+
+    // Process medical history
     _medicalHistory = [
       MedicalHistoryEntry(
         title: "Creazione Paziente",
         date: _patient!.createdAt,
         description:
-            "Paziente registrato nel sistema${_patient!.diagnosticSummary.isNotEmpty ? ' con dati di analisi.' : '. In attesa di analisi.'}",
+            "Paziente registrato nel sistema${_latestAnalysis != null ? ' con dati di analisi.' : '. In attesa di analisi.'}",
       ),
+      if (_latestAnalysis != null)
+        MedicalHistoryEntry(
+          title: "Ultima Analisi",
+          date: _latestAnalysis!.completedAt ?? _latestAnalysis!.createdAt,
+          description: _diagnosticSummary ?? "Analisi completata",
+        ),
       if (_patient!.medicalHistory.isNotEmpty)
         ...(_patient!.medicalHistory.entries.map(
           (entry) => MedicalHistoryEntry(
             title: entry.key,
-            date: _patient!.updatedAt, // Use updated date as fallback
+            date: _patient!.updatedAt,
             description: entry.value.toString(),
           ),
         )),
     ];
+
+    debugPrint(
+      '✅ Data processing complete. Findings: ${_bloodworkFindings.length}, Summary: ${_diagnosticSummary != null}',
+    );
+  }
+
+  String _formatMathAnalysisName(String key) {
+    switch (key) {
+      case 'bun_creatinina':
+        return 'BUN/Creatinina';
+      case 'calcio_fosforo':
+        return 'Calcio/Fosforo';
+      case 'neutrofili_linfociti':
+        return 'Neutrofili/Linfociti';
+      case 'na_k':
+        return 'Na/K';
+      case 'albumina_globuline':
+        return 'Albumina/Globuline';
+      default:
+        return key;
+    }
+  }
+
+  String _formatPatternName(String key) {
+    // Convert snake_case to title case
+    return key
+        .split('_')
+        .map((word) => word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
   }
 
   AppBadgeVariant _getStatusVariant(String status) {
     switch (status.toLowerCase()) {
-      case 'normal':
+      case 'normale':
         return AppBadgeVariant.success;
-      case 'attention':
+      case 'alterato_lieve':
         return AppBadgeVariant.warning;
-      case 'high':
+      case 'alterato_grave':
         return AppBadgeVariant.destructive;
-      case 'healthy':
-        return AppBadgeVariant.success;
       default:
         return AppBadgeVariant.secondary;
     }
@@ -178,14 +435,12 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
-      case 'normal':
+      case 'normale':
         return CupertinoIcons.checkmark_circle_fill;
-      case 'attention':
+      case 'alterato_lieve':
         return CupertinoIcons.exclamationmark_triangle_fill;
-      case 'high':
-        return CupertinoIcons.arrow_up_circle_fill;
-      case 'healthy':
-        return CupertinoIcons.heart_fill;
+      case 'alterato_grave':
+        return CupertinoIcons.xmark_circle_fill;
       default:
         return CupertinoIcons.circle_fill;
     }
@@ -193,16 +448,53 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
   String _getStatusLabel(String status) {
     switch (status.toLowerCase()) {
-      case 'normal':
+      case 'normale':
         return 'Normale';
-      case 'attention':
-        return 'Attenzione';
-      case 'high':
-        return 'Alto';
-      case 'healthy':
-        return 'Sano';
+      case 'alterato_lieve':
+        return 'Alterato Lieve';
+      case 'alterato_grave':
+        return 'Alterato Grave';
       default:
         return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'normale':
+        return AppColors.successGreen;
+      case 'alterato_lieve':
+        return AppColors.warningOrange;
+      case 'alterato_grave':
+        return AppColors.destructiveRed;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  AppBadgeVariant _getUrgencyVariant(String? urgency) {
+    switch (urgency?.toUpperCase()) {
+      case 'EMERGENZA':
+        return AppBadgeVariant.destructive;
+      case 'URGENZA A BREVE':
+        return AppBadgeVariant.warning;
+      case 'ROUTINE':
+        return AppBadgeVariant.success;
+      default:
+        return AppBadgeVariant.secondary;
+    }
+  }
+
+  AppBadgeVariant _getPriorityVariant(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'alta':
+        return AppBadgeVariant.destructive;
+      case 'media':
+        return AppBadgeVariant.warning;
+      case 'bassa':
+        return AppBadgeVariant.success;
+      default:
+        return AppBadgeVariant.secondary;
     }
   }
 
@@ -318,20 +610,20 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                     icon: CupertinoIcons.doc_text,
                   ),
                   AppTab(
+                    id: 'treatment',
+                    label: 'Piano Terapeutico',
+                    icon: CupertinoIcons.bandage,
+                  ),
+                  AppTab(
                     id: 'history',
                     label: 'Storia Medica',
                     icon: CupertinoIcons.time,
                   ),
-                  AppTab(
-                    id: 'trends',
-                    label: 'Tendenze',
-                    icon: CupertinoIcons.graph_square,
-                  ),
                 ],
                 children: [
                   _buildResultsTab(),
+                  _buildTreatmentTab(),
                   _buildHistoryTab(),
-                  _buildTrendsTab(),
                 ],
               ),
             ),
@@ -371,6 +663,14 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                                   ? CupertinoIcons.checkmark_circle_fill
                                   : CupertinoIcons.circle_fill,
                         ),
+                        if (_urgencyLevel != null) ...[
+                          const SizedBox(width: AppDimensions.spacingM),
+                          AppBadge(
+                            label: _urgencyLevel!,
+                            variant: _getUrgencyVariant(_urgencyLevel),
+                            icon: CupertinoIcons.exclamationmark_triangle_fill,
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: AppDimensions.spacingL),
@@ -462,6 +762,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         _buildInfoRow("Specie", _patient!.species),
         _buildInfoRow("Razza", _patient!.breed),
         _buildInfoRow("Età", _patient!.age.toString()),
+        _buildInfoRow("Data di nascita", _formatDate(_patient!.birthdate)),
         _buildInfoRow("Sesso", _patient!.sex),
         _buildInfoRow(
           "Peso",
@@ -488,7 +789,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         _buildInfoRow("Data Creazione", _formatDate(_patient!.createdAt)),
         _buildInfoRow("Ultimo Aggiornamento", _formatDate(_patient!.updatedAt)),
         _buildInfoRow("ID Paziente", _patient!.patientId),
-        _buildInfoRow("Totale Test", "${_bloodworkResults.length}"),
+        _buildInfoRow("Totale Test", _bloodworkFindings.isNotEmpty ? "1" : "0"),
       ],
     );
   }
@@ -500,7 +801,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 100,
             child: Text(
               "$label:",
               style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w500),
@@ -513,7 +814,20 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
   }
 
   Widget _buildResultsTab() {
-    if (_bloodworkResults.isEmpty) {
+    if (_isLoadingAnalysis) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CupertinoActivityIndicator(),
+            SizedBox(height: 16),
+            Text('Caricamento analisi...'),
+          ],
+        ),
+      );
+    }
+
+    if (_bloodworkFindings.isEmpty && _diagnosticSummary == null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -561,31 +875,75 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       child: Column(
-        children:
-            _bloodworkResults.asMap().entries.map((entry) {
-              final index = entry.key;
-              final result = entry.value;
-              return Container(
-                margin: EdgeInsets.only(
-                  bottom:
-                      index < _bloodworkResults.length - 1
-                          ? AppDimensions.spacingL
-                          : 0,
-                ),
-                child: _buildResultCard(result),
-              );
-            }).toList(),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Classificazione Urgenza
+          if (_urgencyLevel != null) ...[
+            _buildUrgencyClassificationCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 2. Sintesi Diagnostica
+          if (_diagnosticSummary != null) ...[
+            _buildDiagnosticSummaryCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 3. Educazione Al Proprietario
+          if (_ownerEducation != null) ...[
+            _buildOwnerEducationCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 4. Diagnosi Differenziali
+          if (_differentialDiagnoses.isNotEmpty) ...[
+            _buildDifferentialDiagnosesCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 5. Alterazioni Cliniche
+          if (_clinicalAlterations.isNotEmpty) ...[
+            _buildClinicalAlterationsCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 6. Pattern Compatibili
+          if (_compatiblePatterns.isNotEmpty) ...[
+            _buildCompatiblePatternsCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 7. Riferimento Citologico
+          if (_cytologyReport != null) ...[
+            _buildCytologyReportCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 8. Analisi Matematica
+          if (_mathematicalAnalyses.isNotEmpty) ...[
+            _buildMathematicalAnalysisCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 9. Bandierine Rosse
+          if (_redFlags.isNotEmpty) ...[
+            _buildRedFlagsCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // 10. Parametri Analizzati
+          if (_bloodworkFindings.isNotEmpty) ...[_buildParametersCard()],
+        ],
       ),
     );
   }
 
-  Widget _buildResultCard(BloodworkResult result) {
+  Widget _buildDiagnosticSummaryCard() {
     return InfoCard(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Container(
@@ -598,7 +956,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ),
                 ),
                 child: const Icon(
-                  CupertinoIcons.doc_text,
+                  CupertinoIcons.doc_text_search,
                   color: AppColors.primaryBlue,
                   size: 24,
                 ),
@@ -608,83 +966,516 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(result.type, style: AppTextStyles.title3),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.calendar,
-                          size: 16,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingXs),
-                        Text(
-                          _formatDate(result.date),
-                          style: AppTextStyles.body.copyWith(
+                    Text("Sintesi Diagnostica", style: AppTextStyles.title3),
+                    if (_latestAnalysis != null) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Row(
+                        children: [
+                          const Icon(
+                            CupertinoIcons.calendar,
+                            size: 16,
                             color: AppColors.textSecondary,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              AppBadge(
-                label: _getStatusLabel(result.status),
-                variant: _getStatusVariant(result.status),
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              SecondaryButton(
-                size: ButtonSize.small,
-                onPressed: () {
-                  // TODO: Implement download functionality
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.cloud_download, size: 14),
-                    SizedBox(width: AppDimensions.spacingXs),
-                    Text("Scarica"),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(
+                            _formatDate(
+                              _latestAnalysis!.completedAt ??
+                                  _latestAnalysis!.createdAt,
+                            ),
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: AppDimensions.spacingL),
+          Text(_diagnosticSummary!, style: AppTextStyles.body),
+        ],
+      ),
+    );
+  }
 
-          // Summary
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildUrgencyClassificationCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                "Riepilogo",
-                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+              const Icon(
+                CupertinoIcons.exclamationmark_triangle_fill,
+                color: AppColors.destructiveRed,
+                size: 20,
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.spacingS),
               Text(
-                result.summary,
-                style: AppTextStyles.body.copyWith(
+                "Classificazione Urgenza",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.destructiveRed,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          Row(
+            children: [
+              AppBadge(
+                label: _urgencyLevel!,
+                variant: _getUrgencyVariant(_urgencyLevel),
+                icon: CupertinoIcons.exclamationmark_triangle_fill,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                _urgencyReason ?? "Motivazione non disponibile",
+                style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildParametersCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Parametri Analizzati", style: AppTextStyles.title3),
           const SizedBox(height: AppDimensions.spacingL),
+          _buildResultsTable(_bloodworkFindings),
+        ],
+      ),
+    );
+  }
 
-          // Detailed Results Table
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Risultati Dettagliati",
-                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+  Widget _buildMathematicalAnalysisCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Analisi Matematica", style: AppTextStyles.title3),
+          const SizedBox(height: AppDimensions.spacingL),
+          ..._mathematicalAnalyses.map((analysis) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
               ),
-              const SizedBox(height: AppDimensions.spacingM),
-              _buildResultsTable(result.findings),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        analysis.name,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        analysis.value,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Text(
+                    analysis.interpretation,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClinicalAlterationsCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.exclamationmark_triangle_fill,
+                color: AppColors.destructiveRed,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Alterazioni Cliniche",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.destructiveRed,
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: AppDimensions.spacingL),
+          ..._clinicalAlterations.map((alteration) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.destructiveRed.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                border: Border.all(
+                  color: AppColors.destructiveRed.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.exclamationmark_circle_fill,
+                    color: AppColors.destructiveRed,
+                    size: 16,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Text(
+                      alteration,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.destructiveRed,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifferentialDiagnosesCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.exclamationmark_triangle_fill,
+                color: AppColors.destructiveRed,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Diagnosi Differenziali",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.destructiveRed,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          ..._differentialDiagnoses.map((diagnosis) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.destructiveRed.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                border: Border.all(
+                  color: AppColors.destructiveRed.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.exclamationmark_circle_fill,
+                    color: AppColors.destructiveRed,
+                    size: 16,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Text(
+                      "${diagnosis.diagnosis} (${diagnosis.confidence})",
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.destructiveRed,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCytologyReportCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.doc_text_search,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Riferimento Citologico",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          Text(_cytologyReport!, style: AppTextStyles.body),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompatiblePatternsCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.doc_checkmark,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Pattern Compatibili",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate how many columns can fit
+              const minCardWidth = 200.0;
+              const spacing = AppDimensions.spacingM;
+              final availableWidth = constraints.maxWidth;
+              final maxColumns =
+                  ((availableWidth + spacing) / (minCardWidth + spacing))
+                      .floor();
+              final actualColumns =
+                  (maxColumns < 1)
+                      ? 1
+                      : (maxColumns > _compatiblePatterns.length)
+                      ? _compatiblePatterns.length
+                      : maxColumns;
+
+              // Calculate uniform card width
+              final cardWidth =
+                  (availableWidth - (spacing * (actualColumns - 1))) /
+                  actualColumns;
+
+              // Group cards into rows for uniform height
+              final entries = _compatiblePatterns.entries.toList();
+              final rows = <List<MapEntry<String, String>>>[];
+
+              for (int i = 0; i < entries.length; i += actualColumns) {
+                final end =
+                    (i + actualColumns < entries.length)
+                        ? i + actualColumns
+                        : entries.length;
+                rows.add(entries.sublist(i, end));
+              }
+
+              return Column(
+                children:
+                    rows.map((rowEntries) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: rows.last == rowEntries ? 0 : spacing,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children:
+                                rowEntries.asMap().entries.map((indexedEntry) {
+                                  final index = indexedEntry.key;
+                                  final entry = indexedEntry.value;
+
+                                  return Expanded(
+                                    child: Container(
+                                      margin: EdgeInsets.only(
+                                        right:
+                                            index < rowEntries.length - 1
+                                                ? spacing
+                                                : 0,
+                                      ),
+                                      padding: const EdgeInsets.all(
+                                        AppDimensions.spacingM,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.backgroundSecondary
+                                            .withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(
+                                          AppDimensions.radiusMedium,
+                                        ),
+                                        border: Border.all(
+                                          color: AppColors.borderGray
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _formatPatternName(entry.key),
+                                            style: AppTextStyles.body.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.foregroundDark,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: AppDimensions.spacingXs,
+                                          ),
+                                          Text(
+                                            entry.value,
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOwnerEducationCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.person_fill,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Educazione Proprietario",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          Text(_ownerEducation!, style: AppTextStyles.body),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRedFlagsCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.exclamationmark_triangle_fill,
+                color: AppColors.destructiveRed,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text(
+                "Bandierine Rosse",
+                style: AppTextStyles.title3.copyWith(
+                  color: AppColors.destructiveRed,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          ..._redFlags.map((flag) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.destructiveRed.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                border: Border.all(
+                  color: AppColors.destructiveRed.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.exclamationmark_circle_fill,
+                    color: AppColors.destructiveRed,
+                    size: 16,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Text(
+                      flag,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.destructiveRed,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -773,7 +1564,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ),
                   Expanded(
                     child: Text(
-                      "${finding.value} ${finding.unit}",
+                      "${finding.value} ${finding.unit}".trim(),
                       style: AppTextStyles.body,
                     ),
                   ),
@@ -810,17 +1601,375 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'normal':
-        return AppColors.successGreen;
-      case 'attention':
-        return AppColors.warningOrange;
-      case 'high':
-        return AppColors.destructiveRed;
-      default:
-        return AppColors.textSecondary;
+  Widget _buildTreatmentTab() {
+    if (_isLoadingAnalysis) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CupertinoActivityIndicator(),
+            SizedBox(height: 16),
+            Text('Caricamento piano terapeutico...'),
+          ],
+        ),
+      );
     }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Diagnostic Plan
+          if (_diagnosticPlan.isNotEmpty) ...[
+            _buildDiagnosticPlanCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // Treatment Plan
+          if (_treatments.isNotEmpty) ...[
+            _buildTreatmentPlanCard(),
+            const SizedBox(height: AppDimensions.spacingL),
+          ],
+
+          // Follow-up Plan
+          if (_followUpPeriod != null || _monitoringParameters.isNotEmpty) ...[
+            _buildFollowUpCard(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticPlanCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.search,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text("Piano Diagnostico", style: AppTextStyles.title3),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+          ..._diagnosticPlan.map((plan) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          plan.exam,
+                          style: AppTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      AppBadge(
+                        label: "Priorità: ${plan.priority}",
+                        variant: _getPriorityVariant(plan.priority),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Row(
+                    children: [
+                      Text(
+                        "Invasività: ",
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        plan.invasiveness,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTreatmentPlanCard() {
+    final medications = _treatments.where((t) => t.type == 'farmaco').toList();
+    final supplements =
+        _treatments.where((t) => t.type == 'supplemento').toList();
+    final supports = _treatments.where((t) => t.type == 'supporto').toList();
+
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.bandage,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text("Piano Terapeutico", style: AppTextStyles.title3),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+
+          // Medications
+          if (medications.isNotEmpty) ...[
+            Text(
+              "Farmaci",
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            ...medications.map(
+              (treatment) =>
+                  _buildTreatmentItem(treatment, CupertinoIcons.capsule),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+          ],
+
+          // Supplements
+          if (supplements.isNotEmpty) ...[
+            Text(
+              "Supplementi",
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.successGreen,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            ...supplements.map(
+              (treatment) =>
+                  _buildTreatmentItem(treatment, CupertinoIcons.plus_circle),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+          ],
+
+          // Support therapies
+          if (supports.isNotEmpty) ...[
+            Text(
+              "Supporti Terapeutici",
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.warningOrange,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            ...supports.map(
+              (treatment) =>
+                  _buildTreatmentItem(treatment, CupertinoIcons.heart),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTreatmentItem(TreatmentItem treatment, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.textSecondary),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  treatment.name,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (treatment.dosage != null ||
+                    treatment.route != null ||
+                    treatment.duration != null) ...[
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Row(
+                    children: [
+                      if (treatment.dosage != null) ...[
+                        Text(
+                          treatment.dosage!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (treatment.route != null ||
+                            treatment.duration != null)
+                          Text(
+                            " • ",
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
+                      if (treatment.route != null) ...[
+                        Text(
+                          treatment.route!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (treatment.duration != null)
+                          Text(
+                            " • ",
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
+                      if (treatment.duration != null)
+                        Text(
+                          treatment.duration!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowUpCard() {
+    return InfoCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                CupertinoIcons.calendar_today,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Text("Follow-up", style: AppTextStyles.title3),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
+
+          if (_followUpPeriod != null) ...[
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    CupertinoIcons.clock,
+                    color: AppColors.primaryBlue,
+                    size: 16,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Text(
+                    "Ripetere esami tra: $_followUpPeriod",
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+          ],
+
+          if (_monitoringParameters.isNotEmpty) ...[
+            Text(
+              "Parametri da Monitorare",
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            ..._monitoringParameters.map((parameter) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSmall,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      CupertinoIcons.add_circled_solid,
+                      color: AppColors.mediumGray,
+                      size: 14,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    Text(parameter, style: AppTextStyles.bodySmall),
+                  ],
+                ),
+              );
+            }),
+          ],
+
+          if (_prognosis != null) ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingM),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Prognosi",
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Text(_prognosis!, style: AppTextStyles.body),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildHistoryTab() {
@@ -873,34 +2022,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrendsTab() {
-    return Center(
-      child: InfoCard(
-        padding: const EdgeInsets.all(AppDimensions.spacingXl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              CupertinoIcons.graph_square,
-              size: 48,
-              color: AppColors.textSecondary,
-            ),
-            const SizedBox(height: AppDimensions.spacingM),
-            Text("Analisi Tendenze", style: AppTextStyles.title3),
-            const SizedBox(height: AppDimensions.spacingS),
-            Text(
-              "L'analisi delle tendenze sarà disponibile con più risultati di test nel tempo.",
-              style: AppTextStyles.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

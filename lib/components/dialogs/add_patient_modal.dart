@@ -31,10 +31,14 @@ class _AddPatientModalState extends State<AddPatientModal> {
   final _ownerController = TextEditingController();
   final _speciesController = TextEditingController();
   final _breedController = TextEditingController();
-  final _ageController = TextEditingController();
   final _weightController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+
+  // Birthdate instead of age
+  DateTime _selectedBirthdate = DateTime.now().subtract(
+    const Duration(days: 365),
+  ); // Default to 1 year old
 
   bool _isLoading = false;
 
@@ -44,7 +48,6 @@ class _AddPatientModalState extends State<AddPatientModal> {
     _ownerController.dispose();
     _speciesController.dispose();
     _breedController.dispose();
-    _ageController.dispose();
     _weightController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -65,8 +68,6 @@ class _AddPatientModalState extends State<AddPatientModal> {
     });
 
     try {
-      // Parse age and weight
-      int ageYears = int.tryParse(_ageController.text) ?? 0;
       double? weight;
       if (_weightController.text.isNotEmpty) {
         weight = double.tryParse(_weightController.text);
@@ -77,7 +78,7 @@ class _AddPatientModalState extends State<AddPatientModal> {
         name: _nameController.text.trim(),
         species: _speciesController.text.trim(),
         breed: _breedController.text.trim(),
-        age: PatientAge(years: ageYears, months: 0),
+        birthdate: _selectedBirthdate,
         sex: 'Unknown', // Default for now
         weight: weight,
         ownerInfo: PatientOwnerInfo(
@@ -122,10 +123,65 @@ class _AddPatientModalState extends State<AddPatientModal> {
     _ownerController.clear();
     _speciesController.clear();
     _breedController.clear();
-    _ageController.clear();
     _weightController.clear();
     _emailController.clear();
     _phoneController.clear();
+    setState(() {
+      _selectedBirthdate = DateTime.now().subtract(const Duration(days: 365));
+    });
+  }
+
+  void _showDatePicker() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder:
+          (BuildContext context) => Container(
+            height: 216,
+            padding: const EdgeInsets.only(top: 6.0),
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        child: const Text('Cancel'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      CupertinoButton(
+                        child: const Text('Done'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 150,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: _selectedBirthdate,
+                      maximumDate: DateTime.now(),
+                      onDateTimeChanged: (DateTime newDateTime) {
+                        setState(() {
+                          _selectedBirthdate = newDateTime;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   @override
@@ -282,15 +338,48 @@ class _AddPatientModalState extends State<AddPatientModal> {
 
         const SizedBox(height: AppDimensions.spacingL),
 
-        // Age and Weight
+        // Birthdate and Weight
         Row(
           children: [
             Expanded(
-              child: AppTextInput(
-                controller: _ageController,
-                label: 'Età',
-                placeholder: '5 anni',
-                textInputAction: TextInputAction.next,
+              child: GestureDetector(
+                onTap: _showDatePicker,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.borderGray),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Data di Nascita',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _formatDate(_selectedBirthdate),
+                            style: AppTextStyles.body,
+                          ),
+                          const Icon(
+                            CupertinoIcons.calendar,
+                            size: 16,
+                            color: AppColors.mediumGray,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),

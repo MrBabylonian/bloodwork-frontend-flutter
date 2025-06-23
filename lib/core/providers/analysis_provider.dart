@@ -1,11 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import '../repositories/analysis_repository.dart';
 import '../models/analysis_models.dart';
+import '../repositories/analysis_repository.dart';
 import '../services/service_locator.dart';
 
-enum AnalysisStatus { idle, uploading, processing, completed, failed }
+enum AnalysisStatus { idle, processing, completed, failed }
 
 class AnalysisProvider extends ChangeNotifier {
   final AnalysisRepository _analysisRepository;
@@ -18,28 +18,33 @@ class AnalysisProvider extends ChangeNotifier {
   // State
   AnalysisStatus _status = AnalysisStatus.idle;
   String? _errorMessage;
-  String? _currentAnalysisId;
   AnalysisResult? _currentResult;
   Map<String, List<AnalysisResult>> _patientResults = {};
+  bool _isLoading = false;
 
   // Getters
   AnalysisStatus get status => _status;
   String? get errorMessage => _errorMessage;
-  String? get currentAnalysisId => _currentAnalysisId;
   AnalysisResult? get currentResult => _currentResult;
-  bool get isUploading => _status == AnalysisStatus.uploading;
+  Map<String, List<AnalysisResult>> get patientResults => _patientResults;
+  bool get isIdle => _status == AnalysisStatus.idle;
   bool get isProcessing => _status == AnalysisStatus.processing;
   bool get hasError => _status == AnalysisStatus.failed;
+  bool get isLoading => _isLoading;
+  String? get error => _errorMessage;
 
   /// Upload a PDF file for analysis
-  Future<bool> uploadPdfFile({
+  Future<AnalysisUploadResponse?> uploadPdfFile({
     required PlatformFile file,
     String? patientId,
     String? notes,
   }) async {
+    _status = AnalysisStatus.processing;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
       _logger.d('📄 PROVIDER: Starting PDF upload');
-      _setStatus(AnalysisStatus.uploading);
 
       final response = await _analysisRepository.uploadPdfFile(
         file: file,
@@ -48,47 +53,55 @@ class AnalysisProvider extends ChangeNotifier {
       );
 
       if (response != null) {
-        _currentAnalysisId = response.diagnosticId;
-        _setStatus(AnalysisStatus.processing);
+        _status = AnalysisStatus.completed;
         _logger.d(
           '📄 PROVIDER: Upload successful - ID: ${response.diagnosticId}',
         );
-        return true;
       } else {
-        _setError('Failed to upload file');
-        return false;
+        _status = AnalysisStatus.failed;
+        _errorMessage = "Upload failed";
+        _logger.e('📄 PROVIDER: Upload failed');
       }
+
+      notifyListeners();
+      return response;
     } catch (e) {
       _logger.e('📄 PROVIDER: Upload error: $e');
-      _setError('Upload failed: $e');
-      return false;
+      _status = AnalysisStatus.failed;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 
-  /// Check analysis result by ID
-  Future<AnalysisResult?> checkAnalysisResult(String analysisId) async {
-    try {
-      _logger.d('📄 PROVIDER: Checking analysis result: $analysisId');
+  /// Get analysis result by ID
+  Future<AnalysisResult?> getAnalysisResult(String diagnosticId) async {
+    _status = AnalysisStatus.processing;
+    _errorMessage = null;
+    notifyListeners();
 
-      final result = await _analysisRepository.getAnalysisResult(analysisId);
+    try {
+      _logger.d('📄 PROVIDER: Getting analysis result: $diagnosticId');
+
+      final result = await _analysisRepository.getAnalysisResult(diagnosticId);
 
       if (result != null) {
         _currentResult = result;
-
-        if (result.isCompleted) {
-          _setStatus(AnalysisStatus.completed);
-        } else if (result.isFailed) {
-          _setStatus(AnalysisStatus.failed);
-          _errorMessage = result.errorMessage ?? 'Analysis failed';
-        }
-
-        notifyListeners();
-        return result;
+        _status = AnalysisStatus.completed;
+        _logger.d('📄 PROVIDER: Got result - Status: ${result.status}');
+      } else {
+        _status = AnalysisStatus.failed;
+        _errorMessage = "Result not found";
+        _logger.e('📄 PROVIDER: Result not found');
       }
 
-      return null;
+      notifyListeners();
+      return result;
     } catch (e) {
-      _logger.e('📄 PROVIDER: Check result error: $e');
+      _logger.e('📄 PROVIDER: Get result error: $e');
+      _status = AnalysisStatus.failed;
+      _errorMessage = e.toString();
+      notifyListeners();
       return null;
     }
   }
@@ -97,18 +110,28 @@ class AnalysisProvider extends ChangeNotifier {
   Future<List<AnalysisResult>> getPatientAnalysisResults(
     String patientId,
   ) async {
+    _status = AnalysisStatus.processing;
+    _errorMessage = null;
+    notifyListeners();
+
     try {
       _logger.d('📄 PROVIDER: Getting patient results: $patientId');
 
       final results = await _analysisRepository.getPatientAnalysisResults(
         patientId,
       );
+
       _patientResults[patientId] = results;
+      _status = AnalysisStatus.completed;
+      _logger.d('📄 PROVIDER: Found ${results.length} results for patient');
 
       notifyListeners();
       return results;
     } catch (e) {
       _logger.e('📄 PROVIDER: Get patient results error: $e');
+      _status = AnalysisStatus.failed;
+      _errorMessage = e.toString();
+      notifyListeners();
       return [];
     }
   }
@@ -122,28 +145,95 @@ class AnalysisProvider extends ChangeNotifier {
   void reset() {
     _status = AnalysisStatus.idle;
     _errorMessage = null;
-    _currentAnalysisId = null;
     _currentResult = null;
     notifyListeners();
   }
 
-  // Private methods
-  void _setStatus(AnalysisStatus newStatus) {
-    if (_status != newStatus) {
-      _status = newStatus;
-      _clearError();
+  Future<AnalysisResult?> getLatestAnalysisForPatient(String patientId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
+
+      _logger.d('📄 PROVIDER: Getting latest analysis for patient: $patientId');
+
+      final result = await _analysisRepository.getLatestAnalysisForPatient(
+        patientId,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+
+      if (result != null) {
+        _logger.d('📄 PROVIDER: Got latest analysis result');
+      } else {
+        _logger.d('📄 PROVIDER: No analysis found for patient');
+      }
+
+      return result;
+    } catch (e) {
+      _logger.e('📄 PROVIDER: Get latest analysis error: $e');
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
     }
   }
 
-  void _setError(String message) {
-    _errorMessage = message;
-    _status = AnalysisStatus.failed;
-    notifyListeners();
+  Future<AnalysisUploadResponse?> uploadAnalysis(
+    String filePath,
+    String patientId,
+    String? notes,
+  ) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      _logger.d('📄 PROVIDER: Uploading analysis from path: $filePath');
+
+      final result = await _analysisRepository.uploadAnalysis(
+        filePath,
+        patientId,
+        notes,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+
+      return result;
+    } catch (e) {
+      _logger.e('📄 PROVIDER: Upload analysis error: $e');
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
-  void _clearError() {
-    _errorMessage = null;
+  Future<List<AnalysisResult>> getAnalysisForPatient(String patientId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      _logger.d('📄 PROVIDER: Getting all analysis for patient: $patientId');
+
+      final results = await _analysisRepository.getAnalysisForPatient(
+        patientId,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+
+      return results;
+    } catch (e) {
+      _logger.e('📄 PROVIDER: Get analysis for patient error: $e');
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return [];
+    }
   }
 
   @override

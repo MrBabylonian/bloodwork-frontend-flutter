@@ -52,6 +52,44 @@ class AnalysisRepository {
     }
   }
 
+  /// Upload a PDF file for analysis (alternative method signature)
+  Future<AnalysisUploadResponse?> uploadAnalysis(
+    String filePath,
+    String patientId,
+    String? notes,
+  ) async {
+    try {
+      _logger.d('📄 REPO: Uploading analysis from path: $filePath');
+
+      // Create multipart form data with file
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          contentType: DioMediaType('application', 'pdf'),
+        ),
+        'patient_id': patientId,
+        if (notes != null) 'notes': notes,
+      });
+
+      final response = await _apiService.post(
+        '/api/v1/analysis/upload',
+        data: formData,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = AnalysisUploadResponse.fromJson(response.data);
+        _logger.d('📄 REPO: Upload successful - ID: ${result.diagnosticId}');
+        return result;
+      }
+
+      _logger.e('📄 REPO: Upload failed - Status: ${response.statusCode}');
+      return null;
+    } catch (e) {
+      _logger.e('📄 REPO: Upload error: $e');
+      return null;
+    }
+  }
+
   /// Get analysis result by diagnostic ID
   ///
   /// @param diagnosticId Human-readable sequential ID (e.g., DGN-001)
@@ -105,6 +143,38 @@ class AnalysisRepository {
     } catch (e) {
       _logger.e('📄 REPO: Get patient results error: $e');
       return [];
+    }
+  }
+
+  /// Get all analysis results for a patient (alternative method name)
+  Future<List<AnalysisResult>> getAnalysisForPatient(String patientId) async {
+    return getPatientAnalysisResults(patientId);
+  }
+
+  /// Get latest analysis result for a patient
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
+  Future<AnalysisResult?> getLatestAnalysisForPatient(String patientId) async {
+    try {
+      _logger.d('📄 REPO: Getting latest analysis for patient: $patientId');
+
+      final response = await _apiService.get(
+        '/api/v1/diagnostics/patient/$patientId/latest',
+      );
+
+      if (response.statusCode == 200) {
+        final result = AnalysisResult.fromJson(response.data);
+        _logger.d('📄 REPO: Got latest result - Status: ${result.status}');
+        return result;
+      }
+
+      _logger.e(
+        '📄 REPO: Get latest result failed - Status: ${response.statusCode}',
+      );
+      return null;
+    } catch (e) {
+      _logger.e('📄 REPO: Get latest result error: $e');
+      return null;
     }
   }
 }

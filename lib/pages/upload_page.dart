@@ -101,12 +101,12 @@ class _UploadPageState extends State<UploadPage> {
       bool allUploadsSuccessful = true;
 
       for (final platformFile in pdfFiles) {
-        final success = await analysisProvider.uploadPdfFile(
+        final response = await analysisProvider.uploadPdfFile(
           file: platformFile,
           patientId: widget.patientId,
         );
 
-        if (!success) {
+        if (response == null) {
           allUploadsSuccessful = false;
           break;
         }

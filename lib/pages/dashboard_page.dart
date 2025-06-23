@@ -10,6 +10,8 @@ import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
+import '../core/providers/analysis_provider.dart';
+import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
 
@@ -27,6 +29,9 @@ class _DashboardPageState extends State<DashboardPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _isAddPatientModalOpen = false;
   String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+  // Map to store analysis results for each patient
+  final Map<String, AnalysisResult?> _patientAnalysisResults = {};
 
   @override
   void initState() {
@@ -35,6 +40,22 @@ class _DashboardPageState extends State<DashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPatients();
     });
+
+    // Add scroll listener for pagination
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final patientProvider = Provider.of<PatientProvider>(
+        context,
+        listen: false,
+      );
+      if (patientProvider.hasMorePages && !patientProvider.isLoadingMore) {
+        patientProvider.loadMorePatients();
+      }
+    }
   }
 
   void _loadPatients() {
@@ -42,12 +63,13 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       listen: false,
     );
-    patientProvider.loadPatients();
+    patientProvider.loadPatients(reset: true);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -77,22 +99,52 @@ class _DashboardPageState extends State<DashboardPage> {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  /// Helper method to determine patient status based on diagnostic summary
+  /// Helper method to determine patient status based on medical history
   PatientHealthStatus _getPatientStatus(PatientModel patient) {
-    // For now, return healthy as default since we don't have specific status logic
-    // This could be enhanced based on diagnostic_summary or medical_history
-    if (patient.diagnosticSummary.containsKey('critical')) {
-      return PatientHealthStatus.critical;
-    } else if (patient.diagnosticSummary.containsKey('attention')) {
-      return PatientHealthStatus.needsAttention;
+    // Check if we have analysis results for this patient
+    final analysisResult = _patientAnalysisResults[patient.id];
+
+    if (analysisResult != null && analysisResult.diagnosticSummary != null) {
+      // Check diagnostic summary for status indicators
+      final summary = analysisResult.diagnosticSummary!;
+      if (summary.containsKey('critical')) {
+        return PatientHealthStatus.critical;
+      } else if (summary.containsKey('attention')) {
+        return PatientHealthStatus.needsAttention;
+      }
     }
+
+    // Default to healthy if no analysis results or no critical/attention indicators
     return PatientHealthStatus.healthy;
   }
 
   /// Helper method to get tests count from medical history
   int _getTestsCount(PatientModel patient) {
-    // Default to 0, could be enhanced based on medical_history structure
+    // Check medical history for tests count
     return (patient.medicalHistory['tests_count'] as int?) ?? 0;
+  }
+
+  /// Load analysis data for a patient
+  Future<void> _loadAnalysisData(String patientId) async {
+    final analysisProvider = Provider.of<AnalysisProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      final result = await analysisProvider.getLatestAnalysisForPatient(
+        patientId,
+      );
+
+      // Check if the widget is still mounted before updating state
+      if (mounted) {
+        setState(() {
+          _patientAnalysisResults[patientId] = result;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading analysis data: $e');
+    }
   }
 
   @override
@@ -130,6 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 // Main Content
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(AppDimensions.spacingL),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,6 +204,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
                         // Patient Grid
                         _buildPatientGrid(),
+
+                        // Pagination loading indicator
+                        _buildPaginationIndicator(),
                       ],
                     ),
                   ),
@@ -257,6 +313,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildStatsCards() {
+    final patientProvider = Provider.of<PatientProvider>(context);
+    final totalPatients = patientProvider.totalPatients.toString();
+
     return LayoutBuilder(
       builder: (context, constraints) {
         // Mobile layout - 2x2 grid with proper distribution
@@ -270,7 +329,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       constraints: const BoxConstraints(maxWidth: 250),
                       child: _buildStatCard(
                         title: 'Pazienti Totali',
-                        value: '247',
+                        value: totalPatients,
                         icon: CupertinoIcons.person_2,
                         color: AppColors.primaryBlue,
                       ),
@@ -333,7 +392,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ), // Slightly larger max width
                 child: _buildStatCard(
                   title: 'Pazienti Totali',
-                  value: '247',
+                  value: totalPatients,
                   icon: CupertinoIcons.person_2,
                   color: AppColors.primaryBlue,
                 ),
@@ -460,7 +519,35 @@ class _DashboardPageState extends State<DashboardPage> {
               child: AppTextInput(
                 controller: _searchController,
                 placeholder: 'Cerca pazienti per nome, proprietario o razza...',
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: (value) {
+                  setState(() => _searchQuery = value);
+
+                  // Get provider reference before async gap
+                  final patientProvider = Provider.of<PatientProvider>(
+                    context,
+                    listen: false,
+                  );
+
+                  // Debounce search
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (_searchQuery == value) {
+                      if (_searchQuery.isEmpty) {
+                        // Check if widget is still mounted before updating
+                        if (mounted) {
+                          patientProvider.loadPatients(reset: true);
+                        }
+                      } else {
+                        // Check if widget is still mounted before updating
+                        if (mounted) {
+                          patientProvider.searchPatients(
+                            _searchQuery,
+                            reset: true,
+                          );
+                        }
+                      }
+                    }
+                  });
+                },
                 prefix: const Padding(
                   padding: EdgeInsets.only(left: 12, right: 16),
                   child: Icon(
@@ -533,11 +620,11 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
 
-        // Get filtered patients
-        final filteredPatients = patientProvider.filterPatients(_searchQuery);
+        // Get patients
+        final patients = patientProvider.patients;
 
         // Handle empty state
-        if (filteredPatients.isEmpty) {
+        if (patients.isEmpty) {
           return _buildEmptyState();
         }
 
@@ -567,9 +654,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         ? 1.6
                         : 1.3, // Higher ratio for desktop = shorter cards, balanced for mobile
               ),
-              itemCount: filteredPatients.length,
+              itemCount: patients.length,
               itemBuilder: (context, index) {
-                final patient = filteredPatients[index];
+                final patient = patients[index];
                 return _buildPatientCard(patient);
               },
             );
@@ -579,7 +666,38 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget _buildPaginationIndicator() {
+    final patientProvider = Provider.of<PatientProvider>(context);
+
+    if (patientProvider.isLoadingMore) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+        alignment: Alignment.center,
+        child: const CupertinoActivityIndicator(),
+      );
+    }
+
+    if (patientProvider.hasMorePages) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+        alignment: Alignment.center,
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Text('Carica altri pazienti'),
+          onPressed: () => patientProvider.loadMorePatients(),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
   Widget _buildPatientCard(PatientModel patient) {
+    // Load analysis data for this patient if not already loaded
+    if (!_patientAnalysisResults.containsKey(patient.id)) {
+      _loadAnalysisData(patient.id);
+    }
+
     return GestureDetector(
       onTap: () => context.go('/patient/${patient.id}'),
       child: Container(
@@ -652,6 +770,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 _buildPatientDetailRow('Breed:', patient.breed),
                 const SizedBox(height: 6), // Reduced from 8
                 _buildPatientDetailRow('Age:', patient.age.toString()),
+                const SizedBox(height: 6), // Reduced from 8
+                _buildPatientDetailRow(
+                  'Birthdate:',
+                  _formatDate(patient.birthdate),
+                ),
               ],
             ),
 
