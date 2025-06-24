@@ -52,6 +52,33 @@ class AnalysisRepository {
     }
   }
 
+  /// Check if a patient has a pending analysis request
+  ///
+  /// @param patientId Human-readable sequential ID (e.g., PAT-001)
+  Future<bool> hasPendingAnalysis(String patientId) async {
+    try {
+      _logger.d('📄 REPO: Checking pending analysis for patient: $patientId');
+
+      final response = await _apiService.get(
+        '/api/v1/diagnostics/patient/$patientId/pending',
+      );
+
+      if (response.statusCode == 200) {
+        final hasPending = response.data['has_pending_analysis'] as bool;
+        _logger.d('📄 REPO: Pending analysis check: $hasPending');
+        return hasPending;
+      }
+
+      _logger.e(
+        '📄 REPO: Pending analysis check failed - Status: ${response.statusCode}',
+      );
+      return false;
+    } catch (e) {
+      _logger.e('📄 REPO: Pending analysis check error: $e');
+      return false;
+    }
+  }
+
   /// Get latest analysis result for a patient
   ///
   /// @param patientId Human-readable sequential ID (e.g., PAT-001)

@@ -20,6 +20,8 @@ class AnalysisProvider extends ChangeNotifier {
   String? _errorMessage;
   AnalysisResult? _currentResult;
   bool _isLoading = false;
+  bool _hasPendingAnalysis = false;
+  bool _isCheckingPendingStatus = false;
 
   // Getters
   AnalysisStatus get status => _status;
@@ -30,6 +32,8 @@ class AnalysisProvider extends ChangeNotifier {
   bool get hasError => _status == AnalysisStatus.failed;
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
+  bool get hasPendingAnalysis => _hasPendingAnalysis;
+  bool get isCheckingPendingStatus => _isCheckingPendingStatus;
 
   /// Upload a PDF file for analysis
   Future<AnalysisUploadResponse?> uploadPdfFile({
@@ -72,6 +76,35 @@ class AnalysisProvider extends ChangeNotifier {
     }
   }
 
+  /// Check if a patient has a pending analysis
+  Future<bool> checkPendingAnalysis(String patientId) async {
+    try {
+      _isCheckingPendingStatus = true;
+      notifyListeners();
+
+      _logger.d(
+        '📄 PROVIDER: Checking pending analysis for patient: $patientId',
+      );
+
+      final hasPending = await _analysisRepository.hasPendingAnalysis(
+        patientId,
+      );
+
+      _hasPendingAnalysis = hasPending;
+      _isCheckingPendingStatus = false;
+      notifyListeners();
+
+      _logger.d('📄 PROVIDER: Pending analysis status: $hasPending');
+      return hasPending;
+    } catch (e) {
+      _logger.e('📄 PROVIDER: Check pending analysis error: $e');
+      _isCheckingPendingStatus = false;
+      _hasPendingAnalysis = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<AnalysisResult?> getLatestAnalysisForPatient(String patientId) async {
     try {
       _isLoading = true;
@@ -89,9 +122,13 @@ class AnalysisProvider extends ChangeNotifier {
 
       if (result != null) {
         _currentResult = result;
+        // If we got a result, there's no longer a pending analysis
+        _hasPendingAnalysis = false;
         _logger.d('📄 PROVIDER: Got latest analysis result');
       } else {
         _logger.d('📄 PROVIDER: No analysis found for patient');
+        // Check if there's a pending analysis
+        await checkPendingAnalysis(patientId);
       }
 
       return result;
@@ -109,6 +146,7 @@ class AnalysisProvider extends ChangeNotifier {
     _status = AnalysisStatus.idle;
     _errorMessage = null;
     _currentResult = null;
+    _hasPendingAnalysis = false;
     notifyListeners();
   }
 

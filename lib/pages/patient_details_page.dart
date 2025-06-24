@@ -191,12 +191,17 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         widget.patientId,
       );
 
+      // Always check for pending analysis, regardless of whether there's a latest analysis
+      await analysisProvider.checkPendingAnalysis(widget.patientId);
+
       setState(() {
         _latestAnalysis = latestAnalysis;
         _isLoadingAnalysis = false;
       });
 
-      _processAnalysisData();
+      if (latestAnalysis != null) {
+        _processAnalysisData();
+      }
     } catch (e) {
       setState(() {
         _isLoadingAnalysis = false;
@@ -814,6 +819,51 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
       );
     }
 
+    // Get the analysis provider to check for pending analysis
+    final analysisProvider = Provider.of<AnalysisProvider>(
+      context,
+      listen: false,
+    );
+    final hasPendingAnalysis = analysisProvider.hasPendingAnalysis;
+
+    // Show "Analisi in Corso" if there's a pending analysis
+    if (hasPendingAnalysis) {
+      // Start polling in the background
+      _startPolling(analysisProvider);
+
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.warningOrange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+              ),
+              child: const Icon(
+                CupertinoIcons.hourglass,
+                color: AppColors.warningOrange,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            Text("Analisi in Corso", style: AppTextStyles.title3),
+            const SizedBox(height: AppDimensions.spacingS),
+            Text(
+              "L'analisi del campione è in corso. I risultati saranno disponibili a breve.",
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Show "Nessuna Analisi Disponibile" if there's no analysis and no pending analysis
     if (_bloodworkFindings.isEmpty && _diagnosticSummary == null) {
       return Center(
         child: Column(
@@ -923,6 +973,31 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         ],
       ),
     );
+  }
+
+  // Simple polling function using a while loop
+  Future<void> _startPolling(AnalysisProvider provider) async {
+    // Run in a separate isolate to avoid blocking the UI
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      debugPrint('Starting polling for pending analysis');
+
+      // Poll every 15 seconds until analysis is no longer pending
+      while (mounted && provider.hasPendingAnalysis) {
+        await Future.delayed(const Duration(seconds: 15));
+
+        if (!mounted) return; // Safety check
+
+        debugPrint('Polling for pending analysis status');
+        await provider.checkPendingAnalysis(widget.patientId);
+
+        // If analysis is no longer pending, reload data and break
+        if (!provider.hasPendingAnalysis) {
+          debugPrint('Analysis completed, reloading data');
+          await _loadAnalysisData();
+          break;
+        }
+      }
+    });
   }
 
   Widget _buildDiagnosticSummaryCard() {
@@ -1594,6 +1669,50 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             CupertinoActivityIndicator(),
             SizedBox(height: 16),
             Text('Caricamento piano terapeutico...'),
+          ],
+        ),
+      );
+    }
+
+    // Get the analysis provider to check for pending analysis
+    final analysisProvider = Provider.of<AnalysisProvider>(
+      context,
+      listen: false,
+    );
+    final hasPendingAnalysis = analysisProvider.hasPendingAnalysis;
+
+    // Show "Analisi in Corso" if there's a pending analysis
+    if (hasPendingAnalysis) {
+      // Start polling in the background (same as in _buildResultsTab)
+      _startPolling(analysisProvider);
+
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.warningOrange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+              ),
+              child: const Icon(
+                CupertinoIcons.hourglass,
+                color: AppColors.warningOrange,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            Text("Analisi in Corso", style: AppTextStyles.title3),
+            const SizedBox(height: AppDimensions.spacingS),
+            Text(
+              "Il piano terapeutico sarà disponibile al termine dell'analisi.",
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       );
