@@ -420,19 +420,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         .join(' ');
   }
 
-  AppBadgeVariant _getStatusVariant(String status) {
-    switch (status.toLowerCase()) {
-      case 'normale':
-        return AppBadgeVariant.success;
-      case 'alterato_lieve':
-        return AppBadgeVariant.warning;
-      case 'alterato_grave':
-        return AppBadgeVariant.destructive;
-      default:
-        return AppBadgeVariant.secondary;
-    }
-  }
-
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'normale':
@@ -1301,9 +1288,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                       : maxColumns;
 
               // Calculate uniform card width
-              final cardWidth =
-                  (availableWidth - (spacing * (actualColumns - 1))) /
-                  actualColumns;
 
               // Group cards into rows for uniform height
               final entries = _compatiblePatterns.entries.toList();
