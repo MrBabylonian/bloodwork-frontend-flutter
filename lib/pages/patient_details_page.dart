@@ -106,6 +106,17 @@ class PatientDetailsPage extends StatefulWidget {
 
   const PatientDetailsPage({super.key, required this.patientId});
 
+  static String? getUrgencyLevel(Map<String, dynamic>? aiDiagnostic) {
+    if (aiDiagnostic != null) {
+      final classificazioneUrgenza =
+          aiDiagnostic['classificazione_urgenza'] as Map<String, dynamic>?;
+      if (classificazioneUrgenza != null) {
+        return classificazioneUrgenza['livello'];
+      }
+    }
+    return null;
+  }
+
   @override
   State<PatientDetailsPage> createState() => _PatientDetailsPageState();
 }

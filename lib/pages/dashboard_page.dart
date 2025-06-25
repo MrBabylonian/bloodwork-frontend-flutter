@@ -14,6 +14,7 @@ import '../core/providers/analysis_provider.dart';
 import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
+import 'patient_details_page.dart';
 
 /// Patient health status enum for UI display
 enum PatientHealthStatus { healthy, needsAttention, critical }
@@ -105,16 +106,18 @@ class _DashboardPageState extends State<DashboardPage> {
     final analysisResult = _patientAnalysisResults[patient.id];
 
     if (analysisResult != null && analysisResult.diagnosticSummary != null) {
-      // Check diagnostic summary for status indicators
-      final summary = analysisResult.diagnosticSummary!;
-      if (summary.containsKey('critical')) {
+      final urgenyLevel = PatientDetailsPage.getUrgencyLevel(
+        analysisResult.aiDiagnostic,
+      );
+
+      if (urgenyLevel?.toLowerCase() == 'EMERGENZA') {
         return PatientHealthStatus.critical;
-      } else if (summary.containsKey('attention')) {
+      } else if (urgenyLevel?.toUpperCase() == 'URGENZA A BREVE') {
         return PatientHealthStatus.needsAttention;
+      } else if (urgenyLevel?.toUpperCase() == 'ROUTINE') {
+        return PatientHealthStatus.healthy;
       }
     }
-
-    // Default to healthy if no analysis results or no critical/attention indicators
     return PatientHealthStatus.healthy;
   }
 
@@ -642,23 +645,44 @@ class _DashboardPageState extends State<DashboardPage> {
               crossAxisCount = 1; // sm: 1 column
             }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: AppDimensions.spacingL,
-                mainAxisSpacing: AppDimensions.spacingL,
-                childAspectRatio:
-                    constraints.maxWidth >= 1024
-                        ? 1.6
-                        : 1.3, // Higher ratio for desktop = shorter cards, balanced for mobile
-              ),
-              itemCount: patients.length,
-              itemBuilder: (context, index) {
-                final patient = patients[index];
-                return _buildPatientCard(patient);
-              },
+            // Responsive grid using ListView and Row
+            return Column(
+              children: [
+                for (int i = 0; i < patients.length; i += crossAxisCount)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: AppDimensions.spacingL,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (
+                          int j = i;
+                          j < i + crossAxisCount && j < patients.length;
+                          j++
+                        )
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right:
+                                    j < i + crossAxisCount - 1
+                                        ? AppDimensions.spacingL
+                                        : 0,
+                              ),
+                              child: _buildPatientCard(patients[j]),
+                            ),
+                          ),
+                        // Add empty expanded widgets if the row isn't full
+                        for (
+                          int k = patients.length;
+                          k < i + crossAxisCount && k > i;
+                          k++
+                        )
+                          Expanded(child: const SizedBox()),
+                      ],
+                    ),
+                  ),
+              ],
             );
           },
         );
@@ -700,45 +724,124 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return GestureDetector(
       onTap: () => context.go('/patient/${patient.id}'),
-      child: Container(
-        padding: const EdgeInsets.all(
-          16,
-        ), // Reduced from 20 for more compact layout
-        decoration: BoxDecoration(
-          color: AppColors.backgroundWhite.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.borderGray.withValues(alpha: 0.2),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.foregroundDark.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+      child: IntrinsicHeight(
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 240),
+          padding: const EdgeInsets.all(
+            16,
+          ), // Reduced from 20 for more compact layout
+          decoration: BoxDecoration(
+            color: AppColors.backgroundWhite.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.borderGray.withValues(alpha: 0.2),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        patient.name,
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.foregroundDark.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          patient.name,
+                          style: AppTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Owner: ${patient.ownerInfo.name}',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minSize: 0,
+                    child: const Icon(
+                      CupertinoIcons.ellipsis,
+                      color: AppColors.mediumGray,
+                      size: 16,
+                    ),
+                    onPressed:
+                        () => debugPrint('More options for ${patient.name}'),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12), // Reduced from 16 for compactness
+              // Patient Details
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildPatientDetailRow('Species:', patient.species),
+                    const SizedBox(height: 6), // Reduced from 8
+                    _buildPatientDetailRow('Breed:', patient.breed),
+                    const SizedBox(height: 6), // Reduced from 8
+                    _buildPatientDetailRow('Age:', patient.age.toString()),
+                    const SizedBox(height: 6), // Reduced from 8
+                    _buildPatientDetailRow(
+                      'Birthdate:',
+                      _formatDate(patient.birthdate),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12), // Reduced from 16 for compactness
+              // Status and Last Visit
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(_getPatientStatus(patient)),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getStatusText(_getPatientStatus(patient)),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
                       ),
-                      const SizedBox(height: 4),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Icon(
+                        CupertinoIcons.calendar,
+                        size: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
                       Text(
-                        'Owner: ${patient.ownerInfo.name}',
+                        _formatDate(patient.updatedAt),
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.textSecondary,
                           fontSize: 14,
@@ -746,114 +849,43 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                   ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minSize: 0,
-                  child: const Icon(
-                    CupertinoIcons.ellipsis,
-                    color: AppColors.mediumGray,
-                    size: 16,
-                  ),
-                  onPressed:
-                      () => debugPrint('More options for ${patient.name}'),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 12), // Reduced from 16 for compactness
-            // Patient Details
-            Column(
-              children: [
-                _buildPatientDetailRow('Species:', patient.species),
-                const SizedBox(height: 6), // Reduced from 8
-                _buildPatientDetailRow('Breed:', patient.breed),
-                const SizedBox(height: 6), // Reduced from 8
-                _buildPatientDetailRow('Age:', patient.age.toString()),
-                const SizedBox(height: 6), // Reduced from 8
-                _buildPatientDetailRow(
-                  'Birthdate:',
-                  _formatDate(patient.birthdate),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12), // Reduced from 16 for compactness
-            // Status and Last Visit
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(_getPatientStatus(patient)),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _getStatusText(_getPatientStatus(patient)),
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
+              const SizedBox(height: 12), // Reduced from 16 for compactness
+              // Tests Count - this is where the card should end
+              Container(
+                padding: const EdgeInsets.only(
+                  top: 12,
+                ), // Reduced from 16 for compactness
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: AppColors.borderGray, width: 1),
                   ),
                 ),
-                Row(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      CupertinoIcons.calendar,
-                      size: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
                     Text(
-                      _formatDate(patient.updatedAt),
+                      'Tests performed:',
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                       ),
                     ),
+                    Text(
+                      '${_getTestsCount(patient)}',
+                      style: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 12), // Reduced from 16 for compactness
-            // Tests Count - this is where the card should end
-            Container(
-              padding: const EdgeInsets.only(
-                top: 12,
-              ), // Reduced from 16 for compactness
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: AppColors.borderGray, width: 1),
-                ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Tests performed:',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    '${_getTestsCount(patient)}',
-                    style: AppTextStyles.caption.copyWith(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Card ends here - no additional content
-          ],
+              // Card ends here - no additional content
+            ],
+          ),
         ),
       ),
     );
