@@ -25,6 +25,7 @@ class AppPopover extends StatefulWidget {
     required this.content,
     this.position = AppPopoverPosition.bottom,
     this.offset = const Offset(0, 8),
+    this.anchorRect,
     this.backgroundColor,
     this.borderRadius,
     this.showArrow = true,
@@ -46,6 +47,9 @@ class AppPopover extends StatefulWidget {
 
   /// Offset from the calculated position.
   final Offset offset;
+
+  /// Optional bounding rectangle of the trigger (in global coords). If null, popover is centered.
+  final Rect? anchorRect;
 
   /// Background color of the popover.
   final Color? backgroundColor;
@@ -76,6 +80,7 @@ class AppPopover extends StatefulWidget {
     required BuildContext context,
     required Widget trigger,
     required Widget content,
+    Rect? anchorRect,
     AppPopoverPosition position = AppPopoverPosition.bottom,
     Offset offset = const Offset(0, 8),
     Color? backgroundColor,
@@ -97,6 +102,7 @@ class AppPopover extends StatefulWidget {
             content: content,
             position: position,
             offset: offset,
+            anchorRect: anchorRect,
             backgroundColor: backgroundColor,
             borderRadius: borderRadius,
             showArrow: showArrow,
@@ -167,6 +173,7 @@ class _AppPopoverState extends State<AppPopover>
         // Popover content
         _AppPopoverPositioned(
           trigger: widget.trigger,
+          anchorRect: widget.anchorRect,
           position: widget.position,
           offset: widget.offset,
           child: AnimatedBuilder(
@@ -198,21 +205,40 @@ class _AppPopoverState extends State<AppPopover>
 class _AppPopoverPositioned extends StatelessWidget {
   const _AppPopoverPositioned({
     required this.trigger,
+    this.anchorRect,
     required this.position,
     required this.offset,
     required this.child,
   });
 
   final Widget trigger;
+  final Rect? anchorRect;
   final AppPopoverPosition position;
   final Offset offset;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    // This is a simplified positioning - in a real implementation,
-    // you'd calculate the exact position based on the trigger's position
-    return Center(child: child);
+    if (anchorRect == null) {
+      // Fallback center
+      return Center(child: child);
+    }
+
+    final Size screen = MediaQuery.of(context).size;
+    const double margin = 8;
+    double left = anchorRect!.left;
+    double top = anchorRect!.bottom + offset.dy;
+
+    // simplistic only bottom
+    if (left + (child is SizedBox ? (child as SizedBox).width ?? 0 : 240) >
+        screen.width - margin) {
+      left = screen.width - margin - 240;
+    }
+    if (top + 300 > screen.height - margin) {
+      top = anchorRect!.top - 300 - offset.dy;
+    }
+
+    return Positioned(left: left, top: top, child: child);
   }
 }
 

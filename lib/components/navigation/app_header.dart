@@ -101,6 +101,23 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           'VetAnalytics',
           style: AppTextStyles.title3.copyWith(fontWeight: FontWeight.w600),
         ),
+        const SizedBox(width: AppDimensions.spacingXs),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.warningOrange,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+          ),
+          child: const Text(
+            'BETA',
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -213,6 +213,40 @@ class PatientProvider extends ChangeNotifier {
     }
   }
 
+  /// Update existing patient
+  Future<bool> updatePatient(
+    String patientId,
+    PatientUpdateRequest request,
+  ) async {
+    try {
+      _logger.d('🏥 PROVIDER: Updating patient: $patientId');
+
+      final updatedPatient = await _patientRepository.updatePatient(
+        patientId,
+        request,
+      );
+
+      if (updatedPatient != null) {
+        // Update local list if exists
+        final index = _patients.indexWhere(
+          (p) => p.id == patientId || p.patientId == patientId,
+        );
+        if (index != -1) {
+          _patients[index] = updatedPatient;
+        }
+        notifyListeners();
+        return true;
+      } else {
+        _setError('Failed to update patient');
+        return false;
+      }
+    } catch (e) {
+      _logger.e('🏥 PROVIDER: Error updating patient $patientId: $e');
+      _setError('Failed to update patient');
+      return false;
+    }
+  }
+
   // Private methods
   void _setStatus(PatientStatus newStatus) {
     if (_status != newStatus) {

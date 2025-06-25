@@ -8,6 +8,7 @@ import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
+import '../components/inputs/app_dropdown_menu.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
 import '../core/providers/analysis_provider.dart';
@@ -15,6 +16,8 @@ import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
 import 'patient_details_page.dart';
+import '../core/repositories/diagnostic_repository.dart';
+import '../core/services/service_locator.dart';
 
 /// Patient health status enum for UI display
 enum PatientHealthStatus { healthy, needsAttention, critical }
@@ -33,6 +36,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final ScrollController _scrollController = ScrollController();
   // Map to store analysis results for each patient
   final Map<String, AnalysisResult?> _patientAnalysisResults = {};
+  final Map<String, int> _patientTestsCount = {};
 
   @override
   void initState() {
@@ -123,8 +127,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Helper method to get tests count from medical history
   int _getTestsCount(PatientModel patient) {
-    // Check medical history for tests count
-    return (patient.medicalHistory['tests_count'] as int?) ?? 0;
+    // Prefer fetched count, fallback to medical history or 0
+    return _patientTestsCount[patient.id] ??
+        (patient.medicalHistory['tests_count'] as int? ?? 0);
   }
 
   /// Load analysis data for a patient
@@ -147,6 +152,21 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       debugPrint('Error loading analysis data: $e');
+    }
+  }
+
+  /// Load tests count for a patient
+  Future<void> _loadTestsCount(String patientId) async {
+    final repo = DiagnosticRepository(apiService: ServiceLocator().apiService);
+    try {
+      final count = await repo.getTestsCount(patientId);
+      if (mounted) {
+        setState(() {
+          _patientTestsCount[patientId] = count;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading tests count: $e');
     }
   }
 
@@ -321,124 +341,28 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Mobile layout - 2x2 grid with proper distribution
+        final card = _buildStatCard(
+          title: 'Pazienti Totali',
+          value: totalPatients,
+          icon: CupertinoIcons.person_2,
+          color: AppColors.primaryBlue,
+        );
+
+        // Mobile (stacked)
         if (constraints.maxWidth < 768) {
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 250),
-                      child: _buildStatCard(
-                        title: 'Pazienti Totali',
-                        value: totalPatients,
-                        icon: CupertinoIcons.person_2,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 250),
-                      child: _buildStatCard(
-                        title: 'Test Oggi',
-                        value: '12',
-                        icon: CupertinoIcons.heart,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-              Row(
-                children: [
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 250),
-                      child: _buildStatCard(
-                        title: 'Revisioni Pendenti',
-                        value: '8',
-                        icon: CupertinoIcons.doc_text,
-                        color: AppColors.warningOrange,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 250),
-                      child: _buildStatCard(
-                        title: 'Casi Critici',
-                        value: '3',
-                        icon: CupertinoIcons.exclamationmark_triangle,
-                        color: AppColors.errorRed,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: card,
           );
         }
 
-        // Desktop layout - single row with proper distribution
+        // Larger viewports – center the single card
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute evenly
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 280,
-                ), // Slightly larger max width
-                child: _buildStatCard(
-                  title: 'Pazienti Totali',
-                  value: totalPatients,
-                  icon: CupertinoIcons.person_2,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-            ),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 280,
-                ), // Slightly larger max width
-                child: _buildStatCard(
-                  title: 'Test Oggi',
-                  value: '12',
-                  icon: CupertinoIcons.heart,
-                  color: AppColors.primaryBlue,
-                ),
-              ),
-            ),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 280,
-                ), // Slightly larger max width
-                child: _buildStatCard(
-                  title: 'Revisioni Pendenti',
-                  value: '8',
-                  icon: CupertinoIcons.doc_text,
-                  color: AppColors.warningOrange,
-                ),
-              ),
-            ),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 280,
-                ), // Slightly larger max width
-                child: _buildStatCard(
-                  title: 'Casi Critici',
-                  value: '3',
-                  icon: CupertinoIcons.exclamationmark_triangle,
-                  color: AppColors.errorRed,
-                ),
-              ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: card,
             ),
           ],
         );
@@ -722,6 +646,11 @@ class _DashboardPageState extends State<DashboardPage> {
       _loadAnalysisData(patient.id);
     }
 
+    // Load tests count for this patient if not already loaded
+    if (!_patientTestsCount.containsKey(patient.id)) {
+      _loadTestsCount(patient.id);
+    }
+
     return GestureDetector(
       onTap: () => context.go('/patient/${patient.id}'),
       child: IntrinsicHeight(
@@ -775,17 +704,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ],
                     ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    child: const Icon(
-                      CupertinoIcons.ellipsis,
-                      color: AppColors.mediumGray,
-                      size: 16,
-                    ),
-                    onPressed:
-                        () => debugPrint('More options for ${patient.name}'),
                   ),
                 ],
               ),

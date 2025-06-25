@@ -8,6 +8,7 @@ import '../../theme/app_text_styles.dart';
 import '../buttons/index.dart';
 import '../forms/text_input.dart';
 import 'app_custom_dialog.dart';
+import '../forms/app_date_picker.dart';
 
 /// Modal for adding a new patient
 class AddPatientModal extends StatefulWidget {
@@ -32,6 +33,7 @@ class _AddPatientModalState extends State<AddPatientModal> {
   final _speciesController = TextEditingController();
   final _breedController = TextEditingController();
   final _weightController = TextEditingController();
+  final _sexController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
 
@@ -49,6 +51,7 @@ class _AddPatientModalState extends State<AddPatientModal> {
     _speciesController.dispose();
     _breedController.dispose();
     _weightController.dispose();
+    _sexController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -58,7 +61,8 @@ class _AddPatientModalState extends State<AddPatientModal> {
     // Basic validation
     if (_nameController.text.trim().isEmpty ||
         _ownerController.text.trim().isEmpty ||
-        _speciesController.text.trim().isEmpty) {
+        _speciesController.text.trim().isEmpty ||
+        _sexController.text.trim().isEmpty) {
       _showErrorDialog('Please fill in all required fields');
       return;
     }
@@ -79,7 +83,7 @@ class _AddPatientModalState extends State<AddPatientModal> {
         species: _speciesController.text.trim(),
         breed: _breedController.text.trim(),
         birthdate: _selectedBirthdate,
-        sex: 'Unknown', // Default for now
+        sex: _sexController.text.trim(),
         weight: weight,
         ownerInfo: PatientOwnerInfo(
           name: _ownerController.text.trim(),
@@ -124,64 +128,12 @@ class _AddPatientModalState extends State<AddPatientModal> {
     _speciesController.clear();
     _breedController.clear();
     _weightController.clear();
+    _sexController.clear();
     _emailController.clear();
     _phoneController.clear();
     setState(() {
       _selectedBirthdate = DateTime.now().subtract(const Duration(days: 365));
     });
-  }
-
-  void _showDatePicker() {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder:
-          (BuildContext context) => Container(
-            height: 216,
-            padding: const EdgeInsets.only(top: 6.0),
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            color: CupertinoColors.systemBackground.resolveFrom(context),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CupertinoButton(
-                        child: const Text('Cancel'),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      CupertinoButton(
-                        child: const Text('Done'),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 150,
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
-                      initialDateTime: _selectedBirthdate,
-                      maximumDate: DateTime.now(),
-                      onDateTimeChanged: (DateTime newDateTime) {
-                        setState(() {
-                          _selectedBirthdate = newDateTime;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   @override
@@ -338,48 +290,15 @@ class _AddPatientModalState extends State<AddPatientModal> {
 
         const SizedBox(height: AppDimensions.spacingL),
 
-        // Birthdate and Weight
+        // Sex and Weight Row
         Row(
           children: [
             Expanded(
-              child: GestureDetector(
-                onTap: _showDatePicker,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderGray),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Data di Nascita',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _formatDate(_selectedBirthdate),
-                            style: AppTextStyles.body,
-                          ),
-                          const Icon(
-                            CupertinoIcons.calendar,
-                            size: 16,
-                            color: AppColors.mediumGray,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+              child: AppTextInput(
+                controller: _sexController,
+                label: 'Sesso',
+                placeholder: 'Maschio',
+                textInputAction: TextInputAction.next,
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -392,6 +311,15 @@ class _AddPatientModalState extends State<AddPatientModal> {
               ),
             ),
           ],
+        ),
+
+        const SizedBox(height: AppDimensions.spacingL),
+
+        // Date of Birth row (full width)
+        AppDatePickerField(
+          label: 'Data di Nascita',
+          selectedDate: _selectedBirthdate,
+          onDateChanged: (d) => setState(() => _selectedBirthdate = d),
         ),
 
         const SizedBox(height: AppDimensions.spacingL),

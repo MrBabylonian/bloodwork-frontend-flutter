@@ -15,6 +15,7 @@ import '../core/providers/analysis_provider.dart';
 import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
+import '../components/dialogs/update_patient_modal.dart';
 
 /// Blood work finding model
 class BloodworkFinding {
@@ -127,6 +128,8 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
   bool _isLoading = true;
   bool _isLoadingAnalysis = true;
   String? _errorMessage;
+
+  bool _isUpdatePatientModalOpen = false;
 
   // Processed data for display
   List<BloodworkFinding> _bloodworkFindings = [];
@@ -512,22 +515,37 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
       return AuthUtils.buildLoginRequiredScreen(context);
     }
 
-    return CupertinoPageScaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      child: Column(
-        children: [
-          // Header
-          AppHeader(
-            title: Text("Dettagli Paziente", style: AppTextStyles.title2),
-            showAuth: true,
-            onProfileTap: () => context.go('/profile'),
-            onLogoutTap: () => LogoutService.showLogoutDialog(context),
-          ),
+    return Stack(
+      children: [
+        CupertinoPageScaffold(
+          backgroundColor: AppColors.backgroundWhite,
+          child: Column(
+            children: [
+              // Header
+              AppHeader(
+                title: Text("Dettagli Paziente", style: AppTextStyles.title2),
+                showAuth: true,
+                onProfileTap: () => context.go('/profile'),
+                onLogoutTap: () => LogoutService.showLogoutDialog(context),
+              ),
 
-          // Content
-          Expanded(child: _buildContent()),
-        ],
-      ),
+              // Content
+              Expanded(child: _buildContent()),
+            ],
+          ),
+        ),
+
+        // Update Patient Modal
+        if (_patient != null)
+          UpdatePatientModal(
+            isOpen: _isUpdatePatientModalOpen,
+            onClose: () => setState(() => _isUpdatePatientModalOpen = false),
+            patient: _patient!,
+            onPatientUpdated: () async {
+              await _loadPatientData();
+            },
+          ),
+      ],
     );
   }
 
@@ -680,17 +698,34 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ],
                 ),
               ),
-              // Upload button
-              PrimaryButton(
-                onPressed: () => context.go('/upload/${widget.patientId}'),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.cloud_upload, size: 16),
-                    SizedBox(width: AppDimensions.spacingXs),
-                    Text("Carica Nuovo Test"),
-                  ],
-                ),
+              // Action buttons
+              Row(
+                children: [
+                  PrimaryButton(
+                    onPressed: () => context.go('/upload/${widget.patientId}'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.cloud_upload, size: 16),
+                        SizedBox(width: AppDimensions.spacingXs),
+                        Text("Carica Nuovo Test"),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  SecondaryButton(
+                    onPressed:
+                        () => setState(() => _isUpdatePatientModalOpen = true),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(CupertinoIcons.pencil, size: 16),
+                        SizedBox(width: AppDimensions.spacingXs),
+                        Text("Aggiorna Paziente"),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
