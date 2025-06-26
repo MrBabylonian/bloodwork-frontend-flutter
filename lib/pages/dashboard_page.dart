@@ -8,7 +8,6 @@ import '../components/buttons/index.dart';
 import '../components/forms/text_input.dart';
 import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
-import '../components/inputs/app_dropdown_menu.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
 import '../core/providers/analysis_provider.dart';
