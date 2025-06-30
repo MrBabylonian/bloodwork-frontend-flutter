@@ -2,18 +2,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import '../models/analysis_models.dart';
-import '../repositories/analysis_repository.dart';
+import '../api/api_service.dart';
 import '../services/service_locator.dart';
 
 enum AnalysisStatus { idle, processing, completed, failed }
 
 class AnalysisProvider extends ChangeNotifier {
-  final AnalysisRepository _analysisRepository;
+  final ApiService _apiService = ServiceLocator().apiService;
   final Logger _logger = Logger();
 
-  AnalysisProvider({AnalysisRepository? analysisRepository})
-    : _analysisRepository =
-          analysisRepository ?? ServiceLocator().analysisRepository;
+  AnalysisProvider();
 
   // State
   AnalysisStatus _status = AnalysisStatus.idle;
@@ -48,7 +46,7 @@ class AnalysisProvider extends ChangeNotifier {
     try {
       _logger.d('📄 PROVIDER: Starting PDF upload');
 
-      final response = await _analysisRepository.uploadPdfFile(
+      final response = await _apiService.uploadPdf(
         file: file,
         patientId: patientId,
         notes: notes,
@@ -86,9 +84,7 @@ class AnalysisProvider extends ChangeNotifier {
         '📄 PROVIDER: Checking pending analysis for patient: $patientId',
       );
 
-      final hasPending = await _analysisRepository.hasPendingAnalysis(
-        patientId,
-      );
+      final hasPending = await _apiService.hasPendingAnalysis(patientId);
 
       _hasPendingAnalysis = hasPending;
       _isCheckingPendingStatus = false;
@@ -113,9 +109,7 @@ class AnalysisProvider extends ChangeNotifier {
 
       _logger.d('📄 PROVIDER: Getting latest analysis for patient: $patientId');
 
-      final result = await _analysisRepository.getLatestAnalysisForPatient(
-        patientId,
-      );
+      final result = await _apiService.getLatestAnalysis(patientId);
 
       _isLoading = false;
       notifyListeners();

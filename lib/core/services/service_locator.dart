@@ -1,7 +1,5 @@
 import '../api/api_service.dart';
 import '../providers/auth_provider.dart';
-import '../repositories/analysis_repository.dart';
-import '../repositories/patient_repository.dart';
 import '../services/storage_service.dart';
 
 /// Service locator for dependency injection
@@ -16,10 +14,6 @@ class ServiceLocator {
   // Core services
   StorageService? _storageService;
   ApiService? _apiService;
-
-  // Repositories
-  AnalysisRepository? _analysisRepository;
-  PatientRepository? _patientRepository;
 
   // Providers
   AuthProvider? _authProvider;
@@ -43,16 +37,10 @@ class ServiceLocator {
 
     // Initialize auth provider (now that ApiService is ready)
     await _authProvider!.initialize();
-
-    // Update repositories to use the full ApiService
-    _analysisRepository = AnalysisRepository(apiService: _apiService!);
-    _patientRepository = PatientRepository(apiService: _apiService!);
   }
 
   // Getters
   StorageService get storageService => _storageService!;
   ApiService get apiService => _apiService!;
-  AnalysisRepository get analysisRepository => _analysisRepository!;
-  PatientRepository get patientRepository => _patientRepository!;
   AuthProvider get authProvider => _authProvider!;
 }

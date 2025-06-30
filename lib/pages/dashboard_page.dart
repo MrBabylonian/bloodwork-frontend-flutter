@@ -15,7 +15,6 @@ import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
 import 'patient_details_page.dart';
-import '../core/repositories/diagnostic_repository.dart';
 import '../core/services/service_locator.dart';
 
 /// Patient health status enum for UI display
@@ -156,9 +155,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Load tests count for a patient
   Future<void> _loadTestsCount(String patientId) async {
-    final repo = DiagnosticRepository(apiService: ServiceLocator().apiService);
     try {
-      final count = await repo.getTestsCount(patientId);
+      final count = await ServiceLocator().apiService.getTestsCount(patientId);
       if (mounted) {
         setState(() {
           _patientTestsCount[patientId] = count;

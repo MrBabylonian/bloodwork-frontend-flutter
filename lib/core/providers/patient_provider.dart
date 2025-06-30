@@ -1,18 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import '../repositories/patient_repository.dart';
 import '../models/patient_models.dart';
+import '../api/api_service.dart';
 import '../services/service_locator.dart';
 
 enum PatientStatus { loading, loaded, error, empty }
 
 class PatientProvider extends ChangeNotifier {
-  final PatientRepository _patientRepository;
+  final ApiService _apiService = ServiceLocator().apiService;
   final Logger _logger = Logger();
 
-  PatientProvider({PatientRepository? patientRepository})
-    : _patientRepository =
-          patientRepository ?? ServiceLocator().patientRepository;
+  PatientProvider();
 
   // State
   PatientStatus _status = PatientStatus.empty;
@@ -55,7 +53,7 @@ class PatientProvider extends ChangeNotifier {
         }
       }
 
-      final response = await _patientRepository.getAllPatients(
+      final response = await _apiService.getPatients(
         page: _currentPage,
         limit: _limit,
       );
@@ -126,7 +124,7 @@ class PatientProvider extends ChangeNotifier {
         }
       }
 
-      final response = await _patientRepository.searchPatients(
+      final response = await _apiService.searchPatients(
         query,
         page: _currentPage,
         limit: _limit,
@@ -184,7 +182,7 @@ class PatientProvider extends ChangeNotifier {
       _logger.d('🏥 PROVIDER: Creating patient: ${request.name}');
       _setStatus(PatientStatus.loading);
 
-      final patient = await _patientRepository.createPatient(request);
+      final patient = await _apiService.createPatient(request);
 
       if (patient != null) {
         // Add to local list and update state
@@ -206,7 +204,7 @@ class PatientProvider extends ChangeNotifier {
   /// Get patient by ID
   Future<PatientModel?> getPatientById(String patientId) async {
     try {
-      return await _patientRepository.getPatientById(patientId);
+      return await _apiService.getPatientById(patientId);
     } catch (e) {
       _logger.e('🏥 PROVIDER: Error getting patient: $e');
       return null;
@@ -221,7 +219,7 @@ class PatientProvider extends ChangeNotifier {
     try {
       _logger.d('🏥 PROVIDER: Updating patient: $patientId');
 
-      final updatedPatient = await _patientRepository.updatePatient(
+      final updatedPatient = await _apiService.updatePatient(
         patientId,
         request,
       );

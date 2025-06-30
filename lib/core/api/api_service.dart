@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../interceptors/auth_interceptor.dart';
 import '../providers/auth_provider.dart';
 import '../services/storage_service.dart';
 import '../models/auth_models.dart';
+import '../models/patient_models.dart';
+import '../models/analysis_models.dart';
 
 /// Production-grade API service with automatic authentication
 ///
@@ -315,6 +318,154 @@ class ApiService {
     } catch (e) {
       _logger.e('Update password error: $e');
       return false;
+    }
+  }
+
+  // -------------------------
+  // PATIENT ENDPOINTS
+  // -------------------------
+
+  Future<PatientListResponse> getPatients({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await get(
+      '/api/v1/patients/',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return PatientListResponse.fromJson(response.data);
+  }
+
+  Future<PatientModel?> getPatientById(String patientId) async {
+    try {
+      final response = await get('/api/v1/patients/$patientId');
+      return PatientModel.fromJson(response.data);
+    } catch (e) {
+      _logger.e('Get patient error: $e');
+      return null;
+    }
+  }
+
+  Future<PatientModel?> createPatient(PatientCreateRequest request) async {
+    try {
+      final response = await post('/api/v1/patients/', data: request.toJson());
+      return PatientModel.fromJson(response.data);
+    } catch (e) {
+      _logger.e('Create patient error: $e');
+      return null;
+    }
+  }
+
+  Future<PatientModel?> updatePatient(
+    String patientId,
+    PatientUpdateRequest request,
+  ) async {
+    try {
+      final response = await put(
+        '/api/v1/patients/$patientId',
+        data: request.toJson(),
+      );
+      return PatientModel.fromJson(response.data);
+    } catch (e) {
+      _logger.e('Update patient error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> deletePatient(String patientId) async {
+    try {
+      await delete('/api/v1/patients/$patientId');
+      return true;
+    } catch (e) {
+      _logger.e('Delete patient error: $e');
+      return false;
+    }
+  }
+
+  Future<PatientListResponse> searchPatients(
+    String name, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await get(
+      '/api/v1/patients/search/$name',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return PatientListResponse.fromJson(response.data);
+  }
+
+  // -------------------------
+  // ANALYSIS ENDPOINTS
+  // -------------------------
+
+  Future<AnalysisUploadResponse?> uploadPdf({
+    required PlatformFile file,
+    String? patientId,
+    String? notes,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          file.bytes!,
+          filename: file.name,
+          contentType: DioMediaType('application', 'pdf'),
+        ),
+        if (patientId != null) 'patient_id': patientId,
+        if (notes != null) 'notes': notes,
+      });
+
+      final response = await post('/api/v1/analysis/upload', data: formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return AnalysisUploadResponse.fromJson(response.data);
+      }
+      _logger.e('Upload PDF failed: ${response.statusCode}');
+      return null;
+    } catch (e) {
+      _logger.e('Upload PDF error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> hasPendingAnalysis(String patientId) async {
+    try {
+      final response = await get(
+        '/api/v1/diagnostics/patient/$patientId/pending',
+      );
+      if (response.statusCode == 200) {
+        return response.data['has_pending_analysis'] as bool;
+      }
+      return false;
+    } catch (e) {
+      _logger.e('Pending analysis check error: $e');
+      return false;
+    }
+  }
+
+  Future<AnalysisResult?> getLatestAnalysis(String patientId) async {
+    try {
+      final response = await get(
+        '/api/v1/diagnostics/patient/$patientId/latest',
+      );
+      if (response.statusCode == 200) {
+        return AnalysisResult.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      _logger.e('Get latest analysis error: $e');
+      return null;
+    }
+  }
+
+  Future<int> getTestsCount(String patientId) async {
+    try {
+      final response = await get(
+        '/api/v1/diagnostics/patient/$patientId/tests-count',
+      );
+      return (response.data as num).toInt();
+    } catch (e) {
+      _logger.e('Get tests count error: $e');
+      return 0;
     }
   }
 }
