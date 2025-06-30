@@ -1,16 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import '../repositories/auth_repository.dart';
+import '../api/api_service.dart';
 import '../models/auth_models.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
-  final AuthRepository _authRepository;
+  ApiService? _apiService;
   final Logger _logger = Logger();
 
-  AuthProvider({AuthRepository? authRepository})
-    : _authRepository = authRepository ?? AuthRepository();
+  AuthProvider();
 
   // Private state variables
   AuthStatus _status = AuthStatus.initial;
@@ -24,16 +23,24 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _status == AuthStatus.authenticated;
   bool get isLoading => _status == AuthStatus.loading;
 
+  // Inject ApiService after ServiceLocator creates it to break circular dependency
+  void setApiService(ApiService apiService) {
+    _apiService = apiService;
+  }
+
   // Initialize authentication (call on app start)
   Future<void> initialize() async {
     try {
       _logger.d('Initializing authentication provider');
       _setStatus(AuthStatus.loading);
 
-      final isAuth = await _authRepository.initializeAuth();
+      if (_apiService == null) {
+        throw StateError('ApiService not set in AuthProvider');
+      }
+      final isAuth = await _apiService!.initializeAuth();
 
       if (isAuth) {
-        final user = await _authRepository.getCurrentUser();
+        final user = await _apiService!.getCurrentUser();
         _currentUser = user;
         _setStatus(AuthStatus.authenticated);
         _logger.d('User is authenticated: ${user?.username}');
@@ -59,7 +66,7 @@ class AuthProvider extends ChangeNotifier {
       _setStatus(AuthStatus.loading);
       _clearError();
 
-      final loginResponse = await _authRepository.login(
+      final loginResponse = await _apiService!.login(
         username: username,
         password: password,
       );
@@ -94,7 +101,7 @@ class AuthProvider extends ChangeNotifier {
       // STEP 1: Set loading state
       _setStatus(AuthStatus.loading);
 
-      final success = await _authRepository.logout();
+      final success = await _apiService!.logout();
 
       if (success) {
         // STEP 2: Logout successful - clear state and set unauthenticated
@@ -123,7 +130,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       _logger.d('Refreshing token');
 
-      final success = await _authRepository.refreshToken();
+      final success = await _apiService!.refreshToken();
 
       if (!success) {
         _logger.w('Token refresh failed, logging out');
@@ -142,10 +149,10 @@ class AuthProvider extends ChangeNotifier {
   // Check authentication status
   Future<bool> checkAuthStatus() async {
     try {
-      final isAuth = await _authRepository.isAuthenticated();
+      final isAuth = await _apiService!.isAuthenticated();
 
       if (isAuth && _status != AuthStatus.authenticated) {
-        final user = await _authRepository.getCurrentUser();
+        final user = await _apiService!.getCurrentUser();
         _currentUser = user;
         _setStatus(AuthStatus.authenticated);
       } else if (!isAuth && _status == AuthStatus.authenticated) {
@@ -192,7 +199,7 @@ class AuthProvider extends ChangeNotifier {
       _setStatus(AuthStatus.loading);
       _clearError();
 
-      final response = await _authRepository.register(
+      final response = await _apiService!.register(
         username: username,
         email: email,
         password: password,
@@ -259,14 +266,14 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      final success = await _authRepository.updateProfile(
+      final success = await _apiService!.updateProfile(
         userId: _currentUser!.id,
         profileData: profileData,
       );
 
       if (success) {
         // Refresh current user data
-        final user = await _authRepository.getCurrentUser();
+        final user = await _apiService!.getCurrentUser();
         _currentUser = user;
         notifyListeners();
         return true;
@@ -286,7 +293,7 @@ class AuthProvider extends ChangeNotifier {
     required String confirmPassword,
   }) async {
     try {
-      final success = await _authRepository.updatePassword(
+      final success = await _apiService!.updatePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
         confirmPassword: confirmPassword,

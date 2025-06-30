@@ -1,7 +1,6 @@
 import '../api/api_service.dart';
 import '../providers/auth_provider.dart';
 import '../repositories/analysis_repository.dart';
-import '../repositories/auth_repository.dart';
 import '../repositories/patient_repository.dart';
 import '../services/storage_service.dart';
 
@@ -19,7 +18,6 @@ class ServiceLocator {
   ApiService? _apiService;
 
   // Repositories
-  AuthRepository? _authRepository;
   AnalysisRepository? _analysisRepository;
   PatientRepository? _patientRepository;
 
@@ -31,20 +29,20 @@ class ServiceLocator {
     // Initialize storage service first
     _storageService = StorageService();
 
-    // Create auth repository (will create its own simple ApiService initially)
-    _authRepository = AuthRepository();
-
-    // Create auth provider
-    _authProvider = AuthProvider(authRepository: _authRepository);
-
-    // Initialize auth provider
-    await _authProvider!.initialize();
+    // Create auth provider (no repository needed)
+    _authProvider = AuthProvider();
 
     // Now create the full ApiService with interceptors
     _apiService = ApiService(
       storageService: _storageService!,
       authProvider: _authProvider!,
     );
+
+    // Inject ApiService into AuthProvider to break circular dependency
+    _authProvider!.setApiService(_apiService!);
+
+    // Initialize auth provider (now that ApiService is ready)
+    await _authProvider!.initialize();
 
     // Update repositories to use the full ApiService
     _analysisRepository = AnalysisRepository(apiService: _apiService!);
@@ -54,7 +52,6 @@ class ServiceLocator {
   // Getters
   StorageService get storageService => _storageService!;
   ApiService get apiService => _apiService!;
-  AuthRepository get authRepository => _authRepository!;
   AnalysisRepository get analysisRepository => _analysisRepository!;
   PatientRepository get patientRepository => _patientRepository!;
   AuthProvider get authProvider => _authProvider!;
