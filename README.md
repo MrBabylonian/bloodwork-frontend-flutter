@@ -1,6 +1,6 @@
 # VetAnalytics – Bloodwork Analysis Front-End
 
-VetAnalytics is a cross-platform Flutter application that allows veterinary clinics to visualise, track and manage patients' bloodwork results in real-time. It provides a modern, responsive UI designed with Material 3 and Apple-inspired aesthetics, powered by Provider state-management and Go Router navigation.
+VetAnalytics is a cross-platform Flutter application that allows veterinary clinics to visualise, track and manage patients' bloodwork results in real-time. It provides a modern, responsive UI designed entirely with Material 3, powered by Provider state-management and Go Router navigation.
 
 ---
 
@@ -12,6 +12,7 @@ VetAnalytics is a cross-platform Flutter application that allows veterinary clin
 - **Adaptive UI** – desktop, tablet, web and mobile layouts from a single code-base.
 - **Dark / Light Theme** – instant toggling via the in-app theme switcher.
 - **Offline Ready** – cached data & graceful connectivity handling.
+- **Locale-Aware Dates** – automatic date formatting based on device locale.
 - **Secure Auth** – token-based login with automatic refresh & logout.
 
 ---
@@ -20,7 +21,7 @@ VetAnalytics is a cross-platform Flutter application that allows veterinary clin
 
 | Layer            | Package(s)                          | Notes                                  |
 | ---------------- | ----------------------------------- | -------------------------------------- |
-| UI Toolkit       | `flutter`, `material3`              | Custom design system in `lib/theme`    |
+| UI Toolkit       | `flutter` (Material 3)              | Custom design system in `lib/theme`    |
 | State Management | `provider`                          | Simple, lightweight & testable         |
 | Navigation       | `go_router`                         | Declarative, URL-aware routing         |
 | Networking       | `dio`, `http`, `connectivity_plus`  | Robust API calls & connectivity checks |

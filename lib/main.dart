@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'navigation/simple_router.dart';
 import 'core/providers/patient_provider.dart';
 import 'core/providers/analysis_provider.dart';
+import 'core/providers/tests_count_provider.dart';
 import 'core/services/service_locator.dart';
 import 'theme/app_theme.dart';
 
@@ -20,6 +21,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AppTheme()),
         ChangeNotifierProvider(create: (context) => PatientProvider()),
         ChangeNotifierProvider(create: (context) => AnalysisProvider()),
+        ChangeNotifierProvider(create: (context) => TestsCountProvider()),
       ],
       child: const VetAnalyticsApp(),
     ),

@@ -10,15 +10,9 @@ import '../components/navigation/app_header.dart';
 import '../components/dialogs/add_patient_modal.dart';
 import '../core/models/patient_models.dart';
 import '../core/providers/patient_provider.dart';
-import '../core/providers/analysis_provider.dart';
-import '../core/models/analysis_models.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
-import 'patient_details_page.dart';
-import '../core/services/service_locator.dart';
-
-/// Patient health status enum for UI display
-enum PatientHealthStatus { healthy, needsAttention, critical }
+import '../components/cards/patient_card.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -32,9 +26,6 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isAddPatientModalOpen = false;
   String _searchQuery = '';
   final ScrollController _scrollController = ScrollController();
-  // Map to store analysis results for each patient
-  final Map<String, AnalysisResult?> _patientAnalysisResults = {};
-  final Map<String, int> _patientTestsCount = {};
 
   @override
   void initState() {
@@ -74,97 +65,6 @@ class _DashboardPageState extends State<DashboardPage> {
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Color _getStatusColor(PatientHealthStatus status) {
-    switch (status) {
-      case PatientHealthStatus.healthy:
-        return AppColors.successGreen;
-      case PatientHealthStatus.needsAttention:
-        return AppColors.warningOrange;
-      case PatientHealthStatus.critical:
-        return AppColors.errorRed;
-    }
-  }
-
-  String _getStatusText(PatientHealthStatus status) {
-    switch (status) {
-      case PatientHealthStatus.healthy:
-        return 'Sano';
-      case PatientHealthStatus.needsAttention:
-        return 'Attenzione';
-      case PatientHealthStatus.critical:
-        return 'Critico';
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-  }
-
-  /// Helper method to determine patient status based on medical history
-  PatientHealthStatus _getPatientStatus(PatientModel patient) {
-    // Check if we have analysis results for this patient
-    final analysisResult = _patientAnalysisResults[patient.id];
-
-    if (analysisResult != null && analysisResult.diagnosticSummary != null) {
-      final urgenyLevel = PatientDetailsPage.getUrgencyLevel(
-        analysisResult.aiDiagnostic,
-      );
-
-      if (urgenyLevel?.toLowerCase() == 'EMERGENZA') {
-        return PatientHealthStatus.critical;
-      } else if (urgenyLevel?.toUpperCase() == 'URGENZA A BREVE') {
-        return PatientHealthStatus.needsAttention;
-      } else if (urgenyLevel?.toUpperCase() == 'ROUTINE') {
-        return PatientHealthStatus.healthy;
-      }
-    }
-    return PatientHealthStatus.healthy;
-  }
-
-  /// Helper method to get tests count from medical history
-  int _getTestsCount(PatientModel patient) {
-    // Prefer fetched count, fallback to medical history or 0
-    return _patientTestsCount[patient.id] ??
-        (patient.medicalHistory['tests_count'] as int? ?? 0);
-  }
-
-  /// Load analysis data for a patient
-  Future<void> _loadAnalysisData(String patientId) async {
-    final analysisProvider = Provider.of<AnalysisProvider>(
-      context,
-      listen: false,
-    );
-
-    try {
-      final result = await analysisProvider.getLatestAnalysisForPatient(
-        patientId,
-      );
-
-      // Check if the widget is still mounted before updating state
-      if (mounted) {
-        setState(() {
-          _patientAnalysisResults[patientId] = result;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading analysis data: $e');
-    }
-  }
-
-  /// Load tests count for a patient
-  Future<void> _loadTestsCount(String patientId) async {
-    try {
-      final count = await ServiceLocator().apiService.getTestsCount(patientId);
-      if (mounted) {
-        setState(() {
-          _patientTestsCount[patientId] = count;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading tests count: $e');
-    }
   }
 
   @override
@@ -590,7 +490,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ? AppDimensions.spacingL
                                         : 0,
                               ),
-                              child: _buildPatientCard(patients[j]),
+                              child: PatientCard(patient: patients[j]),
                             ),
                           ),
                         // Add empty expanded widgets if the row isn't full
@@ -635,197 +535,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     return const SizedBox.shrink();
-  }
-
-  Widget _buildPatientCard(PatientModel patient) {
-    // Load analysis data for this patient if not already loaded
-    if (!_patientAnalysisResults.containsKey(patient.id)) {
-      _loadAnalysisData(patient.id);
-    }
-
-    // Load tests count for this patient if not already loaded
-    if (!_patientTestsCount.containsKey(patient.id)) {
-      _loadTestsCount(patient.id);
-    }
-
-    return GestureDetector(
-      onTap: () => context.go('/patient/${patient.id}'),
-      child: IntrinsicHeight(
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 240),
-          padding: const EdgeInsets.all(
-            16,
-          ), // Reduced from 20 for more compact layout
-          decoration: BoxDecoration(
-            color: AppColors.backgroundWhite.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.borderGray.withValues(alpha: 0.2),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.foregroundDark.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          patient.name,
-                          style: AppTextStyles.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Owner: ${patient.ownerInfo.name}',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12), // Reduced from 16 for compactness
-              // Patient Details
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildPatientDetailRow('Species:', patient.species),
-                    const SizedBox(height: 6), // Reduced from 8
-                    _buildPatientDetailRow('Breed:', patient.breed),
-                    const SizedBox(height: 6), // Reduced from 8
-                    _buildPatientDetailRow('Age:', patient.age.toString()),
-                    const SizedBox(height: 6), // Reduced from 8
-                    _buildPatientDetailRow(
-                      'Birthdate:',
-                      _formatDate(patient.birthdate),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 12), // Reduced from 16 for compactness
-              // Status and Last Visit
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(_getPatientStatus(patient)),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      _getStatusText(_getPatientStatus(patient)),
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today,
-                        size: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatDate(patient.updatedAt),
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12), // Reduced from 16 for compactness
-              // Tests Count - this is where the card should end
-              Container(
-                padding: const EdgeInsets.only(
-                  top: 12,
-                ), // Reduced from 16 for compactness
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: AppColors.borderGray, width: 1),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Tests performed:',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      '${_getTestsCount(patient)}',
-                      style: AppTextStyles.caption.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Card ends here - no additional content
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPatientDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          value,
-          style: AppTextStyles.caption.copyWith(
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildEmptyState() {
