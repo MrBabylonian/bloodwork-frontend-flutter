@@ -1,4 +1,4 @@
-import "package:flutter/cupertino.dart";
+import 'package:flutter/material.dart';
 
 /// AppColors defines the color palette for the entire application.
 ///

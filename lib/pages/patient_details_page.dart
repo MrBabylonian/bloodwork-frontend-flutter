@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' hide IconButton;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
@@ -442,13 +442,13 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'normale':
-        return CupertinoIcons.checkmark_circle_fill;
+        return Icons.check_circle;
       case 'alterato_lieve':
-        return CupertinoIcons.exclamationmark_triangle_fill;
+        return Icons.warning;
       case 'alterato_grave':
-        return CupertinoIcons.xmark_circle_fill;
+        return Icons.cancel;
       default:
-        return CupertinoIcons.circle_fill;
+        return Icons.circle;
     }
   }
 
@@ -517,9 +517,9 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
 
     return Stack(
       children: [
-        CupertinoPageScaffold(
+        Scaffold(
           backgroundColor: AppColors.backgroundWhite,
-          child: Column(
+          body: Column(
             children: [
               // Header
               AppHeader(
@@ -555,7 +555,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(),
+            CircularProgressIndicator(),
             SizedBox(height: 16),
             Text('Caricamento paziente...'),
           ],
@@ -568,20 +568,16 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              CupertinoIcons.exclamationmark_triangle,
-              size: 48,
-              color: CupertinoColors.systemRed,
-            ),
+            const Icon(Icons.warning, size: 48, color: AppColors.errorRed),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
-              style: const TextStyle(color: CupertinoColors.systemRed),
+              style: const TextStyle(color: AppColors.errorRed),
             ),
             const SizedBox(height: 16),
-            CupertinoButton.filled(
-              child: const Text('Riprova'),
+            PrimaryButton(
               onPressed: () => _loadPatientData(),
+              child: const Text('Riprova'),
             ),
           ],
         ),
@@ -605,7 +601,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.back, size: 16),
+                  Icon(Icons.arrow_back, size: 16),
                   SizedBox(width: AppDimensions.spacingXs),
                   Text("Torna alla Dashboard"),
                 ],
@@ -628,17 +624,17 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   AppTab(
                     id: 'results',
                     label: 'Risultati Analisi',
-                    icon: CupertinoIcons.doc_text,
+                    icon: Icons.description,
                   ),
                   AppTab(
                     id: 'treatment',
                     label: 'Piano Terapeutico',
-                    icon: CupertinoIcons.bandage,
+                    icon: Icons.healing,
                   ),
                   AppTab(
                     id: 'history',
                     label: 'Storia Medica',
-                    icon: CupertinoIcons.time,
+                    icon: Icons.schedule,
                   ),
                 ],
                 children: [
@@ -681,15 +677,15 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                                   : AppBadgeVariant.secondary,
                           icon:
                               _patient!.isActive
-                                  ? CupertinoIcons.checkmark_circle_fill
-                                  : CupertinoIcons.circle_fill,
+                                  ? Icons.check_circle
+                                  : Icons.circle,
                         ),
                         if (_urgencyLevel != null) ...[
                           const SizedBox(width: AppDimensions.spacingM),
                           AppBadge(
                             label: _urgencyLevel!,
                             variant: _getUrgencyVariant(_urgencyLevel),
-                            icon: CupertinoIcons.exclamationmark_triangle_fill,
+                            icon: Icons.warning,
                           ),
                         ],
                       ],
@@ -706,7 +702,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(CupertinoIcons.cloud_upload, size: 16),
+                        Icon(Icons.cloud_upload, size: 16),
                         SizedBox(width: AppDimensions.spacingXs),
                         Text("Carica Nuovo Test"),
                       ],
@@ -719,7 +715,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(CupertinoIcons.pencil, size: 16),
+                        Icon(Icons.edit, size: 16),
                         SizedBox(width: AppDimensions.spacingXs),
                         Text("Aggiorna Paziente"),
                       ],
@@ -857,7 +853,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(),
+            CircularProgressIndicator(),
             SizedBox(height: 16),
             Text('Caricamento analisi...'),
           ],
@@ -889,7 +885,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
               ),
               child: const Icon(
-                CupertinoIcons.hourglass,
+                Icons.hourglass_empty,
                 color: AppColors.warningOrange,
                 size: 40,
               ),
@@ -923,7 +919,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
               ),
               child: const Icon(
-                CupertinoIcons.doc_text,
+                Icons.description,
                 color: AppColors.primaryBlue,
                 size: 40,
               ),
@@ -944,7 +940,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.cloud_upload, size: 16),
+                  Icon(Icons.cloud_upload, size: 16),
                   SizedBox(width: AppDimensions.spacingXs),
                   Text("Carica Prima Analisi"),
                 ],
@@ -1064,7 +1060,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                   ),
                 ),
                 child: const Icon(
-                  CupertinoIcons.doc_text_search,
+                  Icons.manage_search,
                   color: AppColors.primaryBlue,
                   size: 24,
                 ),
@@ -1080,7 +1076,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                       Row(
                         children: [
                           const Icon(
-                            CupertinoIcons.calendar,
+                            Icons.calendar_today,
                             size: 16,
                             color: AppColors.textSecondary,
                           ),
@@ -1118,7 +1114,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill,
+                Icons.warning,
                 color: AppColors.destructiveRed,
                 size: 20,
               ),
@@ -1137,7 +1133,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               AppBadge(
                 label: _urgencyLevel!,
                 variant: _getUrgencyVariant(_urgencyLevel),
-                icon: CupertinoIcons.exclamationmark_triangle_fill,
+                icon: Icons.warning,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
@@ -1229,7 +1225,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill,
+                Icons.warning,
                 color: AppColors.destructiveRed,
                 size: 20,
               ),
@@ -1257,7 +1253,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: Row(
                 children: [
                   const Icon(
-                    CupertinoIcons.exclamationmark_circle_fill,
+                    Icons.error,
                     color: AppColors.destructiveRed,
                     size: 16,
                   ),
@@ -1289,7 +1285,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill,
+                Icons.warning,
                 color: AppColors.destructiveRed,
                 size: 20,
               ),
@@ -1317,7 +1313,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: Row(
                 children: [
                   const Icon(
-                    CupertinoIcons.exclamationmark_circle_fill,
+                    Icons.error,
                     color: AppColors.destructiveRed,
                     size: 16,
                   ),
@@ -1349,7 +1345,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.doc_text_search,
+                Icons.manage_search,
                 color: AppColors.primaryBlue,
                 size: 20,
               ),
@@ -1378,7 +1374,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.doc_checkmark,
+                Icons.assignment_turned_in,
                 color: AppColors.primaryBlue,
                 size: 20,
               ),
@@ -1505,11 +1501,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         children: [
           Row(
             children: [
-              const Icon(
-                CupertinoIcons.person_fill,
-                color: AppColors.primaryBlue,
-                size: 20,
-              ),
+              const Icon(Icons.person, color: AppColors.primaryBlue, size: 20),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 "Educazione Proprietario",
@@ -1535,7 +1527,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill,
+                Icons.warning,
                 color: AppColors.destructiveRed,
                 size: 20,
               ),
@@ -1563,7 +1555,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: Row(
                 children: [
                   const Icon(
-                    CupertinoIcons.exclamationmark_circle_fill,
+                    Icons.error,
                     color: AppColors.destructiveRed,
                     size: 16,
                   ),
@@ -1712,7 +1704,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(),
+            CircularProgressIndicator(),
             SizedBox(height: 16),
             Text('Caricamento piano terapeutico...'),
           ],
@@ -1744,7 +1736,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
               ),
               child: const Icon(
-                CupertinoIcons.hourglass,
+                Icons.hourglass_empty,
                 color: AppColors.warningOrange,
                 size: 40,
               ),
@@ -1798,11 +1790,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         children: [
           Row(
             children: [
-              const Icon(
-                CupertinoIcons.search,
-                color: AppColors.primaryBlue,
-                size: 20,
-              ),
+              const Icon(Icons.search, color: AppColors.primaryBlue, size: 20),
               const SizedBox(width: AppDimensions.spacingS),
               Text("Piano Diagnostico", style: AppTextStyles.title3),
             ],
@@ -1874,11 +1862,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
         children: [
           Row(
             children: [
-              const Icon(
-                CupertinoIcons.bandage,
-                color: AppColors.primaryBlue,
-                size: 20,
-              ),
+              const Icon(Icons.healing, color: AppColors.primaryBlue, size: 20),
               const SizedBox(width: AppDimensions.spacingS),
               Text("Piano Terapeutico", style: AppTextStyles.title3),
             ],
@@ -1896,8 +1880,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             ...medications.map(
-              (treatment) =>
-                  _buildTreatmentItem(treatment, CupertinoIcons.capsule),
+              (treatment) => _buildTreatmentItem(treatment, Icons.medication),
             ),
             const SizedBox(height: AppDimensions.spacingM),
           ],
@@ -1913,8 +1896,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             ...supplements.map(
-              (treatment) =>
-                  _buildTreatmentItem(treatment, CupertinoIcons.plus_circle),
+              (treatment) => _buildTreatmentItem(treatment, Icons.add_circle),
             ),
             const SizedBox(height: AppDimensions.spacingM),
           ],
@@ -1930,8 +1912,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             ...supports.map(
-              (treatment) =>
-                  _buildTreatmentItem(treatment, CupertinoIcons.heart),
+              (treatment) => _buildTreatmentItem(treatment, Icons.favorite),
             ),
           ],
         ],
@@ -2025,7 +2006,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
           Row(
             children: [
               const Icon(
-                CupertinoIcons.calendar_today,
+                Icons.calendar_today,
                 color: AppColors.primaryBlue,
                 size: 20,
               ),
@@ -2045,7 +2026,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
               child: Row(
                 children: [
                   const Icon(
-                    CupertinoIcons.clock,
+                    Icons.access_time,
                     color: AppColors.primaryBlue,
                     size: 16,
                   ),
@@ -2081,7 +2062,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> {
                 child: Row(
                   children: [
                     const Icon(
-                      CupertinoIcons.add_circled_solid,
+                      Icons.add_circle,
                       color: AppColors.mediumGray,
                       size: 14,
                     ),

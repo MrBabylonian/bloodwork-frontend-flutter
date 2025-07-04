@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
-import '../components/buttons/index.dart';
 import '../components/navigation/app_header.dart';
+import '../components/buttons/index.dart';
 
 // Data models for the landing page sections
 class FeatureItem {
@@ -42,19 +42,19 @@ class _LandingPageState extends State<LandingPage> {
   // Features data in Italian
   static const List<FeatureItem> features = [
     FeatureItem(
-      icon: CupertinoIcons.waveform_path_ecg,
+      icon: Icons.monitor_heart,
       title: "Analisi Istantanea",
       description:
           "Ottieni analisi complete del sangue in secondi con insight basati sull'intelligenza artificiale",
     ),
     FeatureItem(
-      icon: CupertinoIcons.shield_fill,
+      icon: Icons.shield,
       title: "Conforme HIPAA",
       description:
           "Sicurezza di livello aziendale che garantisce la protezione di tutti i dati dei pazienti",
     ),
     FeatureItem(
-      icon: CupertinoIcons.bolt_fill,
+      icon: Icons.bolt,
       title: "Risultati in Tempo Reale",
       description:
           "Insight diagnostici immediati per accelerare le decisioni di cura dei pazienti",
@@ -63,18 +63,10 @@ class _LandingPageState extends State<LandingPage> {
 
   // Stats data in Italian
   static const List<StatItem> stats = [
+    StatItem(icon: Icons.group, value: "500+", label: "Cliniche Veterinarie"),
+    StatItem(icon: Icons.description, value: "50K+", label: "Test Analizzati"),
     StatItem(
-      icon: CupertinoIcons.group,
-      value: "500+",
-      label: "Cliniche Veterinarie",
-    ),
-    StatItem(
-      icon: CupertinoIcons.doc_text,
-      value: "50K+",
-      label: "Test Analizzati",
-    ),
-    StatItem(
-      icon: CupertinoIcons.chart_bar,
+      icon: Icons.bar_chart,
       value: "99.2%",
       label: "Tasso di Accuratezza",
     ),
@@ -82,14 +74,12 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
-      child: SingleChildScrollView(
+      appBar: const LandingHeader(),
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
-            const LandingHeader(),
-
             // Hero Section
             _buildHeroSection(context),
 
@@ -208,6 +198,7 @@ class _LandingPageState extends State<LandingPage> {
                 width: double.infinity,
                 child: PrimaryButton(
                   size: ButtonSize.large,
+                  width: double.infinity,
                   onPressed: () => context.go('/login'),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -215,7 +206,7 @@ class _LandingPageState extends State<LandingPage> {
                     children: [
                       Text('Inizia Analisi'),
                       SizedBox(width: AppDimensions.spacingS),
-                      Icon(CupertinoIcons.chevron_right, size: 20),
+                      Icon(Icons.chevron_right, size: 20),
                     ],
                   ),
                 ),
@@ -225,12 +216,13 @@ class _LandingPageState extends State<LandingPage> {
                 width: double.infinity,
                 child: OutlineButton(
                   size: ButtonSize.large,
+                  width: double.infinity,
                   onPressed: () => debugPrint('Guarda Demo tapped'),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(CupertinoIcons.play_fill, size: 20),
+                      Icon(Icons.play_arrow, size: 20),
                       SizedBox(width: AppDimensions.spacingS),
                       Text('Guarda Demo'),
                     ],
@@ -249,6 +241,7 @@ class _LandingPageState extends State<LandingPage> {
                 children: [
                   PrimaryButton(
                     size: ButtonSize.large,
+                    width: double.infinity,
                     onPressed: () => context.go('/login'),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -256,18 +249,19 @@ class _LandingPageState extends State<LandingPage> {
                       children: [
                         Text('Inizia Analisi'),
                         SizedBox(width: AppDimensions.spacingS),
-                        Icon(CupertinoIcons.chevron_right, size: 20),
+                        Icon(Icons.chevron_right, size: 20),
                       ],
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   OutlineButton(
                     size: ButtonSize.large,
+                    width: double.infinity,
                     onPressed: () => debugPrint('Guarda Demo tapped'),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(CupertinoIcons.play_fill, size: 20),
+                        Icon(Icons.play_arrow, size: 20),
                         SizedBox(width: AppDimensions.spacingS),
                         Text('Guarda Demo'),
                       ],
@@ -564,16 +558,15 @@ class _LandingPageState extends State<LandingPage> {
               const SizedBox(height: AppDimensions.spacingXl),
 
               // CTA button
-              Button(
+              SecondaryButton(
                 size: ButtonSize.large,
                 onPressed: () => context.go('/login'),
-                variant: ButtonVariant.secondary,
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Inizia Oggi'),
                     SizedBox(width: AppDimensions.spacingS),
-                    Icon(CupertinoIcons.chevron_right, size: 20),
+                    Icon(Icons.chevron_right, size: 20),
                   ],
                 ),
               ),

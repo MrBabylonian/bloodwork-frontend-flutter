@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
@@ -95,18 +95,22 @@ class InfoCard extends StatelessWidget {
                         children: [
                           DefaultTextStyle(
                             style:
-                                CupertinoTheme.of(
-                                  context,
-                                ).textTheme.navTitleTextStyle,
+                                Theme.of(context).textTheme.titleLarge ??
+                                const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
                             child: title!,
                           ),
                           if (subtitle != null) ...[
                             const SizedBox(height: AppDimensions.spacingXs),
                             DefaultTextStyle(
                               style:
-                                  CupertinoTheme.of(
-                                    context,
-                                  ).textTheme.tabLabelTextStyle,
+                                  Theme.of(context).textTheme.bodyMedium ??
+                                  const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
                               child: subtitle!,
                             ),
                           ],

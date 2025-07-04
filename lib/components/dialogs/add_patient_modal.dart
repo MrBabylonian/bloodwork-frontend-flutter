@@ -1,4 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' hide IconButton, showDatePicker;
+import 'package:flutter/material.dart'
+    as material
+    show IconButton, CircularProgressIndicator, showDatePicker;
+import 'package:flutter/material.dart' as material_icons;
 import 'package:provider/provider.dart';
 import '../../core/models/patient_models.dart';
 import '../../core/providers/patient_provider.dart';
@@ -8,7 +12,6 @@ import '../../theme/app_text_styles.dart';
 import '../buttons/index.dart';
 import '../forms/text_input.dart';
 import 'app_custom_dialog.dart';
-import '../forms/app_date_picker.dart';
 
 /// Modal for adding a new patient
 class AddPatientModal extends StatefulWidget {
@@ -41,6 +44,10 @@ class _AddPatientModalState extends State<AddPatientModal> {
   DateTime _selectedBirthdate = DateTime.now().subtract(
     const Duration(days: 365),
   ); // Default to 1 year old
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
 
   bool _isLoading = false;
 
@@ -147,87 +154,89 @@ class _AddPatientModalState extends State<AddPatientModal> {
         child: Center(
           child: GestureDetector(
             onTap: () {}, // Prevent closing when tapping on modal content
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.9,
-              constraints: const BoxConstraints(maxWidth: 500),
-              margin: const EdgeInsets.all(AppDimensions.spacingL),
-              padding: const EdgeInsets.all(AppDimensions.spacingXl),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundWhite,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.foregroundDark.withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header
-                    Row(
-                      children: [
-                        const Icon(
-                          CupertinoIcons.plus,
-                          color: AppColors.primaryBlue,
-                          size: 20,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingS),
-                        Text(
-                          'Aggiungi Nuovo Paziente',
-                          style: AppTextStyles.title3.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          minSize: 0,
-                          onPressed: widget.onClose,
-                          child: const Icon(
-                            CupertinoIcons.xmark,
-                            color: AppColors.mediumGray,
+            child: Material(
+              color: AppColors.backgroundWhite,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+              elevation: 0,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                constraints: const BoxConstraints(maxWidth: 500),
+                margin: const EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header
+                      Row(
+                        children: [
+                          const Icon(
+                            material_icons.Icons.add,
+                            color: AppColors.primaryBlue,
                             size: 20,
                           ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppDimensions.spacingXl),
-
-                    // Form
-                    _buildForm(),
-
-                    const SizedBox(height: AppDimensions.spacingXl),
-
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GhostButton(
-                            size: ButtonSize.large,
+                          const SizedBox(width: AppDimensions.spacingS),
+                          Text(
+                            'Aggiungi Nuovo Paziente',
+                            style: AppTextStyles.title3.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          material.IconButton(
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(
+                              material_icons.Icons.close,
+                              color: AppColors.mediumGray,
+                              size: 20,
+                            ),
                             onPressed: widget.onClose,
-                            child: const Text('Annulla'),
                           ),
-                        ),
-                        const SizedBox(width: AppDimensions.spacingM),
-                        Expanded(
-                          child: PrimaryButton(
-                            size: ButtonSize.large,
-                            onPressed: _isLoading ? null : _handleSubmit,
-                            child:
-                                _isLoading
-                                    ? const CupertinoActivityIndicator()
-                                    : const Text('Aggiungi Paziente'),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      // Form
+                      _buildForm(),
+
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      // Action Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GhostButton(
+                              size: ButtonSize.large,
+                              onPressed: widget.onClose,
+                              child: const Text('Annulla'),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: AppDimensions.spacingM),
+                          Expanded(
+                            child: PrimaryButton(
+                              size: ButtonSize.large,
+                              onPressed: _isLoading ? null : _handleSubmit,
+                              child:
+                                  _isLoading
+                                      ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child:
+                                            material.CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                      )
+                                      : const Text('Aggiungi Paziente'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -316,10 +325,45 @@ class _AddPatientModalState extends State<AddPatientModal> {
         const SizedBox(height: AppDimensions.spacingL),
 
         // Date of Birth row (full width)
-        AppDatePickerField(
-          label: 'Data di Nascita',
-          selectedDate: _selectedBirthdate,
-          onDateChanged: (d) => setState(() => _selectedBirthdate = d),
+        GestureDetector(
+          onTap: _selectDate,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundSecondary,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  material_icons.Icons.calendar_today,
+                  size: 16,
+                  color: AppColors.mediumGray,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Data di Nascita',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _formatDate(_selectedBirthdate),
+                        style: AppTextStyles.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
 
         const SizedBox(height: AppDimensions.spacingL),
@@ -345,5 +389,17 @@ class _AddPatientModalState extends State<AddPatientModal> {
         ),
       ],
     );
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await material.showDatePicker(
+      context: context,
+      initialDate: _selectedBirthdate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() => _selectedBirthdate = picked);
+    }
   }
 }

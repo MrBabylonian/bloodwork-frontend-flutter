@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -133,7 +133,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(CupertinoIcons.person, size: 16),
+              Icon(Icons.person, size: 16),
               SizedBox(width: AppDimensions.spacingXs),
               Text('Profilo'),
             ],
@@ -146,7 +146,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(CupertinoIcons.arrow_right_square, size: 16),
+              Icon(Icons.logout, size: 16),
               SizedBox(width: AppDimensions.spacingXs),
               Text('Esci'),
             ],
@@ -295,7 +295,7 @@ class LoginHeader extends StatelessWidget implements PreferredSizeWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.chevron_left, size: 16),
+                  Icon(Icons.arrow_back, size: 16),
                   SizedBox(width: AppDimensions.spacingXs),
                   Text('Torna alla Home'),
                 ],

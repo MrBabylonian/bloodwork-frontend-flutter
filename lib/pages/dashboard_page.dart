@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
@@ -176,9 +176,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Stack(
       children: [
-        CupertinoPageScaffold(
+        Scaffold(
           backgroundColor: AppColors.backgroundWhite,
-          child: Container(
+          body: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -278,7 +278,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(CupertinoIcons.plus, size: 16),
+                          Icon(Icons.add, size: 16),
                           SizedBox(width: AppDimensions.spacingS),
                           Text('Aggiungi Paziente'),
                         ],
@@ -320,7 +320,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(CupertinoIcons.plus, size: 16),
+                  Icon(Icons.add, size: 16),
                   SizedBox(width: AppDimensions.spacingS),
                   Text('Aggiungi Paziente'),
                 ],
@@ -341,7 +341,7 @@ class _DashboardPageState extends State<DashboardPage> {
         final card = _buildStatCard(
           title: 'Pazienti Totali',
           value: totalPatients,
-          icon: CupertinoIcons.person_2,
+          icon: Icons.people,
           color: AppColors.primaryBlue,
         );
 
@@ -475,7 +475,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 prefix: const Padding(
                   padding: EdgeInsets.only(left: 12, right: 16),
                   child: Icon(
-                    CupertinoIcons.search,
+                    Icons.search,
                     color: AppColors.mediumGray,
                     size: 16,
                   ),
@@ -490,7 +490,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(CupertinoIcons.slider_horizontal_3, size: 16),
+                Icon(Icons.tune, size: 16),
                 SizedBox(width: 8),
                 Text('Filtri'),
               ],
@@ -510,7 +510,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CupertinoActivityIndicator(),
+                CircularProgressIndicator(),
                 SizedBox(height: 16),
                 Text('Caricamento pazienti...'),
               ],
@@ -525,19 +525,19 @@ class _DashboardPageState extends State<DashboardPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  CupertinoIcons.exclamationmark_triangle,
+                  Icons.error_outline,
                   size: 48,
-                  color: CupertinoColors.systemRed,
+                  color: AppColors.errorRed,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   patientProvider.errorMessage ?? 'Errore nel caricamento',
-                  style: const TextStyle(color: CupertinoColors.systemRed),
+                  style: const TextStyle(color: AppColors.errorRed),
                 ),
                 const SizedBox(height: 16),
-                CupertinoButton.filled(
-                  child: const Text('Riprova'),
+                PrimaryButton(
                   onPressed: () => patientProvider.refresh(),
+                  child: const Text('Riprova'),
                 ),
               ],
             ),
@@ -618,7 +618,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
         alignment: Alignment.center,
-        child: const CupertinoActivityIndicator(),
+        child: const CircularProgressIndicator(),
       );
     }
 
@@ -626,10 +626,10 @@ class _DashboardPageState extends State<DashboardPage> {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
         alignment: Alignment.center,
-        child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: const Text('Carica altri pazienti'),
+        child: SecondaryButton(
+          size: ButtonSize.medium,
           onPressed: () => patientProvider.loadMorePatients(),
+          child: const Text('Carica altri pazienti'),
         ),
       );
     }
@@ -750,7 +750,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Row(
                     children: [
                       const Icon(
-                        CupertinoIcons.calendar,
+                        Icons.calendar_today,
                         size: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -845,11 +845,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       child: Column(
         children: [
-          const Icon(
-            CupertinoIcons.search,
-            size: 48,
-            color: AppColors.mediumGray,
-          ),
+          const Icon(Icons.search, size: 48, color: AppColors.mediumGray),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             'Nessun paziente trovato',

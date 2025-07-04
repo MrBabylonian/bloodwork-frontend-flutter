@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
@@ -239,7 +239,7 @@ class _AppTabButton extends StatelessWidget {
               isActive
                   ? [
                     BoxShadow(
-                      color: CupertinoColors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 2,
                       offset: const Offset(0, 1),
                     ),

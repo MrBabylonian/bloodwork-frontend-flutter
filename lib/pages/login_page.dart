@@ -1,4 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' hide IconButton;
+import 'package:flutter/material.dart'
+    as material
+    show IconButton, SegmentedButton, ButtonSegment;
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../components/buttons/index.dart';
@@ -288,9 +291,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
-      child: SafeArea(
+      body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -362,22 +365,22 @@ class _LoginPageState extends State<LoginPage> {
                                           AppDimensions.spacingM,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: CupertinoColors.systemRed
-                                              .withValues(alpha: 0.1),
+                                          color: AppColors.errorRed.withValues(
+                                            alpha: 0.1,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             AppDimensions.radiusSmall,
                                           ),
                                           border: Border.all(
-                                            color: CupertinoColors.systemRed
+                                            color: AppColors.errorRed
                                                 .withValues(alpha: 0.3),
                                           ),
                                         ),
                                         child: Row(
                                           children: [
                                             const Icon(
-                                              CupertinoIcons
-                                                  .exclamationmark_triangle_fill,
-                                              color: CupertinoColors.systemRed,
+                                              Icons.warning,
+                                              color: AppColors.errorRed,
                                               size: 16,
                                             ),
                                             const SizedBox(
@@ -388,24 +391,25 @@ class _LoginPageState extends State<LoginPage> {
                                                 authProvider.errorMessage!,
                                                 style: AppTextStyles.body
                                                     .copyWith(
-                                                      color:
-                                                          CupertinoColors
-                                                              .systemRed,
+                                                      color: AppColors.errorRed,
                                                       fontSize: 14,
                                                     ),
                                               ),
                                             ),
-                                            CupertinoButton(
+                                            material.IconButton(
                                               padding: EdgeInsets.zero,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              constraints:
+                                                  const BoxConstraints(),
+                                              icon: const Icon(
+                                                Icons.close,
+                                                color: AppColors.errorRed,
+                                                size: 16,
+                                              ),
                                               onPressed:
                                                   () =>
                                                       authProvider.clearError(),
-                                              child: const Icon(
-                                                CupertinoIcons.xmark,
-                                                color:
-                                                    CupertinoColors.systemRed,
-                                                size: 16,
-                                              ),
                                             ),
                                           ],
                                         ),
@@ -428,8 +432,16 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: isLoading ? null : _handleSubmit,
                                   child:
                                       isLoading
-                                          ? const CupertinoActivityIndicator(
-                                            color: AppColors.white,
+                                          ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    AppColors.white,
+                                                  ),
+                                            ),
                                           )
                                           : Text(
                                             _isLogin
@@ -523,7 +535,7 @@ class _LoginPageState extends State<LoginPage> {
               right: AppDimensions.spacingM,
             ),
             child: Icon(
-              CupertinoIcons.person,
+              Icons.person_outline,
               color: AppColors.mediumGray,
               size: 18,
             ),
@@ -546,7 +558,7 @@ class _LoginPageState extends State<LoginPage> {
                 right: AppDimensions.spacingM,
               ),
               child: Icon(
-                CupertinoIcons.mail,
+                Icons.mail_outline,
                 color: AppColors.mediumGray,
                 size: 18,
               ),
@@ -571,7 +583,7 @@ class _LoginPageState extends State<LoginPage> {
               right: AppDimensions.spacingM,
             ),
             child: Icon(
-              CupertinoIcons.lock,
+              Icons.lock_outline,
               color: AppColors.mediumGray,
               size: 18,
             ),
@@ -596,7 +608,7 @@ class _LoginPageState extends State<LoginPage> {
                 right: AppDimensions.spacingM,
               ),
               child: Icon(
-                CupertinoIcons.lock,
+                Icons.lock_outline,
                 color: AppColors.mediumGray,
                 size: 18,
               ),
@@ -625,25 +637,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
-                CupertinoSlidingSegmentedControl<UserRole>(
-                  children: const {
-                    UserRole.veterinarian: Padding(
-                      padding: EdgeInsets.all(AppDimensions.spacingS),
-                      child: Text('Veterinario'),
+                material.SegmentedButton<UserRole>(
+                  segments: const [
+                    material.ButtonSegment<UserRole>(
+                      value: UserRole.veterinarian,
+                      label: Text('Veterinario'),
                     ),
-                    UserRole.veterinaryTechnician: Padding(
-                      padding: EdgeInsets.all(AppDimensions.spacingS),
-                      child: Text('Tecnico'),
+                    material.ButtonSegment<UserRole>(
+                      value: UserRole.veterinaryTechnician,
+                      label: Text('Tecnico'),
                     ),
-                  },
-                  onValueChanged: (UserRole? value) {
-                    if (value != null) {
+                  ],
+                  selected: {_selectedRole},
+                  onSelectionChanged: (Set<UserRole> newSelection) {
+                    if (newSelection.isNotEmpty) {
                       setState(() {
-                        _selectedRole = value;
+                        _selectedRole = newSelection.first;
                       });
                     }
                   },
-                  groupValue: _selectedRole,
                 ),
               ],
             ),
@@ -664,11 +676,7 @@ class _LoginPageState extends State<LoginPage> {
                 left: AppDimensions.spacingS,
                 right: AppDimensions.spacingM,
               ),
-              child: Icon(
-                CupertinoIcons.person_fill,
-                color: AppColors.mediumGray,
-                size: 18,
-              ),
+              child: Icon(Icons.person, color: AppColors.mediumGray, size: 18),
             ),
           ),
 
@@ -687,11 +695,7 @@ class _LoginPageState extends State<LoginPage> {
                 left: AppDimensions.spacingS,
                 right: AppDimensions.spacingM,
               ),
-              child: Icon(
-                CupertinoIcons.person_fill,
-                color: AppColors.mediumGray,
-                size: 18,
-              ),
+              child: Icon(Icons.person, color: AppColors.mediumGray, size: 18),
             ),
           ),
 
@@ -711,7 +715,7 @@ class _LoginPageState extends State<LoginPage> {
                 right: AppDimensions.spacingM,
               ),
               child: Icon(
-                CupertinoIcons.doc_text,
+                Icons.description_outlined,
                 color: AppColors.mediumGray,
                 size: 18,
               ),
@@ -734,7 +738,7 @@ class _LoginPageState extends State<LoginPage> {
                 right: AppDimensions.spacingM,
               ),
               child: Icon(
-                CupertinoIcons.building_2_fill,
+                Icons.business,
                 color: AppColors.mediumGray,
                 size: 18,
               ),
@@ -756,11 +760,7 @@ class _LoginPageState extends State<LoginPage> {
                 left: AppDimensions.spacingS,
                 right: AppDimensions.spacingM,
               ),
-              child: Icon(
-                CupertinoIcons.phone,
-                color: AppColors.mediumGray,
-                size: 18,
-              ),
+              child: Icon(Icons.phone, color: AppColors.mediumGray, size: 18),
             ),
           ),
         ],
@@ -770,8 +770,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildToggle() {
     return Center(
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
+      child: TextButton(
+        style: TextButton.styleFrom(padding: EdgeInsets.zero),
         onPressed: _toggleMode,
         child: Text(
           _isLogin

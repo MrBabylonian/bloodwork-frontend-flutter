@@ -1,23 +1,24 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class AuthLoadingWidget extends StatelessWidget {
   const AuthLoadingWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      child: Center(
+    return Scaffold(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(radius: 20),
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(strokeWidth: 4),
+            ),
             SizedBox(height: 16),
             Text(
               'Loading...',
-              style: TextStyle(
-                fontSize: 16,
-                color: CupertinoColors.secondaryLabel,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
         ),

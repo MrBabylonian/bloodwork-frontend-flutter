@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 
 class AppSwitch extends StatelessWidget {
@@ -19,15 +19,16 @@ class AppSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Using CupertinoSwitch for an iOS-style switch, which is common in Flutter.
-    // Material Switch can also be used if a Material look is preferred.
-    return CupertinoSwitch(
+    // Material Switch ensures consistency with the app-wide Material design.
+    return Switch(
       value: value,
       onChanged: onChanged,
-      activeTrackColor: activeColor ?? AppColors.primaryBlue,
+      activeColor: activeColor ?? AppColors.primaryBlue,
+      activeTrackColor: (activeColor ?? AppColors.primaryBlue).withOpacity(
+        0.54,
+      ),
       inactiveTrackColor: trackColor ?? AppColors.lightGray,
-      thumbColor:
-          thumbColor, // CupertinoSwitch handles default thumb color well
+      inactiveThumbColor: thumbColor,
     );
   }
 }

@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_final_fields
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' hide IconButton;
+import 'package:flutter/material.dart' as material show IconButton;
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
@@ -175,7 +177,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
               widget.isLoading
                   ? const SizedBox(
                     height: 150,
-                    child: Center(child: CupertinoActivityIndicator()),
+                    child: Center(child: CircularProgressIndicator()),
                   )
                   : Padding(
                     padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -313,10 +315,12 @@ class _FileUploadFieldState extends State<FileUploadField> {
                                           color: AppColors.mediumGray,
                                         ),
                                       ),
-                                      CupertinoButton(
+                                      material.IconButton(
                                         padding: EdgeInsets.zero,
+                                        visualDensity: VisualDensity.compact,
+                                        constraints: const BoxConstraints(),
                                         onPressed: () => _removeFile(index),
-                                        child: const Icon(
+                                        icon: const Icon(
                                           CupertinoIcons.xmark_circle_fill,
                                           color: AppColors.mediumGray,
                                         ),

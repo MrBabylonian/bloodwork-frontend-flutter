@@ -1,20 +1,19 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_dimensions.dart';
-import '../components/buttons/index.dart';
-import '../components/navigation/app_header.dart';
 import '../components/cards/info_card.dart';
 import '../components/forms/file_upload.dart';
-import '../components/feedback/app_progress_indicator.dart';
 import '../core/providers/analysis_provider.dart';
 import '../components/dialogs/app_custom_dialog.dart';
 import '../core/services/logout_service.dart';
 import '../utils/auth_utils.dart';
+import '../components/buttons/index.dart' hide IconButton;
+import '../components/navigation/app_header.dart';
 
 /// Upload page for analyzing bloodwork files
 class UploadPage extends StatefulWidget {
@@ -169,389 +168,393 @@ class _UploadPageState extends State<UploadPage> {
       return AuthUtils.buildLoginRequiredScreen(context);
     }
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
-      child: Column(
+      appBar: AuthenticatedAppHeader(
+        onProfileTap: () => context.go('/profile'),
+        onLogoutTap: () => LogoutService.showLogoutDialog(context),
+        actions: const [], // extra actions not needed
+      ),
+      body: Column(
         children: [
-          // Header
-          AppHeader(
-            title: const Text("Carica File", style: AppTextStyles.title2),
-            showAuth: true,
-            onProfileTap: () => context.go('/profile'),
-            onLogoutTap: () => LogoutService.showLogoutDialog(context),
-          ),
-
           // Content
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1024),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Page Title
-                    Text(
-                      "Carica File Analisi Sangue",
-                      style: AppTextStyles.title1.copyWith(
-                        fontWeight: FontWeight.bold,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1024),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Page Title
+                      Text(
+                        "Carica File Analisi Sangue",
+                        style: AppTextStyles.title1.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingS),
-                    Text(
-                      "Carica report PDF per analisi alimentata da IA",
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
+                      const SizedBox(height: AppDimensions.spacingS),
+                      Text(
+                        "Carica report PDF per analisi alimentata da IA",
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingM,
-                        vertical: AppDimensions.spacingS,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.lightGray,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusSmall,
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.spacingM,
+                          vertical: AppDimensions.spacingS,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightGray,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusSmall,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.info,
+                              size: 16,
+                              color: AppColors.primaryBlue,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingXs),
+                            Text(
+                              "Al momento supportiamo solo file PDF. Upload immagini in arrivo!",
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            CupertinoIcons.info_circle,
-                            size: 16,
-                            color: AppColors.primaryBlue,
-                          ),
-                          const SizedBox(width: AppDimensions.spacingXs),
-                          Text(
-                            "Al momento supportiamo solo file PDF. Upload immagini in arrivo!",
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
 
-                    const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Upload Area
-                    InfoCard(
-                      padding: const EdgeInsets.all(AppDimensions.spacingXl),
-                      child: FileUploadField(
-                        onFileSelected: _handleFileSelected,
-                        label: "Trascina e rilascia i tuoi file PDF qui",
-                        maxFileSizeMB: 10,
-                        isLoading: _isUploading,
-                      ),
-                    ),
-
-                    if (_selectedFiles.isNotEmpty) ...[
-                      const SizedBox(height: AppDimensions.spacingL),
-
-                      // Selected Files List
+                      // Upload Area
                       InfoCard(
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      CupertinoIcons.doc_text,
-                                      size: 20,
-                                      color: AppColors.primaryBlue,
-                                    ),
-                                    const SizedBox(
-                                      width: AppDimensions.spacingS,
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "File Selezionati (${_selectedFiles.length})",
-                                          style: AppTextStyles.body.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Builder(
-                                          builder: (context) {
-                                            final pdfCount =
-                                                _selectedFiles
-                                                    .where(
-                                                      (f) =>
-                                                          f.extension
-                                                              ?.toLowerCase() ==
-                                                          'pdf',
-                                                    )
-                                                    .length;
-                                            return Text(
-                                              "$pdfCount PDF pronti per il caricamento",
-                                              style: AppTextStyles.caption
-                                                  .copyWith(
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                  ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                if (!_isUploading)
-                                  GhostButton(
-                                    size: ButtonSize.small,
-                                    onPressed: _clearAllFiles,
-                                    child: const Text("Rimuovi Tutti"),
-                                  ),
-                              ],
-                            ),
+                        padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                        child: FileUploadField(
+                          onFileSelected: _handleFileSelected,
+                          label: "Trascina e rilascia i tuoi file PDF qui",
+                          maxFileSizeMB: 10,
+                          isLoading: _isUploading,
+                        ),
+                      ),
 
-                            const SizedBox(height: AppDimensions.spacingM),
+                      if (_selectedFiles.isNotEmpty) ...[
+                        const SizedBox(height: AppDimensions.spacingL),
 
-                            // File list with PDF/non-PDF indicators
-                            ..._selectedFiles.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final file = entry.value;
-                              final isPdf =
-                                  file.extension?.toLowerCase() == 'pdf';
-
-                              return Container(
-                                margin: EdgeInsets.only(
-                                  bottom:
-                                      index < _selectedFiles.length - 1
-                                          ? AppDimensions.spacingS
-                                          : 0,
-                                ),
-                                padding: const EdgeInsets.all(
-                                  AppDimensions.spacingM,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      isPdf
-                                          ? AppColors.backgroundSecondary
-                                              .withValues(alpha: 0.5)
-                                          : AppColors.destructiveRed.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                  borderRadius: BorderRadius.circular(
-                                    AppDimensions.radiusMedium,
-                                  ),
-                                  border:
-                                      !isPdf
-                                          ? Border.all(
-                                            color: AppColors.destructiveRed
-                                                .withValues(alpha: 0.3),
-                                            width: 1,
-                                          )
-                                          : null,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _getFileIcon(file.extension ?? ''),
-                                      size: 20,
-                                      color:
-                                          isPdf
-                                              ? AppColors.primaryBlue
-                                              : AppColors.destructiveRed,
-                                    ),
-                                    const SizedBox(
-                                      width: AppDimensions.spacingM,
-                                    ),
-                                    Expanded(
-                                      child: Column(
+                        // Selected Files List
+                        InfoCard(
+                          padding: const EdgeInsets.all(AppDimensions.spacingL),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.description,
+                                        size: 20,
+                                        color: AppColors.primaryBlue,
+                                      ),
+                                      const SizedBox(
+                                        width: AppDimensions.spacingS,
+                                      ),
+                                      Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  file.name,
-                                                  style: AppTextStyles.body
-                                                      .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            isPdf
-                                                                ? null
-                                                                : AppColors
-                                                                    .destructiveRed,
-                                                      ),
-                                                ),
-                                              ),
-                                              if (!isPdf) ...[
-                                                const SizedBox(
-                                                  width:
-                                                      AppDimensions.spacingXs,
-                                                ),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal:
-                                                            AppDimensions
-                                                                .spacingXs,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        AppColors
-                                                            .destructiveRed,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          AppDimensions
-                                                              .radiusSmall,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    'NON SUPPORTATO',
-                                                    style: AppTextStyles.caption
-                                                        .copyWith(
-                                                          color:
-                                                              AppColors.white,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
                                           Text(
-                                            _formatFileSize(file.size),
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                                  color:
-                                                      isPdf
-                                                          ? AppColors
-                                                              .textSecondary
-                                                          : AppColors
-                                                              .destructiveRed
-                                                              .withValues(
-                                                                alpha: 0.8,
-                                                              ),
-                                                ),
+                                            "File Selezionati (${_selectedFiles.length})",
+                                            style: AppTextStyles.body.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Builder(
+                                            builder: (context) {
+                                              final pdfCount =
+                                                  _selectedFiles
+                                                      .where(
+                                                        (f) =>
+                                                            f.extension
+                                                                ?.toLowerCase() ==
+                                                            'pdf',
+                                                      )
+                                                      .length;
+                                              return Text(
+                                                "$pdfCount PDF pronti per il caricamento",
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                      color:
+                                                          AppColors
+                                                              .textSecondary,
+                                                    ),
+                                              );
+                                            },
                                           ),
                                         ],
                                       ),
+                                    ],
+                                  ),
+                                  LinkButton(
+                                    onPressed: _clearAllFiles,
+                                    child: const Text("Rimuovi Tutti"),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: AppDimensions.spacingM),
+
+                              // File list with PDF/non-PDF indicators
+                              ..._selectedFiles.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final file = entry.value;
+                                final isPdf =
+                                    file.extension?.toLowerCase() == 'pdf';
+
+                                return Container(
+                                  margin: EdgeInsets.only(
+                                    bottom:
+                                        index < _selectedFiles.length - 1
+                                            ? AppDimensions.spacingS
+                                            : 0,
+                                  ),
+                                  padding: const EdgeInsets.all(
+                                    AppDimensions.spacingM,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isPdf
+                                            ? AppColors.backgroundSecondary
+                                                .withValues(alpha: 0.5)
+                                            : AppColors.destructiveRed
+                                                .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusMedium,
                                     ),
-                                    if (!_isUploading)
-                                      GhostButton(
-                                        size: ButtonSize.small,
-                                        onPressed: () => _removeFile(index),
-                                        child: const Icon(
-                                          CupertinoIcons.xmark,
+                                    border:
+                                        !isPdf
+                                            ? Border.all(
+                                              color: AppColors.destructiveRed
+                                                  .withValues(alpha: 0.3),
+                                              width: 1,
+                                            )
+                                            : null,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _getFileIcon(file.extension ?? ''),
+                                        size: 20,
+                                        color:
+                                            isPdf
+                                                ? AppColors.primaryBlue
+                                                : AppColors.destructiveRed,
+                                      ),
+                                      const SizedBox(
+                                        width: AppDimensions.spacingM,
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    file.name,
+                                                    style: AppTextStyles.body
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color:
+                                                              isPdf
+                                                                  ? null
+                                                                  : AppColors
+                                                                      .destructiveRed,
+                                                        ),
+                                                  ),
+                                                ),
+                                                if (!isPdf) ...[
+                                                  const SizedBox(
+                                                    width:
+                                                        AppDimensions.spacingXs,
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal:
+                                                              AppDimensions
+                                                                  .spacingXs,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          AppColors
+                                                              .destructiveRed,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            AppDimensions
+                                                                .radiusSmall,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      'NON SUPPORTATO',
+                                                      style: AppTextStyles
+                                                          .caption
+                                                          .copyWith(
+                                                            color:
+                                                                AppColors.white,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            Text(
+                                              _formatFileSize(file.size),
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(
+                                                    color:
+                                                        isPdf
+                                                            ? AppColors
+                                                                .textSecondary
+                                                            : AppColors
+                                                                .destructiveRed
+                                                                .withValues(
+                                                                  alpha: 0.8,
+                                                                ),
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
                                           size: 16,
                                           color: AppColors.textSecondary,
                                         ),
+                                        onPressed: () => _removeFile(index),
                                       ),
-                                  ],
-                                ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    if (_isUploading) ...[
-                      const SizedBox(height: AppDimensions.spacingL),
-
-                      // Upload Progress
-                      InfoCard(
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Caricamento file...",
-                                  style: AppTextStyles.body.copyWith(
-                                    fontWeight: FontWeight.w600,
+                                    ],
                                   ),
-                                ),
-                                Text(
-                                  "${(_uploadProgress * 100).toInt()}%",
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppDimensions.spacingM),
-                            AppProgressIndicator(
-                              value: _uploadProgress,
-                              height: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: AppDimensions.spacingXl),
-
-                    // Action Buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SecondaryButton(
-                          onPressed:
-                              _isUploading
-                                  ? null
-                                  : () => context.go('/dashboard'),
-                          child: const Text("Annulla"),
-                        ),
-                        const SizedBox(width: AppDimensions.spacingM),
-                        PrimaryButton(
-                          onPressed:
-                              (_selectedFiles.isEmpty || _isUploading)
-                                  ? null
-                                  : _handleUpload,
-                          child: Text(
-                            _isUploading ? "Caricamento..." : "Analizza File",
+                                );
+                              }),
+                            ],
                           ),
                         ),
                       ],
-                    ),
 
-                    const SizedBox(height: AppDimensions.spacingXxl),
+                      if (_isUploading) ...[
+                        const SizedBox(height: AppDimensions.spacingL),
 
-                    // Info Cards
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isWide = constraints.maxWidth > 600;
-
-                        if (isWide) {
-                          return Row(
+                        // Upload Progress
+                        InfoCard(
+                          padding: const EdgeInsets.all(AppDimensions.spacingL),
+                          child: Column(
                             children: [
-                              Expanded(child: _buildSupportedFormatsCard()),
-                              const SizedBox(width: AppDimensions.spacingL),
-                              Expanded(child: _buildProcessingTimeCard()),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Caricamento file...",
+                                    style: AppTextStyles.body.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${(_uploadProgress * 100).toInt()}%",
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppDimensions.spacingM),
+                              SizedBox(
+                                height: 8,
+                                child: LinearProgressIndicator(
+                                  value: _uploadProgress,
+                                  backgroundColor: AppColors.lightGray,
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    AppColors.primaryBlue,
+                                  ),
+                                ),
+                              ),
                             ],
-                          );
-                        } else {
-                          return Column(
-                            children: [
-                              _buildSupportedFormatsCard(),
-                              const SizedBox(height: AppDimensions.spacingL),
-                              _buildProcessingTimeCard(),
-                            ],
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      // Action Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlineButton(
+                            onPressed:
+                                _isUploading
+                                    ? null
+                                    : () => context.go('/dashboard'),
+                            child: const Text("Annulla"),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                          PrimaryButton(
+                            size: ButtonSize.medium,
+                            onPressed:
+                                (_selectedFiles.isEmpty || _isUploading)
+                                    ? null
+                                    : _handleUpload,
+                            isLoading: _isUploading,
+                            child: const Text("Analizza File"),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppDimensions.spacingXxl),
+
+                      // Info Cards
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isWide = constraints.maxWidth > 600;
+
+                          if (isWide) {
+                            return Row(
+                              children: [
+                                Expanded(child: _buildSupportedFormatsCard()),
+                                const SizedBox(width: AppDimensions.spacingL),
+                                Expanded(child: _buildProcessingTimeCard()),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              children: [
+                                _buildSupportedFormatsCard(),
+                                const SizedBox(height: AppDimensions.spacingL),
+                                _buildProcessingTimeCard(),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -564,13 +567,13 @@ class _UploadPageState extends State<UploadPage> {
   IconData _getFileIcon(String extension) {
     switch (extension.toLowerCase()) {
       case 'pdf':
-        return CupertinoIcons.doc_text;
+        return Icons.picture_as_pdf;
       case 'jpg':
       case 'jpeg':
       case 'png':
-        return CupertinoIcons.photo;
+        return Icons.photo;
       default:
-        return CupertinoIcons.doc;
+        return Icons.insert_drive_file;
     }
   }
 
@@ -588,7 +591,7 @@ class _UploadPageState extends State<UploadPage> {
               borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
             ),
             child: const Icon(
-              CupertinoIcons.checkmark_circle_fill,
+              Icons.check_circle,
               color: AppColors.successGreen,
               size: 20,
             ),
@@ -633,7 +636,7 @@ class _UploadPageState extends State<UploadPage> {
               borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
             ),
             child: const Icon(
-              CupertinoIcons.exclamationmark_triangle_fill,
+              Icons.warning,
               color: AppColors.warningOrange,
               size: 20,
             ),

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app_colors.dart';
@@ -36,37 +36,36 @@ class AppTheme extends ChangeNotifier {
   }
 
   /// Create light mode theme data
-  CupertinoThemeData get lightTheme {
-    return const CupertinoThemeData(
+  ThemeData get lightTheme {
+    return ThemeData(
       brightness: Brightness.light,
       primaryColor: AppColors.primaryBlue,
-      primaryContrastingColor: AppColors.white,
       scaffoldBackgroundColor: AppColors.backgroundWhite,
-      textTheme: CupertinoTextThemeData(
-        textStyle: AppTextStyles.body,
-        actionTextStyle: AppTextStyles.buttonPrimary,
-        tabLabelTextStyle: AppTextStyles.buttonSecondary,
-        navTitleTextStyle: AppTextStyles.title3,
-        navLargeTitleTextStyle: AppTextStyles.largeTitle,
-        navActionTextStyle: AppTextStyles.buttonPrimary,
-        pickerTextStyle: AppTextStyles.body,
-        dateTimePickerTextStyle: AppTextStyles.body,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primaryBlue,
+      ).copyWith(
+        primary: AppColors.primaryBlue,
+        secondary: AppColors.primaryBlue,
+        error: AppColors.destructiveRed,
+        background: AppColors.backgroundWhite,
       ),
-      barBackgroundColor: AppColors.backgroundWhite,
+      textTheme: const TextTheme(
+        displayLarge: AppTextStyles.largeTitle,
+        titleLarge: AppTextStyles.title2,
+        titleMedium: AppTextStyles.title3,
+        bodyLarge: AppTextStyles.body,
+        bodyMedium: AppTextStyles.bodySmall,
+        labelLarge: AppTextStyles.buttonPrimary,
+      ),
+      useMaterial3: true,
     );
   }
 
-  /// Create dark mode theme data
-  CupertinoThemeData get darkTheme {
-    // Note: For now, we're using light theme everywhere
-    // This is a placeholder for future dark mode implementation
-    return lightTheme;
-  }
+  /// Create dark mode theme data (placeholder - mirrors light for now)
+  ThemeData get darkTheme => lightTheme.copyWith(brightness: Brightness.dark);
 
   /// Get current theme based on mode
-  CupertinoThemeData get currentTheme {
-    return isDarkMode ? darkTheme : lightTheme;
-  }
+  ThemeData get currentTheme => isDarkMode ? darkTheme : lightTheme;
 
   /// Static method to access theme from context
   static AppTheme of(BuildContext context) {

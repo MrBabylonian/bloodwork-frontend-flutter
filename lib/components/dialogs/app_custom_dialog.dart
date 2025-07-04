@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material_icons;
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
@@ -78,8 +79,8 @@ class AppCustomDialog extends StatelessWidget {
                     ),
                     child: Icon(
                       isError
-                          ? CupertinoIcons.xmark_circle_fill
-                          : CupertinoIcons.checkmark_circle_fill,
+                          ? material_icons.Icons.error_rounded
+                          : material_icons.Icons.check_circle,
                       color:
                           isError
                               ? AppColors.destructiveRed
@@ -143,19 +144,18 @@ Future<T?> showAppCustomDialog<T>({
   double width = 400,
   bool barrierDismissible = true,
 }) {
-  return showCupertinoDialog<T>(
+  return showDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
-    builder: (BuildContext context) {
-      return AppCustomDialog(
-        title: title,
-        message: message,
-        isError: isError,
-        onPressed: onPressed,
-        buttonText: buttonText,
-        width: width,
-      );
-    },
+    builder:
+        (BuildContext context) => AppCustomDialog(
+          title: title,
+          message: message,
+          isError: isError,
+          onPressed: onPressed,
+          buttonText: buttonText,
+          width: width,
+        ),
   );
 }
 
@@ -216,90 +216,89 @@ Future<bool?> showConfirmationDialog({
   double width = 400,
   bool barrierDismissible = true,
 }) {
-  return showCupertinoDialog<bool>(
+  return showDialog<bool>(
     context: context,
     barrierDismissible: barrierDismissible,
-    builder: (BuildContext context) {
-      return Center(
-        child: Container(
-          width: width,
-          margin: const EdgeInsets.all(AppDimensions.spacingL),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.foregroundDark.withValues(alpha: 0.15),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Column(
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.title2.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingS),
-                    Text(
-                      message,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+    builder:
+        (BuildContext context) => Center(
+          child: Container(
+            width: width,
+            margin: const EdgeInsets.all(AppDimensions.spacingL),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundWhite,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.foregroundDark.withValues(alpha: 0.15),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-
-              // Divider
-              Container(
-                height: 1,
-                color: AppColors.borderGray.withValues(alpha: 0.3),
-              ),
-
-              // Actions
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SecondaryButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(cancelText),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  child: Column(
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.title2.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child:
-                          isDestructive
-                              ? DestructiveButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                child: Text(confirmText),
-                              )
-                              : PrimaryButton(
-                                onPressed:
-                                    () => Navigator.of(context).pop(true),
-                                child: Text(confirmText),
-                              ),
-                    ),
-                  ],
+                      const SizedBox(height: AppDimensions.spacingS),
+                      Text(
+                        message,
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // Divider
+                Container(
+                  height: 1,
+                  color: AppColors.borderGray.withValues(alpha: 0.3),
+                ),
+
+                // Actions
+                Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SecondaryButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(cancelText),
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Expanded(
+                        child:
+                            isDestructive
+                                ? DestructiveButton(
+                                  onPressed:
+                                      () => Navigator.of(context).pop(true),
+                                  child: Text(confirmText),
+                                )
+                                : PrimaryButton(
+                                  onPressed:
+                                      () => Navigator.of(context).pop(true),
+                                  child: Text(confirmText),
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      );
-    },
   );
 }

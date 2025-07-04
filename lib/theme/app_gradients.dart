@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 /// Defines gradient styles used throughout the application.

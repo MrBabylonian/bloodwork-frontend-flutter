@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
@@ -365,9 +365,9 @@ class _ProfilePageState extends State<ProfilePage> {
       return AuthUtils.buildLoginRequiredScreen(context);
     }
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
-      child: Column(
+      body: Column(
         children: [
           // Header
           AppHeader(
@@ -381,7 +381,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Expanded(
             child:
                 _isLoadingProfile
-                    ? const Center(child: CupertinoActivityIndicator())
+                    ? const Center(child: CircularProgressIndicator())
                     : _profile == null
                     ? const Center(child: Text("Nessun profilo disponibile"))
                     : SingleChildScrollView(
@@ -397,7 +397,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(CupertinoIcons.back, size: 16),
+                                  Icon(Icons.arrow_back, size: 16),
                                   SizedBox(width: AppDimensions.spacingXs),
                                   Text("Torna alla Dashboard"),
                                 ],
@@ -421,17 +421,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                   AppTab(
                                     id: 'profile',
                                     label: 'Profilo',
-                                    icon: CupertinoIcons.person,
+                                    icon: Icons.person,
                                   ),
                                   AppTab(
                                     id: 'notifications',
                                     label: 'Notifiche',
-                                    icon: CupertinoIcons.bell,
+                                    icon: Icons.notifications,
                                   ),
                                   AppTab(
                                     id: 'security',
                                     label: 'Sicurezza',
-                                    icon: CupertinoIcons.shield,
+                                    icon: Icons.shield,
                                   ),
                                 ],
                                 children: [
@@ -581,7 +581,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(CupertinoIcons.checkmark, size: 16),
+                      Icon(Icons.check, size: 16),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text("Salva Modifiche"),
                     ],
@@ -782,7 +782,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(CupertinoIcons.checkmark, size: 16),
+                      Icon(Icons.check, size: 16),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text("Salva Preferenze"),
                     ],
@@ -995,7 +995,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Row(
               children: [
                 Icon(
-                  CupertinoIcons.shield,
+                  Icons.shield,
                   color: AppColors.mediumGray,
                   size: AppDimensions.iconSizeMedium,
                 ),
@@ -1055,7 +1055,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(CupertinoIcons.settings, size: 16),
+                  Icon(Icons.settings, size: 16),
                   SizedBox(width: AppDimensions.spacingXs),
                   Text("Configura 2FA"),
                 ],

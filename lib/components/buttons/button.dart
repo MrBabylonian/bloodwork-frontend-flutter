@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_dimensions.dart';
@@ -96,7 +96,7 @@ class Button extends StatelessWidget {
 
   /// Get button width based on size - uses minimum width constants from AppDimensions
   double? get _buttonWidth {
-    if (width != null) return width;
+    if (width != null && width!.isFinite) return width;
 
     switch (size) {
       case ButtonSize.small:
@@ -139,7 +139,7 @@ class Button extends StatelessWidget {
     }
   }
 
-  /// Get background color based on variant and state
+  /// Get background color based on variant and state (for Material style)
   Color get _backgroundColor {
     if (disabled) return AppColors.lightGray.withValues(alpha: 0.5);
 
@@ -153,7 +153,7 @@ class Button extends StatelessWidget {
       case ButtonVariant.outline:
       case ButtonVariant.ghost:
       case ButtonVariant.link:
-        return CupertinoColors.transparent;
+        return Colors.transparent;
     }
   }
 
@@ -189,10 +189,10 @@ class Button extends StatelessWidget {
     );
   }
 
-  /// Get border for outline variant
-  Border? get _border {
+  /// Get border side (for outline / ghost variants)
+  BorderSide? get _borderSide {
     if (variant == ButtonVariant.outline) {
-      return Border.all(
+      return BorderSide(
         color: disabled ? AppColors.lightGray : AppColors.borderGray,
         width: 1,
       );
@@ -204,38 +204,42 @@ class Button extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isEffectivelyDisabled = disabled || onPressed == null;
 
+    final minWidth =
+        (_buttonWidth != null && _buttonWidth!.isFinite) ? _buttonWidth! : 0.0;
+
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        minWidth: _buttonWidth ?? 0,
-        minHeight: _buttonHeight,
-      ),
-      child: Container(
-        height: _buttonHeight,
-        decoration: BoxDecoration(
-          color: _backgroundColor,
-          borderRadius: _borderRadius,
-          border: _border,
-        ),
-        child: CupertinoButton(
+      constraints: BoxConstraints(minWidth: minWidth, minHeight: _buttonHeight),
+      child: TextButton(
+        style: TextButton.styleFrom(
+          backgroundColor: _backgroundColor,
+          foregroundColor: _textColor,
+          minimumSize: Size(minWidth, _buttonHeight),
           padding: EdgeInsets.symmetric(horizontal: _horizontalPadding),
-          borderRadius: _borderRadius,
-          minSize: 0,
-          onPressed: isEffectivelyDisabled || isLoading ? null : onPressed,
-          child:
-              isLoading
-                  ? CupertinoActivityIndicator(
-                    color: _textColor,
-                    radius: size == ButtonSize.small ? 8 : 10,
-                  )
-                  : IconTheme(
-                    data: IconThemeData(color: _textColor),
-                    child: DefaultTextStyle(
-                      style: _textStyle,
-                      textAlign: TextAlign.center,
-                      child: child,
-                    ),
-                  ),
+          shape: RoundedRectangleBorder(
+            borderRadius: _borderRadius,
+            side: _borderSide ?? BorderSide.none,
+          ),
+          textStyle: _textStyle,
         ),
+        onPressed: isEffectivelyDisabled || isLoading ? null : onPressed,
+        child:
+            isLoading
+                ? SizedBox(
+                  width: size == ButtonSize.small ? 16 : 20,
+                  height: size == ButtonSize.small ? 16 : 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(_textColor),
+                  ),
+                )
+                : IconTheme(
+                  data: IconThemeData(color: _textColor),
+                  child: DefaultTextStyle(
+                    style: _textStyle,
+                    textAlign: TextAlign.center,
+                    child: child,
+                  ),
+                ),
       ),
     );
   }

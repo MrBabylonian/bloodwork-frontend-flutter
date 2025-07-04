@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_styles.dart';
@@ -102,15 +102,6 @@ class AppTextInput extends StatelessWidget {
       textFieldFillColor = AppColors.backgroundSecondary;
     }
 
-    BoxDecoration decoration = BoxDecoration(
-      color: textFieldFillColor,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
-      border: Border.all(
-        color: hasError ? AppColors.error : AppColors.borderGray,
-        width: AppDimensions.borderWidth,
-      ),
-    );
-
     // Style for the input text itself
     TextStyle inputTextStyle = AppTextStyles.formInput.copyWith(
       color: enabled ? AppColors.foregroundDark : AppColors.textDisabled,
@@ -136,9 +127,8 @@ class AppTextInput extends StatelessWidget {
             child: Text(label!, style: labelStyle),
           ),
         ],
-        CupertinoTextField(
+        TextField(
           controller: controller,
-          placeholder: placeholder,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
@@ -151,33 +141,69 @@ class AppTextInput extends StatelessWidget {
           autofocus: autofocus,
           autocorrect: autocorrect,
           focusNode: focusNode,
-          prefix: prefix,
-          suffix: suffix,
           textCapitalization: textCapitalization,
-          padding: const EdgeInsets.symmetric(
-            horizontal:
-                AppDimensions.paddingMedium, // Corresponds to px-3 in mock
-            vertical:
-                AppDimensions
-                    .paddingSmall, // Corresponds to py-2 in mock (adjust if h-10 target is strict)
-          ),
-          decoration: decoration,
+          cursorColor: AppColors.primaryBlue,
           style: inputTextStyle,
-          placeholderStyle: placeholderTextStyle,
-          cursorColor: AppColors.primaryBlue, // Standard cursor color
-        ),
-        if (hasError) ...[
-          Padding(
-            padding: const EdgeInsets.only(
-              top: AppDimensions.spacingXxs,
-              left: AppDimensions.paddingSmall,
+          decoration: InputDecoration(
+            hintText: placeholder,
+            hintStyle: placeholderTextStyle,
+            filled: true,
+            fillColor: textFieldFillColor,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingMedium,
+              vertical: AppDimensions.paddingSmall,
             ),
-            child: Text(
-              errorText!,
-              style: AppTextStyles.caption.copyWith(color: AppColors.error),
+            prefixIcon: prefix,
+            suffixIcon: suffix,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusMedium,
+              ),
+              borderSide: BorderSide(
+                color: AppColors.borderGray,
+                width: AppDimensions.borderWidth,
+              ),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusMedium,
+              ),
+              borderSide: BorderSide(
+                color: AppColors.primaryBlue,
+                width: AppDimensions.borderWidth,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusMedium,
+              ),
+              borderSide: BorderSide(
+                color: AppColors.borderGray,
+                width: AppDimensions.borderWidth,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusMedium,
+              ),
+              borderSide: BorderSide(
+                color: AppColors.error,
+                width: AppDimensions.borderWidth,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.borderRadiusMedium,
+              ),
+              borderSide: BorderSide(
+                color: AppColors.error,
+                width: AppDimensions.borderWidth,
+              ),
+            ),
+            errorText: errorText,
           ),
-        ],
+        ),
       ],
     );
   }
