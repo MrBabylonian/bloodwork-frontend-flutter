@@ -98,14 +98,6 @@ flutter run --dart-define-from-file=.env
 | Upgrade dependencies    | `flutter pub upgrade --major-versions` |
 | Clean build artefacts   | `flutter clean`                        |
 
----
-
-## 🤝 Contributing
-
-1. Fork the repo & create your branch: `git checkout -b feat/my-feature`.
-2. Commit your changes with clear messages (conventional commits preferred).
-3. Ensure `flutter analyze` & tests pass.
-4. Open a Pull Request – template will guide you.
 
 ---
 
